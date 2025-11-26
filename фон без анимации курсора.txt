@@ -1,0 +1,78 @@
+<script setup lang="ts">
+import { onMounted, onBeforeUnmount, ref } from "vue";
+
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+let animationId: number;
+
+onMounted(() => {
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  const resize = () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  };
+
+  resize();
+  window.addEventListener("resize", resize);
+
+  const stars = Array.from({ length: 120 }).map(() => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    radius: Math.random() * 1.2 + 0.2,
+    opacity: Math.random(),
+    vx: (Math.random() - 0.5) * 0.15, // уменьшили скорость по X
+    vy: (Math.random() - 0.5) * 0.15  // уменьшили скорость по Y
+  }));
+
+  function animate() {
+    ctx.fillStyle = "#04050B"; // тёмное ночное небо
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    stars.forEach((s) => {
+      s.x += s.vx;
+      s.y += s.vy;
+
+      s.vx += (Math.random() - 0.5) * 0.005; // плавное изменение скорости
+      s.vy += (Math.random() - 0.5) * 0.005;
+
+      s.vx = Math.max(-0.2, Math.min(0.2, s.vx));
+      s.vy = Math.max(-0.2, Math.min(0.2, s.vy));
+
+      if (s.x < 0) s.x = canvas.width;
+      if (s.x > canvas.width) s.x = 0;
+      if (s.y < 0) s.y = canvas.height;
+      if (s.y > canvas.height) s.y = 0;
+
+      // Мерцание
+      s.opacity += (Math.random() - 0.5) * 0.05;
+      if (s.opacity < 0.05) s.opacity = 1;
+      if (s.opacity > 1) s.opacity = 1;
+
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
+      ctx.fill();
+    });
+
+    animationId = requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  onBeforeUnmount(() => {
+    cancelAnimationFrame(animationId);
+    window.removeEventListener("resize", resize);
+  });
+});
+</script>
+
+<template>
+  <canvas
+    ref="canvasRef"
+    class="fixed inset-0 pointer-events-none z-0"
+  ></canvas>
+</template>
