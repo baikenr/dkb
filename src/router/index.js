@@ -6,7 +6,13 @@ const routes = [
 		name: 'Main',
 		meta: { public: true },
 		component: () => import('@/pages/Index.vue')
-	}
+	},
+	{
+    path: "/quiz",
+    name: "quizpanel",
+    meta: { public: true },
+    component: () => import("@/components/Quiz/QuizPanel.vue"),
+  },
 ]
 
 const router = createRouter({
