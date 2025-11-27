@@ -27,7 +27,7 @@ const isSubmitting = ref(false);
 const errorMessage = ref("");
 const success = ref(false);
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzsGPaEIndvkyN-gwfNF-NFIxQ-0UziwJ90SNJhFvpQeKhdB-I0H-N9q0BWaf4Y9CQ/exec";
+  "https://script.google.com/macros/s/AKfycbzt1meTh3t6rBDJV8s6H7U0dO0QdAz8qnlNYs7FdU2Y1uhICyU9SG21IWqcH0bIqTU/exec";
 
 function handleFileChange(e: Event, key: "passportFile" | "bankStatementFile") {
   const target = e.target as HTMLInputElement;
@@ -39,11 +39,16 @@ function fileToBase64(file: File | null): Promise<string | null> {
   if (!file) return Promise.resolve(null);
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const base64 = result.includes(",") ? result.split(",")[1] : result;
+      resolve(base64);
+    };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
+
 
 async function onSubmit() {
   try {
@@ -77,7 +82,15 @@ async function onSubmit() {
     (Object.entries(payload) as [string, unknown][]).forEach(([key, value]) => {
       formData.append(key, value != null ? String(value) : "");
     });
+    if (form.value.passportFile) {
+      formData.append("passport_file_name", form.value.passportFile.name);
+      formData.append("passport_file_type", form.value.passportFile.type);
+    }
 
+    if (form.value.bankStatementFile) {
+      formData.append("bank_statement_file_name", form.value.bankStatementFile.name);
+      formData.append("bank_statement_file_type", form.value.bankStatementFile.type);
+    }
     const res = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
       body: formData,
@@ -364,7 +377,6 @@ async function onSubmit() {
       </div>
     </div>
 
-    <!-- FOOTER -->
     <footer class="mt-8 bg-[#003b73] text-white">
       <div
         class="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center md:items-stretch gap-8"
