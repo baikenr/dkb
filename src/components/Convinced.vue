@@ -7,6 +7,7 @@
       </h2>
 
       <button
+        @click="openQuiz"
         style="color: #006AC7 !important;"
         class="bg-white hover:bg-[#E8F5FF] text-[#006AC7] text-base md:text-[22px] font-medium py-4 rounded-md w-[300px] flex-shrink-0"
       >
@@ -18,6 +19,10 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+
+const openQuiz = () => {
+  window.open('/quiz', '_blank');
+};
 
 const { t } = useI18n()
 </script>

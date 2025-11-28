@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
 import Logo from '@/assets/logo_dkb.svg';
 
 const { t, locale } = useI18n();
+
+const openQuiz = () => {
+  window.open('/quiz', '_blank');
+};
 
 const changeLanguage = (lang: string) => {
   locale.value = lang;
@@ -194,9 +201,13 @@ const hideProductsMenu = () => {
           </v-menu>
         </v-btn>
   
-        <button class="bg-[#006AC7] hover:bg-[#134E8A] text-white text-[18px] font-medium py-2 px-5 rounded-md transition-colors">
+        <button 
+          @click="openQuiz"
+          class="bg-[#006AC7] hover:bg-[#134E8A] text-white text-[18px] font-medium py-2 px-5 rounded-md transition-colors"
+        >
           {{ t("header.loon_now") }}
         </button>
+
       </div>
     </div>
   </header>

@@ -7,7 +7,7 @@
         "loon_now": "Jetzt Kredit beantragen"
     },
     "hero": {
-        "blue_week": "Blue Week Deal bis 07.12.25",
+        "blue_week": "Blue Week Deal bis 01.02.26",
         "loan": "Privatkredit mit",
         "discount": "-0,9 % Zinsrabatt sichern",
         "first_point" : "Die Kreditprodukte von Dashi sind für alle Personen mit rechtmäßigem Wohnsitz in Deutschland verfügbar",
@@ -17,7 +17,7 @@
     },
     "interests": {
         "blue_week": "Blue Week Deal – Privatkredit Sofort mit Zinsvorteil",
-        "loan": "Mit unserem Privatkredit Sofort profitierst du bei Abschluss bis zum 7.12.25 automatisch von einem",
+        "loan": "Mit unserem Privatkredit Sofort profitierst du bei Abschluss bis zum 1.02.26 automatisch von einem",
         "discount": "Zinsvorteil von 0,9 Prozentpunkten",
         "text_after_discount": "auf den unten ausgewiesenen effektiven Jahreszins. Somit bist du bereits mit 5,99 % p. a. dabei. Und durch die sofortige Kreditentscheidung ist das Geld in Nullkommax auf deinem Konto.",
         "button": "Jetzt Zinsvorteil sichern"
@@ -28,7 +28,7 @@
         "title2": "Schnell",
         "description2": "Kreditentscheidung und Auszahlung innerhalb von 24 Stunden bei digitalem Antrag möglich.",
         "title3": "Flexibel",
-        "description3": "Kreditbeträge zwischen 2.500 € und 100.000 € mit einer Laufzeit bis zu 120 Monate wählbar.",
+        "description3": "Kreditbeträge zwischen 10.000 € und 150.000 € mit einer Laufzeit bis zu 120 Monate wählbar.",
         "title4": "Kostenlose Rückzahlungen",
         "description4": "Kostenlose vorzeitige Rückzahlungen sind auf Wunsch jederzeit möglich.",
         "title5": "Sicher",
@@ -45,6 +45,21 @@
     "convinced": {
         "title": "Überzeugt vom DKB-Privatkredit? Jetzt unverbindliche Kreditanfrage starten.",
         "btn": "Jetzt Kredit beantragen"
+    },
+    "calculate": {
+        "maxFlexibility": "Maximal flexibel:",
+        "upTo": "bis",
+        "and": "und",
+        "months": "Monate",
+        "calculationAsInstant": "Berechnung als Sofortkredit?",
+        "instantLoanDescription": "Wenn aktiviert wird die Berechnung mit dem Zinsvorteil von 0,9 Prozentpunkten des Sofortkredits durchgeführt.",
+        "netLoanAmount": "Nettodarlehensbetrag",
+        "runtime": "Laufzeit",
+        "monthlyRate": "Monatsrate",
+        "effectiveAnnualInterestRate": "Effektiver Jahreszins:",
+        "borrowingInterest": "Sollzins (p.a. gebunden):",
+        "totalCost": "Gesamtkosten des Kredits:",
+        "total": "Gesamtbetrag:"
     },
     "footer": {
         "account_title":"Konto",
@@ -69,5 +84,68 @@
         "privacy":"Datenschutz",
         "impressum":"Impressum",
         "cookies":"Cookie-Einstellungen"
+    },
+    "quiz": {
+        "title": "Ihre persönlichen Daten",
+        "subtitle": "Bitte füllen Sie Ihre persönlichen Daten aus, damit wir Ihre Kreditanfrage bearbeiten können.",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "dateOfBirth": "Geburtsdatum",
+        "countryOfBirth": "Geburtsland",
+        "countryOfResidence": "Wohnsitzland",
+        "income": "Einkommen (pro Monat)",
+        "additionalIncome": "Zusatzeinkommen",
+        "yes": "Ja",
+        "no": "Nein",
+        "additionalIncomePlaceholder": "Zusatzeinkommen eingeben",
+        "email": "E-Mail",
+        "contactPhone": "Kontakttelefon",
+        "residentialAddress": "Wohnadresse",
+        "workplace": "Arbeitsplatz",
+        "position": "Position",
+        "workStartYear": "Jahr Arbeitsbeginn",
+        "passportUpload": "Reisepass / Ausweis (hochladen)",
+        "bankStatementUpload": "Kontoauszug (hochladen)",
+        "clickToChooseFile": "Klicken Sie, um eine Datei auszuwählen",
+        "fileFormats": "PDF, JPG oder PNG",
+        "selected": "Ausgewählt:",
+        "sending": "Wird gesendet...",
+        "next": "WEITER",
+        "dataSentSuccess": "Daten erfolgreich gesendet.",
+        "needHelp": "Benötigen Sie Hilfe bei Ihrer Bewerbung?",
+        "faqDescription": "Häufig gestellte Fragen und Antworten.",
+        "contact": "Kontakt",
+        "imprint": "Impressum",
+        "dataProtection": "Datenschutz",
+        "cookieSettings": "Cookie-Einstellungen",
+        "errors": {
+            "uploadBothFiles": "Bitte laden Sie sowohl Reisepass/Ausweis als auch Kontoauszug hoch.",
+            "selectDateOfBirth": "Bitte wählen Sie Ihr Geburtsdatum aus.",
+            "mustBe18": "Sie müssen mindestens 18 Jahre alt sein.",
+            "incomeInvalid": "Das Einkommen muss eine nicht negative Zahl sein.",
+            "additionalIncomeInvalid": "Das Zusatzeinkommen muss eine nicht negative Zahl sein.",
+            "phoneInvalid": "Die Kontakttelefonnummer muss mit + beginnen und genau 11 Ziffern enthalten.",
+            "workStartYearInvalid": "Das Jahr des Arbeitsbeginns muss zwischen 1925 und {year} liegen.",
+            "somethingWentWrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
+        }
+    },
+    "fewSteps": {
+        "title": "In wenigen Schritten zum Privatkredit.",
+        "step1": {
+            "title": "Kredit online beantragen",
+            "text": "Einfach Wunschbetrag angeben und den Antrag bequem online abschließen. Beim \"Privatkredit Sofort\" wird dabei die Kreditentscheidung anhand des digitalen Kontochecks und dem Abgleich deiner angegebenen Daten sofort getroffen."
+        },
+        "step2": {
+            "title": "Online legitimieren",
+            "text": "Mit Video-Ident bestätigst du online deine Identität. Alternativ steht dir beim \"Privatkredit Klassisch\" zusätzlich das POSTIDENT-Verfahren zur Verfügung."
+        },
+        "step3": {
+            "title": "Antrag (digital) unterschreiben",
+            "text": "Beim \"Privatkredit Sofort\" erstellst du mit einer TAN, die dir an dein Handy gesendet wird, deine digitale Unterschrift. Diese erscheint in Form eines Siegels auf deinem Darlehensvertrag (Hinweis: Dieser Service ist Mo.-Fr. zwischen 7 und 22 Uhr verfügbar). Beim \"Privatkredit Klassisch\" hast du die Möglichkeit, deinen unterschriebenen Vertrag auf dem Postweg einzureichen. Alternativ registrierst du dich im DKB-Portal und kannst auch hier digital unterschreiben."
+        },
+        "step4": {
+            "title": "Wunschbetrag auf deinem Konto",
+            "text": "Bei einer positiven Kreditentscheidung ist der Betrag in kürzester Zeit (\"Privatkredit Sofort\") bzw. in wenigen Tagen (\"Privatkredit Klassisch\") auf deinem Konto."
+        }
     }
 }

@@ -14,15 +14,12 @@
         {{ $t('interests.text_after_discount') }}
       </p>
 
-      <button class="bg-[#006AC7] hover:bg-[#005AA9] text-white text-[18px] font-medium py-2 px-6 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-        {{ $t('interests.button') }}
-      </button>
     </div>
   </section>
 </template>
 
-<script>
+<script setup>
 import { useI18n } from 'vue-i18n';
 
-const t = useI18n;
+const { t } = useI18n();
 </script>

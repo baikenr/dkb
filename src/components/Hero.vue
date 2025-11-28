@@ -2,6 +2,10 @@
 import { useI18n } from 'vue-i18n';
 import Banner from "@/assets/blue_week.png";
 
+const openQuiz = () => {
+  window.open('/quiz', '_blank');
+};
+
 const { t, locale } = useI18n();
 </script>
 
@@ -53,6 +57,7 @@ const { t, locale } = useI18n();
 
           <div class="flex w-full justify-center md:justify-start">
             <button
+              @click="openQuiz"
               class="px-8 py-4 bg-white text-[24px] font-semibold rounded-md"
               style="color: #006AC7 !important; font-weight: 600 !important;"
             >

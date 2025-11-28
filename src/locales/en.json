@@ -7,7 +7,7 @@
         "loon_now": "Apply for a loan now"
     },
     "hero": {
-        "blue_week": "Blue Week Deal bis 07.12.25",
+        "blue_week": "Blue Week Deal bis 01.02.26",
         "loan": "Secure a personal loan witha",
         "discount": "-0.9% interest discount",
         "first_point" : "Dashi's credit products are available to all persons legally residing in Germany",
@@ -19,7 +19,7 @@
         "blue_week": "Blue Week Deal – Personal Loan Immediately with Interest Advantage",
         "loan": "With our personal loan Sofort, you automatically benefit from an",
         "discount": "interest rate advantage of 0.9 percentage points",
-        "text_after_discount": "on the effective annual interest rate shown below if you take out the loan by 7.12.25. This means that you are already involved with 5.99% p.a. And with the instant credit decision, the money is in your account in no time.",
+        "text_after_discount": "on the effective annual interest rate shown below if you take out the loan by 1.02.26. This means that you are already involved with 5.99% p.a. And with the instant credit decision, the money is in your account in no time.",
         "button": "Secure your interest rate advantage now"
     },
     "benefits": {
@@ -28,7 +28,7 @@
         "title2": "Fast",
         "description2": "Credit decision and disbursement possible within 24 hours with digital application.",
         "title3": "Flexible",
-        "description3": "Loan amounts between €2,500 and €100,000 with a term of up to 120 months can be selected.",
+        "description3": "Loan amounts between €10,000 and €150,000 with a term of up to 120 months can be selected.",
         "title4": "Free refunds",
         "description4": "Free early repayments are possible at any time if desired.",
         "title5": "Secure",
@@ -45,6 +45,21 @@
     "convinced": {
         "title": "Convinced by the DKB personal loan? Start a non-binding loan request now.",
         "btn": "Apply for a loan now"
+    },
+    "calculate": {
+        "maxFlexibility": "Maximum flexibility:",
+        "upTo": "up to",
+        "and": "and",
+        "months": "months",
+        "calculationAsInstant": "Calculation as an instant loan?",
+        "instantLoanDescription": "→ If activated, the calculation is carried out with the interest rate advantage of 0.9 percentage points of the instant loan.",
+        "netLoanAmount": "Net loan amount",
+        "runtime": "Runtime",
+        "monthlyRate": "Monthly rate",
+        "effectiveAnnualInterestRate": "Effective annual interest rate:",
+        "borrowingInterest": "Borrowing interest (p.a. fixed):",
+        "totalCost": "Total cost of the loan:",
+        "total": "Total:"
     },
     "footer": {
         "account_title":"Account",
@@ -69,5 +84,68 @@
         "privacy":"Privacy",
         "impressum":"Imprint",
         "cookies":"Cookie settings"
+    },
+    "quiz": {
+        "title": "Your personal details",
+        "subtitle": "Please fill in your personal data so we can process your loan request.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "dateOfBirth": "Date of birth",
+        "countryOfBirth": "Country of birth",
+        "countryOfResidence": "Country of residence",
+        "income": "Income (per month)",
+        "additionalIncome": "Additional income",
+        "yes": "Yes",
+        "no": "No",
+        "additionalIncomePlaceholder": "Enter additional income amount",
+        "email": "E-mail",
+        "contactPhone": "Contact phone",
+        "residentialAddress": "Residential address",
+        "workplace": "Work place",
+        "position": "Position",
+        "workStartYear": "Year start of work",
+        "passportUpload": "Passport / ID (upload)",
+        "bankStatementUpload": "Bank statement (upload)",
+        "clickToChooseFile": "Click to choose file",
+        "fileFormats": "PDF, JPG or PNG",
+        "selected": "Selected:",
+        "sending": "Sending...",
+        "next": "NEXT",
+        "dataSentSuccess": "Data sent successfully.",
+        "needHelp": "Need help with your application?",
+        "faqDescription": "Frequently asked questions and answers.",
+        "contact": "Contact",
+        "imprint": "Imprint",
+        "dataProtection": "Data protection",
+        "cookieSettings": "Cookie settings",
+        "errors": {
+            "uploadBothFiles": "Please upload both Passport/ID and Bank statement files.",
+            "selectDateOfBirth": "Please select your date of birth.",
+            "mustBe18": "You must be at least 18 years old.",
+            "incomeInvalid": "Income must be a non-negative number.",
+            "additionalIncomeInvalid": "Additional income must be a non-negative number.",
+            "phoneInvalid": "Contact phone must start with + and contain exactly 11 digits.",
+            "workStartYearInvalid": "Year start of work must be between 1925 and {year}.",
+            "somethingWentWrong": "Something went wrong. Please try again."
+        }
+    },
+    "fewSteps": {
+        "title": "In a few steps to a personal loan.",
+        "step1": {
+            "title": "Apply for a loan online",
+            "text": "Simply specify the desired amount and complete the application conveniently online. With the \"Personal Loan Sofort\", the credit decision is made immediately based on the digital account check and the comparison of your specified data."
+        },
+        "step2": {
+            "title": "Identify online",
+            "text": "With Video-Ident, you confirm your identity online. Alternatively, the POSTIDENT procedure is also available for the \"Personal Loan Klassisch\"."
+        },
+        "step3": {
+            "title": "Sign application (digitally)",
+            "text": "With the \"Personal Loan Sofort\", you create your digital signature with a TAN that is sent to your mobile phone. This appears in the form of a seal on your loan agreement (Note: This service is available Mon.-Fri. between 7 a.m. and 10 p.m.). With the \"Personal Loan Klassisch\", you have the option to submit your signed contract by post. Alternatively, you register in the DKB portal and can also sign digitally here."
+        },
+        "step4": {
+            "title": "Desired amount in your account",
+            "text": "With a positive credit decision, the amount is in your account in the shortest possible time (\"Personal Loan Sofort\") or within a few days (\"Personal Loan Klassisch\")."
+        }
     }
 }

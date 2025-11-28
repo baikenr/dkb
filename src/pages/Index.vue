@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import Header from '@/components/Header.vue';
 import Hero from '@/components/Hero.vue';
-<<<<<<< HEAD
 import Interests from '@/components/Interests.vue';
 import Advantages from '@/components/Advantages.vue';
 import SecureInterest from '@/components/SecureInterest.vue'
 import Convinced from '@/components/Convinced.vue'
 import Footer from '@/components/Footer.vue'
-=======
-import QuizPanel from '@/components/Quiz/QuizPanel.vue';
->>>>>>> d2f106a543e0a5317ba7e63dacb1b572eb265f1f
+import Calculate from '@/components/Calculate.vue';
+import FewSteps from '@/components/FewSteps.vue';
 </script>
 
 <template>
@@ -19,6 +17,8 @@ import QuizPanel from '@/components/Quiz/QuizPanel.vue';
     <Interests/>
     <Advantages/>
     <SecureInterest/>
+    <Calculate/>
+    <FewSteps/>
     <Convinced/>
     <Footer/>
   </div>

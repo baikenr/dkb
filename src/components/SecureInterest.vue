@@ -14,7 +14,9 @@
 
         <p class="text-[18px] py-4" v-html="t('interestSection.paragraph2')"></p>
 
-        <button class="bg-[#006AC7] hover:bg-[#005AA9] text-white text-[18px] font-medium py-2 px-6 rounded-md transition-colors">
+        <button 
+          @click="openQuiz"
+          class="bg-[#006AC7] hover:bg-[#005AA9] text-white text-[18px] font-medium py-2 px-6 rounded-md transition-colors">
           {{ t('interestSection.button') }}
         </button>
       </div>
@@ -25,6 +27,10 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import Plane from '@/assets/paper_plane.svg'
+
+const openQuiz = () => {
+  window.open('/quiz', '_blank');
+};
 
 const { t } = useI18n()
 </script>
