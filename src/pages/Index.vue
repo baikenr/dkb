@@ -8,6 +8,5 @@ import QuizPanel from '@/components/Quiz/QuizPanel.vue';
   <div class="min-h-scree">
     <Header class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"/>
     <Hero class="mt-20"/>
-    <QuizPanel/>
   </div>
 </template>
