@@ -14,5 +14,60 @@
         "second_point": "We also consider applications from persons with legal residence in Germany who are on the black list of banks",
         "third_point": "The loan amount is between € 10,000 and € 150,000",
         "only": "only"
+    },
+    "interests": {
+        "blue_week": "Blue Week Deal – Personal Loan Immediately with Interest Advantage",
+        "loan": "With our personal loan Sofort, you automatically benefit from an",
+        "discount": "interest rate advantage of 0.9 percentage points",
+        "text_after_discount": "on the effective annual interest rate shown below if you take out the loan by 7.12.25. This means that you are already involved with 5.99% p.a. And with the instant credit decision, the money is in your account in no time.",
+        "button": "Secure your interest rate advantage now"
+    },
+    "benefits": {
+        "title1": "Top interest rate",
+        "description1": "5.99% creditworthiness-independent effective annual interest rate (5.83% p.a. borrowing interest).",
+        "title2": "Fast",
+        "description2": "Credit decision and disbursement possible within 24 hours with digital application.",
+        "title3": "Flexible",
+        "description3": "Loan amounts between €2,500 and €100,000 with a term of up to 120 months can be selected.",
+        "title4": "Free refunds",
+        "description4": "Free early repayments are possible at any time if desired.",
+        "title5": "Secure",
+        "description5": "With the optional installment protection insurance, your loan is secured against unforeseen risks. Benefit at the same time from <span class=\"font-medium\">100 euros cashback</span>.",
+        "title6": "Reschedule existing loans",
+        "description6": "Repay or restructure existing loan or installment obligations and benefit from the attractive conditions of the DKB personal loan. <a href=\"#\" class=\"text-blue-600 font-medium hover:underline\">More information in the FAQs.</a>"
+    },
+    "interestSection": {
+        "title": "Secure your interest rate advantage now!",
+        "paragraph1": "With our Personal Loan Sofort, you automatically benefit from an <strong>interest rate advantage of 0.9 percentage points</strong> on the effective annual interest rate shown below. And by the way, you also save time thanks to the immediate loan decision.",
+        "paragraph2": "Prerequisite: You agree to a digital account check.",
+        "button": "Apply online now!"
+    },
+    "convinced": {
+        "title": "Convinced by the DKB personal loan? Start a non-binding loan request now.",
+        "btn": "Apply for a loan now"
+    },
+    "footer": {
+        "account_title":"Account",
+        "investing_title":"Saving & Investing",
+        "credits_title":"Credits",
+        "cards_title":"Cards",
+        "account_text1": "Current account",
+        "account_text2": "Joint account",
+        "account_text3": "Current account u18",
+        "account_text4": "Current account for students",
+        "investing_text1": "Call money account",
+        "investing_text2": "Fixed deposits",
+        "investing_text3": "Depot",
+        "investing_text4": "Junior Depot",
+        "credits_text1": "Personal loan",
+        "credits_text2": "Car loan",
+        "credits_text3": "Modernisation loan",
+        "cards_text1": "Debit card",
+        "cards_text2": "Credit card",
+        "cards_text3": "Giro card",
+        "cards_text4": "Comparison",
+        "privacy":"Privacy",
+        "impressum":"Imprint",
+        "cookies":"Cookie settings"
     }
 }
