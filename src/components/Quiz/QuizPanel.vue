@@ -33,6 +33,7 @@ const hasAdditionalIncome = ref(false);
 const isSubmitting = ref(false);
 const errorMessage = ref("");
 const success = ref(false);
+const showSuccessDialog = ref(false);
 
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbzPkqKmw-CsIExfJyKGCKcTwuD7YENVcYNVFQVtuxmI2Dv3LmrvFxtHphJSsXNUQNXJ0g/exec";
@@ -215,6 +216,7 @@ async function onSubmit() {
     if (!data.success) throw new Error("Script error");
 
     success.value = true;
+    showSuccessDialog.value = true;
   } catch (e) {
     console.error(e);
     errorMessage.value = t('quiz.errors.somethingWentWrong');
@@ -522,9 +524,6 @@ async function onSubmit() {
             <p v-if="errorMessage" class="text-sm text-red-600">
               {{ errorMessage }}
             </p>
-            <p v-if="success" class="text-sm text-emerald-600">
-              {{ $t('quiz.dataSentSuccess') }}
-            </p>
           </div>
 
           <div class="mt-6 flex justify-end">
@@ -592,5 +591,28 @@ async function onSubmit() {
         </div>
       </div>
     </footer>
+
+    <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
+      <v-card>
+        <v-card-title class="text-h5 pa-6 pb-4">
+          {{ $t('quiz.successDialogTitle') }}
+        </v-card-title>
+        <v-card-text class="pa-6 pt-2 pb-4">
+          <p class="text-body-1">
+            {{ $t('quiz.successDialogMessage') }}
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-2">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="showSuccessDialog = false"
+          >
+            {{ $t('quiz.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </main>
 </template>
