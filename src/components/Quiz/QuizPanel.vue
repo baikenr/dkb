@@ -76,7 +76,7 @@ function handlePhoneInput(e: Event) {
     const digitsPart = value.slice(1).replace(/\D/g, "");
     value = "+" + digitsPart;
   }
-  const digits = value.slice(1).replace(/\D/g, "").slice(0, 11);
+  const digits = value.slice(1).replace(/\D/g, ""); 
   form.value.phone = "+" + digits;
 }
 function handleWorkplaceInput(e: Event) {
