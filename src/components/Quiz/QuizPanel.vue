@@ -36,7 +36,7 @@ const success = ref(false);
 const showSuccessDialog = ref(false);
 
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzPkqKmw-CsIExfJyKGCKcTwuD7YENVcYNVFQVtuxmI2Dv3LmrvFxtHphJSsXNUQNXJ0g/exec";
+  "https://script.google.com/macros/s/AKfycbxErR5IUh3dXvThX_hc9IrYU3Zk-zz0KT5yKYNGM0RHBextiJhhzO4HCuZLXfaHrw/exec";
 function getMaxBirthDate(): string {
   const today = new Date();
   const d = new Date(
@@ -147,7 +147,7 @@ async function onSubmit() {
       additionalIncomeCurrencyStr = form.value.additionalIncomeCurrency;
     }
     const phoneDigits = form.value.phone.replace(/\D/g, "");
-    if (phoneDigits.length !== 11 || !form.value.phone.startsWith("+")) {
+    if (!form.value.phone.startsWith("+") || phoneDigits.length === 0) {
       errorMessage.value = t('quiz.errors.phoneInvalid');
       return;
     }
