@@ -13,7 +13,8 @@
         "first_point" : "Die Kreditprodukte von Dashi sind für alle Personen mit rechtmäßigem Wohnsitz in Deutschland verfügbar",
         "second_point": "Wir prüfen Anträge auch von Personen mit rechtmäßigem Wohnsitz in Deutschland, die auf der schwarzen Liste von Banken stehen",
         "third_point": "Der Kreditbetrag liegt zwischen 10.000 € und 150.000 €",
-        "only": "nur"
+        "only": "Wir genehmigen",
+        "of_loans" : "der Kredite"
     },
     "interests": {
         "blue_week": "Blue Week Deal – Privatkredit Sofort mit Zinsvorteil",

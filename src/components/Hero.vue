@@ -72,7 +72,7 @@ const { t, locale } = useI18n();
             {{ t('hero.only') }}
           </p>
           <div class="flex items-end">
-            <span class="text-8xl md:text-9xl lg:text-[300px] font-bold text-[#2AD1C9] leading-none">5</span>
+            <span class="text-8xl md:text-9xl lg:text-[300px] font-bold text-[#2AD1C9] leading-none">96</span>
             <div class="flex flex-col items-start -mt-2">
               <div class="flex items-end">
                 <span class="text-6xl md:text-8xl lg:text-[168px] font-bold text-[#2AD1C9] leading-none">99</span>
@@ -84,6 +84,9 @@ const { t, locale } = useI18n();
               </div>
             </div>
           </div>
+          <p class="text-[40px] font-medium text-white md:mb-[-40px] ml-4">
+            {{ t('hero.of_loans') }}
+          </p>
         </div>
         
       </div>
