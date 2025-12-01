@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import Banner from "@/assets/blue_week.png";
 
 const openQuiz = () => {
-  window.open('/quiz', '_blank');
+  window.location.href = '/quiz';
 };
 
 const { t, locale } = useI18n();

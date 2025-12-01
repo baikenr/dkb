@@ -9,7 +9,7 @@ import Logo from '@/assets/logo_dkb.svg';
 const { t, locale } = useI18n();
 
 const openQuiz = () => {
-  window.open('/quiz', '_blank');
+  window.location.href = '/quiz';
 };
 
 const changeLanguage = (lang: string) => {

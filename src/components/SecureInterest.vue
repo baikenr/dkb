@@ -29,7 +29,7 @@ import { useI18n } from 'vue-i18n'
 import Plane from '@/assets/paper_plane.svg'
 
 const openQuiz = () => {
-  window.open('/quiz', '_blank');
+  window.location.href = '/quiz';
 };
 
 const { t } = useI18n()

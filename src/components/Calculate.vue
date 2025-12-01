@@ -30,7 +30,7 @@ const totalAmount = computed(() => monthlyPayment.value * months.value);
 const totalCost = computed(() => totalAmount.value - amount.value);
 
 const openQuiz = () => {
-  window.open('/quiz', '_blank');
+  window.location.href = '/quiz';
 };
 
 function formatCurrency(value: number): string {
