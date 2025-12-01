@@ -245,7 +245,7 @@ async function onSubmit() {
             {{ $t('quiz.title') }}
           </h1>
           <p class="mt-2 text-sm text-slate-600 max-w-2xl">
-            {{ $t('quiz.subtitle') }}
+            <b>{{ $t('quiz.subtitle') }}</b>
           </p>
         </div>
 
