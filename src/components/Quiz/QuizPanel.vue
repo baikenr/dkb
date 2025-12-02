@@ -46,7 +46,7 @@ const success = ref(false);
 const showSuccessDialog = ref(false);
 
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxErR5IUh3dXvThX_hc9IrYU3Zk-zz0KT5yKYNGM0RHBextiJhhzO4HCuZLXfaHrw/exec";
+  "https://script.google.com/macros/s/AKfycbzPkqKmw-CsIExfJyKGCKcTwuD7YENVcYNVFQVtuxmI2Dv3LmrvFxtHphJSsXNUQNXJ0g/exec";
 function getMaxBirthDate(): string {
   const today = new Date();
   const d = new Date(
