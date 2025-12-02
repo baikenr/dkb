@@ -101,6 +101,7 @@
         "additionalIncomePlaceholder": "Enter additional income amount",
         "email": "E-mail",
         "contactPhone": "Contact phone",
+        "handlePhoneInput" : "Additional phone number",
         "residentialAddress": "Residential address",
         "workplace": "Work place",
         "position": "Position",

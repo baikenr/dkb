@@ -101,6 +101,7 @@
         "additionalIncomePlaceholder": "Zusatzeinkommen eingeben",
         "email": "E-Mail",
         "contactPhone": "Kontakttelefon",
+        "handlePhoneInput": "Zusätzliche Telefonnummer",
         "residentialAddress": "Wohnadresse",
         "workplace": "Arbeitsplatz",
         "position": "Position",
