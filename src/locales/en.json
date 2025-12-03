@@ -114,6 +114,7 @@
         "selected": "Selected:",
         "sending": "Sending...",
         "next": "NEXT",
+        "back": "BACK",
         "dataSentSuccess": "Data sent successfully.",
         "successDialogTitle": "Application successfully created!",
         "successDialogMessage": "A manager will contact you shortly to clarify the details.",
@@ -124,6 +125,12 @@
         "imprint": "Imprint",
         "dataProtection": "Data protection",
         "cookieSettings": "Cookie settings",
+        "passportFrontLabel": "Front side of passport / ID (enter ID or upload file)",
+        "passportBackLabel": "Back side of passport / ID (ID or file)",
+        "passportFrontPlaceholder": "Enter passport / ID number (front)",
+        "passportBackPlaceholder": "Enter passport / ID number (back)",
+        "unableToUpload": "Unable to upload",
+        "noBankAccount": "I don’t have a bank account",
         "errors": {
             "uploadBothFiles": "Please upload both Passport/ID and Bank statement files.",
             "selectDateOfBirth": "Please select your date of birth.",
@@ -132,7 +139,11 @@
             "additionalIncomeInvalid": "Additional income must be a non-negative number.",
             "phoneInvalid": "Contact phone must start with + and contain exactly 11 digits.",
             "workStartYearInvalid": "Year start of work must be between 1925 and {year}.",
-            "somethingWentWrong": "Something went wrong. Please try again."
+            "somethingWentWrong": "Something went wrong. Please try again.",
+            "desiredLoanAmountInvalid": "Desired loan amount must be a positive number.",
+            "passportFrontRequired": "Please provide the front side of passport/ID (number or file).",
+            "passportBackRequired": "Please provide the back side of passport/ID (number or file) or tick \"Unable to upload\".",
+            "bankStatementRequired": "Please upload a bank statement or tick \"I don’t have a bank account\"."
         }
     },
     "fewSteps": {

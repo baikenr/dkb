@@ -114,6 +114,7 @@
         "selected": "Ausgewählt:",
         "sending": "Wird gesendet...",
         "next": "WEITER",
+        "back": "ZURÜCK",
         "dataSentSuccess": "Daten erfolgreich gesendet.",
         "successDialogTitle": "Antrag erfolgreich erstellt!",
         "successDialogMessage": "Ein Mitarbeiter wird sich in Kürze mit Ihnen in Verbindung setzen, um die Details zu klären.",
@@ -124,6 +125,12 @@
         "imprint": "Impressum",
         "dataProtection": "Datenschutz",
         "cookieSettings": "Cookie-Einstellungen",
+        "passportFrontLabel": "Vorderseite des Reisepasses / Ausweises (ID eingeben oder Datei hochladen)",
+        "passportBackLabel": "Rückseite des Reisepasses / Ausweises (ID oder Datei)",
+        "passportFrontPlaceholder": "Reisepass- / Ausweisnummer (Vorderseite) eingeben",
+        "passportBackPlaceholder": "Reisepass- / Ausweisnummer (Rückseite) eingeben",
+        "unableToUpload": "Keine Möglichkeit zum Hochladen",
+        "noBankAccount": "Ich habe kein Bankkonto",
         "errors": {
             "uploadBothFiles": "Bitte laden Sie sowohl Reisepass/Ausweis als auch Kontoauszug hoch.",
             "selectDateOfBirth": "Bitte wählen Sie Ihr Geburtsdatum aus.",
@@ -132,7 +139,11 @@
             "additionalIncomeInvalid": "Das Zusatzeinkommen muss eine nicht negative Zahl sein.",
             "phoneInvalid": "Die Kontakttelefonnummer muss mit + beginnen und genau 11 Ziffern enthalten.",
             "workStartYearInvalid": "Das Jahr des Arbeitsbeginns muss zwischen 1925 und {year} liegen.",
-            "somethingWentWrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut."
+            "somethingWentWrong": "Etwas ist schief gelaufen. Bitte versuchen Sie es erneut.",
+             "desiredLoanAmountInvalid": "Der gewünschte Kreditbetrag muss eine positive Zahl sein.",
+            "passportFrontRequired": "Bitte geben Sie die Vorderseite des Reisepasses/Ausweises an (Nummer oder Datei).",
+            "passportBackRequired": "Bitte geben Sie die Rückseite des Reisepasses/Ausweises an (Nummer oder Datei) oder aktivieren Sie „Keine Möglichkeit zum Hochladen“.",
+            "bankStatementRequired": "Bitte laden Sie einen Kontoauszug hoch oder aktivieren Sie „Ich habe kein Bankkonto“."
         }
     },
     "fewSteps": {
