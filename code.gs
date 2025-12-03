@@ -59,21 +59,25 @@ function doPost(e) {
       p.first_name || '',                 // 2  First name
       p.last_name || '',                  // 3  Last name
       p.date_of_birth || '',              // 4  Date of birth
-      p.country_of_birth || '',           // 5  Country of birth
-      p.income || '',                     // 6  Income
-      p.income_currency || '',            // 7  Income currency
-      p.additional_income || '',          // 8  Additional income
-      p.additional_income_currency || '', // 9  Additional income currency
-      p.email || '',                      // 10 Email
-      p.phone ? "'" + p.phone : "",       // 11 Phone (как текст, с плюсом)
-      p.residential_address || '',        // 12 Residential address
-      p.workplace || '',                  // 13 Workplace
-      p.position || '',                   // 14 Position
-      p.work_start_year || '',            // 15 Work start year
-      p.country_of_residence || '',       // 16 Country of residence
-      passportFileUrl,                    // 17 Passport (URL)
-      bankStatementFileUrl                // 18 Bank statement (URL)
-    ]);
+      p.desired_loan_amount || '',        // 5  Desired loan amount
+      p.country_of_birth || '',           // 6  Country of birth
+      p.income || '',                     // 7  Income
+      p.income_currency || '',            // 8  Income currency
+      p.additional_income || '',          // 9  Additional income
+      p.additional_income_currency || '', // 10 Additional income currency
+      p.email || '',                      // 11 Email
+      p.phone ? "'" + p.phone : "",       // 12 Main phone
+      p.additional_phone 
+        ? "'" + p.additional_phone 
+        : "",                             // 13 Additional phone
+      p.residential_address || '',        // 14 Residential address
+      p.workplace || '',                  // 15 Workplace
+      p.position || '',                   // 16 Position
+      p.work_start_year || '',            // 17 Work start year
+      p.country_of_residence || '',       // 18 Country of residence
+      passportFileUrl,                    // 19 Passport (URL)
+      bankStatementFileUrl                // 20 Bank statement (URL)
+  ]);
     var lastRow = sheet.getLastRow();
     var result = {
       success: true,
