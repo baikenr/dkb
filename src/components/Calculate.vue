@@ -72,7 +72,7 @@ function onMonthsInput(e: Event) {
         class="absolute -top-10 -left-6 right-0 flex justify-start px-4 md:px-[15px]"
       >
         <div
-          class="inline-flex items-center rounded-sm bg-[#2AD1C9] px-6 py-3 text-[18px] font-semibold leading-tight"
+          class="inline-flex items-center rounded-sm bg-[#2AD1C9] px-6 py-3 text-[15px] md:text-[18px] font-semibold leading-tight"
         >
           {{ $t('calculate.maxFlexibility') }}
           <span class="ml-2 underline underline-offset-4">

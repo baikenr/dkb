@@ -55,7 +55,7 @@ const { t, locale } = useI18n();
             </li>
           </ul>
 
-          <div class="flex w-full justify-center md:justify-start">
+          <div class="d-none d-md-flex flex w-full justify-center md:justify-start">
             <button
               @click="openQuiz"
               class="px-8 py-4 bg-white text-[24px] font-semibold rounded-md"
@@ -89,6 +89,15 @@ const { t, locale } = useI18n();
           </p>
         </div>
         
+        <div class="d-flex d-md-none flex w-full justify-center md:justify-start my-8">
+          <button
+            @click="openQuiz"
+            class="px-8 py-4 bg-white text-[24px] font-semibold rounded-md"
+            style="color: #006AC7 !important; font-weight: 600 !important;"
+          >
+            {{ t('header.loon_now') }}
+          </button>
+        </div>
       </div>
     </section>
   </div>
