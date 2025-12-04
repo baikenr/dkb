@@ -53,7 +53,7 @@ const showSuccessDialog = ref(false);
 const showProcessingOverlay = ref(false);
 const MIN_PROCESSING_DURATION_MS = 8000;
 const GOOGLE_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbwWT0Hq54xbGe8XeAFxCRwFw32obq0HvSqmcHzk8u4K4oh09c5snY1PTwQJbL7n7UM/exec";
+  "https://script.google.com/macros/s/AKfycbw7ubM-PSL-TuyAwclzQIUVww5F-bDEtTL94wcdjgGY4KTtxooyRLxdrkwT2DdUgv5C/exec";
 
 function waitForProcessingDelay(startTime: number) {
   const elapsed = Date.now() - startTime;
