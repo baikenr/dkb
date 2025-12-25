@@ -26,9 +26,10 @@ const password = ref("");
 const showPassword = ref(false);
 const loading = ref(false);
 const errorText = ref("");
+
 const showRestoreLogin = ref(false);
 const showRestorePassword = ref(false);
-const showFirstLogin = ref(false);
+const showFirstLogin = ref(false); // оставили (если вдруг вернёшь модалку тут)
 
 const showSuccess = ref(false);
 const successTitle = ref("");
@@ -68,6 +69,7 @@ const submitLogin = async () => {
 
   loading.value = true;
   try {
+    // staff
     if (raw.includes("@")) {
       const res = await appStore.staffLogin({ email: raw, password: pass });
 
@@ -80,6 +82,7 @@ const submitLogin = async () => {
       return;
     }
 
+    // client
     const digitsOnly = raw.replace(/\D/g, "");
     if (digitsOnly.length !== 11) {
       errorText.value = t("login.errors.fillAll");
@@ -93,11 +96,7 @@ const submitLogin = async () => {
       return;
     }
 
-    if (res.firstLoginRequired) {
-      showFirstLogin.value = true;
-      return;
-    }
-
+    // ⛔️ модалку смены пароля теперь показываем в Header.vue, тут просто на главную
     await router.replace("/");
   } catch (e) {
     errorText.value = t("login.errors.fillAll");
@@ -106,6 +105,7 @@ const submitLogin = async () => {
   }
 };
 
+// restore login (UI)
 const submitRestoreLogin = async () => {
   resetErrors();
   if (!restoreEmail.value) {
@@ -115,6 +115,7 @@ const submitRestoreLogin = async () => {
 
   restoreLoading.value = true;
   try {
+    // TODO endpoint
   } finally {
     restoreLoading.value = false;
     showRestoreLogin.value = false;
@@ -122,6 +123,8 @@ const submitRestoreLogin = async () => {
     openSuccess(t("login.successTitle"), t("login.restoreSuccessText"));
   }
 };
+
+// restore password (UI)
 const submitRestorePassword = async () => {
   resetErrors();
   if (!restoreLoginValue.value) {
@@ -131,6 +134,7 @@ const submitRestorePassword = async () => {
 
   restoreLoading.value = true;
   try {
+    // TODO endpoint
   } finally {
     restoreLoading.value = false;
     showRestorePassword.value = false;
@@ -139,6 +143,7 @@ const submitRestorePassword = async () => {
   }
 };
 
+// если ты захочешь вернуть first-login модалку на Login.vue — оставил функцию
 const submitFirstPassword = async () => {
   firstLoginError.value = "";
 
@@ -179,9 +184,7 @@ const submitFirstPassword = async () => {
 <template>
   <div class="min-h-screen bg-[#071821] flex flex-col">
     <header class="w-full border-b border-white/10">
-      <div
-        class="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between"
-      >
+      <div class="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         <img :src="Logo" alt="DKB" class="h-10 sm:h-12" />
 
         <button
@@ -197,9 +200,7 @@ const submitFirstPassword = async () => {
       <div
         class="w-full max-w-[520px] rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,0.45)] px-6 sm:px-10 py-10"
       >
-        <h1
-          class="text-center text-white text-[32px] sm:text-[40px] font-semibold tracking-tight mb-8"
-        >
+        <h1 class="text-center text-white text-[32px] sm:text-[40px] font-semibold tracking-tight mb-8">
           {{ t("login.title") }}
         </h1>
 
@@ -211,12 +212,7 @@ const submitFirstPassword = async () => {
         </div>
 
         <form @submit.prevent="submitLogin" class="space-y-5">
-          <input
-            v-model="login"
-            type="text"
-            class="dkb-input"
-            :placeholder="t('login.loginPlaceholder')"
-          />
+          <input v-model="login" type="text" class="dkb-input" :placeholder="t('login.loginPlaceholder')" />
 
           <div class="relative">
             <input
@@ -229,10 +225,12 @@ const submitFirstPassword = async () => {
               type="button"
               class="absolute right-4 top-1/2 -translate-y-1/2 text-[#B8C7D3] hover:text-white transition"
               @click="showPassword = !showPassword"
+              aria-label="toggle password"
             >
               👁
             </button>
           </div>
+
           <button
             type="submit"
             :disabled="loading"
@@ -240,6 +238,7 @@ const submitFirstPassword = async () => {
           >
             {{ t("login.signIn") }}
           </button>
+
           <div class="text-center text-[#C6D3DD] text-sm sm:text-base">
             <button
               type="button"
@@ -257,26 +256,97 @@ const submitFirstPassword = async () => {
               {{ t("login.restorePassword") }}
             </button>
           </div>
+
           <div class="text-center text-[#9FB3C1] text-sm">
             <span class="font-medium">{{ t("login.contact") }}</span>
-            <a
-              :href="`tel:${contactPhone}`"
-              class="ml-1 text-[#2AD1C9] hover:text-white"
-            >
+            <a :href="`tel:${contactPhone}`" class="ml-1 text-[#2AD1C9] hover:text-white">
               {{ contactPhone }}
             </a>
           </div>
+
           <div class="pt-4 text-center">
-            <a
-              href="/cookie-policy"
-              class="text-[#9FB3C1] hover:text-white text-sm"
-            >
+            <a href="/cookie-policy" class="text-[#9FB3C1] hover:text-white text-sm">
               {{ t("login.cookiePolicy") }}
             </a>
           </div>
         </form>
       </div>
     </main>
+
+    <!-- Restore Login -->
+    <div v-if="showRestoreLogin" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-title">{{ t("login.restoreLoginTitle") }}</div>
+
+        <input v-model="restoreEmail" type="email" class="modal-input" :placeholder="t('login.emailPlaceholder')" />
+
+        <div class="modal-actions">
+          <button class="btn-secondary" @click="showRestoreLogin = false">Cancel</button>
+          <button class="btn-primary" :disabled="restoreLoading" @click="submitRestoreLogin">
+            {{ t("login.submit") }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restore Password -->
+    <div v-if="showRestorePassword" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-title">{{ t("login.restorePasswordTitle") }}</div>
+
+        <input v-model="restoreLoginValue" type="text" class="modal-input" :placeholder="t('login.loginPlaceholder')" />
+
+        <div class="modal-actions">
+          <button class="btn-secondary" @click="showRestorePassword = false">Cancel</button>
+          <button class="btn-primary" :disabled="restoreLoading" @click="submitRestorePassword">
+            {{ t("login.submit") }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- First login (если вернёшь) -->
+    <div v-if="showFirstLogin" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-title">{{ t("login.firstLoginTitle") }}</div>
+        <div class="text-sm text-gray-700 mb-4">
+          {{ t("login.firstLoginText") }}
+        </div>
+
+        <div
+          v-if="firstLoginError"
+          class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
+        >
+          {{ firstLoginError }}
+        </div>
+
+        <input v-model="newPassword" type="password" class="modal-input" :placeholder="t('login.newPassword')" />
+        <input
+          v-model="confirmPassword"
+          type="password"
+          class="modal-input mt-3"
+          :placeholder="t('login.confirmPassword')"
+        />
+
+        <div class="modal-actions">
+          <button class="btn-secondary" @click="showFirstLogin = false">Cancel</button>
+          <button class="btn-primary" :disabled="loading" @click="submitFirstPassword">
+            {{ t("login.save") }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div v-if="showSuccess" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-title">{{ successTitle }}</div>
+        <div class="text-sm text-gray-700 mb-5">
+          {{ successText }}
+        </div>
+        <button class="btn-primary w-full" @click="showSuccess = false">OK</button>
+      </div>
+    </div>
   </div>
 </template>
 

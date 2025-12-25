@@ -1,22 +1,21 @@
 {
   "login": {
     "title": "Mein Banking",
-    "lang": "DE",
-    "loginPlaceholder": "Anmeldename",
+    "loginPlaceholder": "Login",
     "passwordPlaceholder": "Passwort",
     "signIn": "Anmelden",
-    "restoreLogin": "Anmeldename",
-    "restorePassword": "Passwort",
+    "restoreLogin": "Login vergessen?",
+    "restorePassword": "Passwort vergessen?",
     "contact": "Kontakt:",
-    "cookiePolicy": "Cookie policy",
-    "restoreLoginTitle": "Anmeldenamen wiederherstellen",
+    "cookiePolicy": "Cookie-Richtlinie",
+    "restoreLoginTitle": "Login wiederherstellen",
     "restorePasswordTitle": "Passwort wiederherstellen",
     "emailPlaceholder": "E-Mail",
     "submit": "Senden",
     "successTitle": "Erfolg",
-    "restoreSuccessText": "Ihre Daten wurden erfolgreich übermittelt! Bitte warten Sie, wir werden uns in Kürze bei Ihnen melden.",
+    "restoreSuccessText": "Ihre Daten wurden erfolgreich übermittelt! Bitte warten Sie, wir kontaktieren Sie in Kürze.",
     "firstLoginTitle": "Hinweis",
-    "firstLoginText": "Dies ist Ihre erste Anmeldung, bitte ändern Sie das Passwort auf Ihr eigenes.",
+    "firstLoginText": "Dies ist Ihre erste Anmeldung, bitte ändern Sie Ihr Passwort.",
     "newPassword": "Neues Passwort",
     "confirmPassword": "Passwort bestätigen",
     "save": "Speichern",
@@ -24,6 +23,41 @@
       "fillAll": "Bitte füllen Sie alle Felder aus.",
       "min8": "Mindestens 8 Zeichen.",
       "notMatch": "Passwörter stimmen nicht überein."
+    }
+  },
+  "header": {
+    "loginBtn": "Anmelden",
+    "userFallback": "Benutzer",
+    "menu": {
+      "profile": "Profil",
+      "logout": "Abmelden"
+    },
+    "changePassword": {
+      "title": "Passwort ändern",
+      "subtitle": "Dies ist Ihre erste Anmeldung. Bitte legen Sie ein neues Passwort fest.",
+      "newPasswordPlaceholder": "Neues Passwort",
+      "confirmPasswordPlaceholder": "Passwort wiederholen",
+      "saveBtn": "Passwort speichern",
+      "errors": {
+        "fillBoth": "Bitte füllen Sie beide Felder aus.",
+        "min8": "Mindestens 8 Zeichen.",
+        "notMatch": "Passwörter stimmen nicht überein.",
+        "failed": "Passwort konnte nicht geändert werden."
+      }
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "errorCannotLoad": "Profil kann nicht geladen werden",
+    "yourData": "Ihre Daten",
+    "refresh": "Aktualisieren",
+    "loading": "Wird geladen...",
+    "noData": "Keine Daten",
+    "fields": {
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail",
+      "roleType": "Rolle / Typ"
     }
   }
 }

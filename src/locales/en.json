@@ -1,7 +1,6 @@
 {
   "login": {
     "title": "Mein Banking",
-    "lang": "EN",
     "loginPlaceholder": "Login",
     "passwordPlaceholder": "Password",
     "signIn": "Sign in",
@@ -24,6 +23,41 @@
       "fillAll": "Please fill in all fields.",
       "min8": "Minimum 8 characters.",
       "notMatch": "Passwords do not match."
+    }
+  },
+  "header": {
+    "loginBtn": "Sign in",
+    "userFallback": "User",
+    "menu": {
+      "profile": "Profile",
+      "logout": "Log out"
+    },
+    "changePassword": {
+      "title": "Change your password",
+      "subtitle": "This is your first login. Please set a new password.",
+      "newPasswordPlaceholder": "New password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "saveBtn": "Save password",
+      "errors": {
+        "fillBoth": "Please fill in both fields.",
+        "min8": "Minimum 8 characters.",
+        "notMatch": "Passwords do not match.",
+        "failed": "Could not change password."
+      }
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "errorCannotLoad": "Cannot load profile",
+    "yourData": "Your data",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "noData": "No data",
+    "fields": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "roleType": "Role / Type"
     }
   }
 }
