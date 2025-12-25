@@ -1,160 +1,185 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import Logo from '@/assets/logo_dkb.svg';
+import { computed, onMounted, onBeforeUnmount, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAppStore } from "@/stores/app.js";
+import { useI18n } from "vue-i18n";
+import Logo from "@/assets/logo_dkb.svg";
 
-const { t, locale } = useI18n();
+const router = useRouter();
+const appStore = useAppStore();
 
-const openQuiz = () => {
-  window.location.href = '/quiz';
-};
+const { locale } = useI18n();
 
+// ===== language =====
 const changeLanguage = (lang: string) => {
   locale.value = lang;
-  sessionStorage.setItem('lang', lang);
+  sessionStorage.setItem("lang", lang);
+};
+const toggleLanguage = () => changeLanguage(locale.value === "de" ? "en" : "de");
+// на DKB обычно показывается язык, НА КОТОРЫЙ переключаемся
+const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
+
+onMounted(() => {
+  const saved = sessionStorage.getItem("lang");
+  if (saved === "de" || saved === "en") locale.value = saved;
+});
+
+// ===== menu/auth =====
+const menuOpen = ref(false);
+
+const isAuth = computed(() => appStore.isAuthenticated && !!appStore.access);
+
+const fullName = computed(() => {
+  const fn = appStore.me?.first_name || "";
+  const ln = appStore.me?.last_name || "";
+  const name = `${fn} ${ln}`.trim();
+  return name || "User";
+});
+
+async function ensureMeLoaded() {
+  if (!appStore.access) return;
+  if (appStore.me) return;
+
+  if (appStore.authType === "client") await appStore.clientMe();
+  else await appStore.staffMe();
+}
+
+const goLogin = async () => {
+  menuOpen.value = false;
+  await router.push("/login");
 };
 
-const getLanguageLabel = () => {
-  return locale.value === 'de' ? 'DE' : 'EN';
+const goProfile = async () => {
+  menuOpen.value = false;
+  await ensureMeLoaded();
+  await router.push("/profile");
 };
 
-// Для десктопа — выпадающее меню продуктов
-const productsMenuOpen = ref(false);
-let hideTimeout: ReturnType<typeof setTimeout> | null = null;
-
-const showProductsMenu = () => {
-  if (hideTimeout) {
-    clearTimeout(hideTimeout);
-    hideTimeout = null;
-  }
-  productsMenuOpen.value = true;
+const doLogout = async () => {
+  menuOpen.value = false;
+  appStore.logout();
+  await router.replace("/login");
 };
 
-const hideProductsMenu = () => {
-  hideTimeout = setTimeout(() => {
-    productsMenuOpen.value = false;
-  }, 200);
+const onDocClick = (e: MouseEvent) => {
+  const el = e.target as HTMLElement | null;
+  if (!el?.closest("[data-user-menu]")) menuOpen.value = false;
 };
+
+onMounted(async () => {
+  document.addEventListener("click", onDocClick);
+  await ensureMeLoaded();
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", onDocClick);
+});
 </script>
 
 <template>
-  <header class="bg-white py-4">
-    <div class="max-w-[1320px] mx-auto flex items-center justify-between px-4 sm:px-6">
-       <div class="flex gap-20">
-         <img :src="Logo" alt="DKB Das kann Bank" class="h-10 sm:h-12" />
-         <nav class="d-none d-md-flex items-center space-x-8 text-[18px] text-[#006AC7] font-medium">
-           <a href="#" class="nav-link">{{ t("header.acc") }}</a>
-           <a href="#" class="nav-link">{{ t("header.credits") }}</a>
-   
-           <div 
-             class="relative products-menu-container"
-             @mouseenter="showProductsMenu"
-             @mouseleave="hideProductsMenu"
-           >
-             <a href="#" class="nav-link cursor-pointer">
-               {{ t("header.products") }}
-             </a>
-   
-             <div 
-               v-if="productsMenuOpen"
-               @mouseenter="showProductsMenu"
-               @mouseleave="hideProductsMenu"
-               class="absolute top-full left-0 mt-6 bg-white shadow-2xl rounded-b-lg p-8 z-50 min-w-[740px]"
-               style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);"
-             >
-               <div class="grid grid-cols-3 gap-8">
-                 <div>
-                   <h3 class="font-bold text-black text-[16px] mb-1">{{ t("footer.account_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text4") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div>
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.investing_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text4") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div>
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.credits_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text3") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div class="col-span-full">
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.cards_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text4") }}</a></li>
-                   </ul>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </nav>
-       </div>
+  <header class="w-full shadow-[0px_4px_8px_0px_rgba(1,84,166,0.16)]">
+    <!-- TOP BAR -->
+    <div class="bg-white">
+      <div class="max-w-[1320px] mx-auto px-4 sm:px-6">
+        <div class="h-[70px] flex items-center justify-between gap-4">
+          <!-- left -->
+          <div class="flex items-center gap-6 min-w-0">
+            <img :src="Logo" alt="DKB" class="h-10 w-auto shrink-0" />
 
-      <div class="flex items-center gap-4 align-center">
-        <v-btn
-          variant="text"
-          append-icon="mdi-chevron-down"
-          rounded="lg"
-          class="font-semibold text-xs sm:text-base uppercase text-[#006AC7]"
-        >
-          {{ getLanguageLabel() }}
-          <v-menu activator="parent">
-            <v-list>
-              <v-list-item title="DE" class="uppercase" @click="changeLanguage('de')" />
-              <v-list-item title="EN" class="uppercase" @click="changeLanguage('en')" />
-            </v-list>
-          </v-menu>
-        </v-btn>
+            <nav class="hidden md:flex items-center gap-6 text-[16px] text-[#2E4A63] font-medium">
+              <a href="#" class="hover:text-[#006AC7] transition">Privat</a>
+              <a href="#" class="hover:text-[#006AC7] transition">Geschäftlich</a>
+              <a href="#" class="hover:text-[#006AC7] transition">Nachhaltig</a>
+            </nav>
+          </div>
 
-        <!-- Кнопка -->
-        <div>
-          <button 
-            @click="openQuiz"
-            class="bg-[#006AC7] hover:bg-[#134E8A] text-white text-[14px] sm:text-[16px] font-medium py-2 px-2 sm:px-5 rounded-md transition-colors whitespace-nowrap"
-          >
-            {{ t("header.loon_now") }}
-          </button>
+          <!-- right -->
+          <div class="flex items-center gap-3 shrink-0">
+            <!-- language toggle -->
+            <button
+              @click="toggleLanguage"
+              class="h-12 px-4 rounded-xl border border-black/10 bg-white
+                     text-[#2E4A63] font-semibold hover:bg-[#F3F7FB] transition"
+              aria-label="toggle language"
+            >
+              {{ langLabel }}
+            </button>
+
+            <!-- search -->
+            <div
+              class="hidden sm:flex items-center gap-2 border border-[#006AC7]/40 rounded-xl px-4 h-12
+                     min-w-[240px] md:min-w-[420px] bg-white"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="#006AC7" stroke-width="1.8"/>
+                <path d="M16.5 16.5 21 21" stroke="#006AC7" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <input
+                class="w-full outline-none text-[#2E4A63] placeholder:text-[#7A93A8]"
+                type="search"
+                placeholder="Intelligente Suche ..."
+              />
+            </div>
+
+            <!-- NOT AUTH -->
+            <button
+              v-if="!isAuth"
+              @click="goLogin"
+              class="h-12 px-4 sm:px-5 rounded-xl bg-[#E9F3FF] text-[#006AC7] font-semibold
+                     flex items-center gap-2 hover:bg-[#D8ECFF] transition"
+            >
+              <span class="hidden lg:inline">Anmelden</span>
+              <span class="lg:hidden">Login</span>
+            </button>
+
+            <!-- AUTH -->
+            <div v-else class="relative" data-user-menu>
+              <button
+                @click="menuOpen = !menuOpen"
+                class="h-12 px-4 sm:px-5 rounded-xl bg-[#E9F3FF] text-[#006AC7] font-semibold
+                       flex items-center gap-2 hover:bg-[#D8ECFF] transition"
+              >
+                <span class="max-w-[180px] truncate">{{ fullName }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 9l6 6 6-6" stroke="#006AC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+
+              <div
+                v-if="menuOpen"
+                class="absolute right-0 mt-2 w-56 rounded-xl border border-black/10 bg-white shadow-lg overflow-hidden"
+              >
+                <button
+                  class="w-full text-left px-4 py-3 hover:bg-[#F3F7FB] text-[#16324A] font-medium"
+                  @click="goProfile"
+                >
+                  Profil
+                </button>
+                <button
+                  class="w-full text-left px-4 py-3 hover:bg-[#F3F7FB] text-[#16324A] font-medium"
+                  @click="doLogout"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- SECOND BAR -->
+    <div class="bg-[#F3F7FB]">
+      <div class="max-w-[1320px] mx-auto px-4 sm:px-6">
+        <nav class="h-[56px] flex items-center gap-8 text-[18px] text-[#2E4A63] font-medium overflow-x-auto">
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Konten &amp; Karten</a>
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Kredite</a>
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Investieren &amp; Sparen</a>
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Finanzierung &amp; Immobilie</a>
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Service</a>
+          <a href="#" class="whitespace-nowrap hover:text-[#006AC7] transition">Hilfe</a>
+        </nav>
       </div>
     </div>
   </header>
 </template>
-
-<style scoped>
-.nav-link {
-  position: relative;
-  padding-bottom: 4px;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 0;
-  width: 0;
-  height: 4px;
-  background-color: #2AD1C9;
-  transition: width 0.4s ease;
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-</style>

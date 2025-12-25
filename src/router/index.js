@@ -2,36 +2,43 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
 	{
+	path: '/login',
+	name: 'login',
+	component: () => import('@/components/Login.vue'),
+	meta: { public: true },
+	},
+	{
 		path: '/',
 		name: 'Main',
-		meta: { public: true },
+		// meta: { public: true },
 		component: () => import('@/pages/Index.vue')
 	},
 	{
-    path: "/quiz",
-    name: "quizpanel",
-    meta: { public: true },
-    component: () => import("@/components/Quiz/QuizPanel.vue"),
+    path: "/profile",
+    name: "Profile",
+    component: () => import("@/components/Profile.vue"),
   },
 ]
 
 const router = createRouter({
-	history: createWebHistory(process.env.BASE_URL),
+	history: createWebHistory(import.meta.env.BASE_URL),
 	routes
 })
 
 router.beforeEach((to, from, next) => {
-	const isAuthenticated = !!sessionStorage.getItem('token');
+	console.log("NAVIGATE TO:", to.fullPath)
+  const token = sessionStorage.getItem('access')
+  const isPublic = Boolean(to.meta.public)
 
-	if (to.meta.public) {
-		next();
-	} 
-	else if (isAuthenticated) {
-		next();
-	} 
-	else {
-		next({ path: '/login', query: { redirect: to.fullPath } });
-	}
-});
+  if (!token && !isPublic) {
+    return next({ path: '/login', query: { redirect: to.fullPath } })
+  }
+
+  if (token && to.path === '/login') {
+    return next({ path: '/' })
+  }
+
+  next()
+})
 
 export default router
