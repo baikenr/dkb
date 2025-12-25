@@ -1,160 +1,180 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import Logo from '@/assets/logo_dkb.svg';
-
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useAppStore } from "@/stores/app.js";
+import Logo from "@/assets/logo_dkb.svg";
+const router = useRouter();
 const { t, locale } = useI18n();
-
-const openQuiz = () => {
-  window.location.href = '/quiz';
-};
-
+const appStore = useAppStore();
 const changeLanguage = (lang: string) => {
   locale.value = lang;
-  sessionStorage.setItem('lang', lang);
+  sessionStorage.setItem("lang", lang);
+};
+const toggleLanguage = () => changeLanguage(locale.value === "de" ? "en" : "de");
+const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
+const isAuthed = computed(() => appStore.isAuthenticated);
+const fullName = computed(() => {
+  const fn = appStore.me?.first_name || "";
+  const ln = appStore.me?.last_name || "";
+  const name = `${fn} ${ln}`.trim();
+  return name || t("header.userFallback");
+});
+
+const menuOpen = ref(false);
+const goProfile = async () => {
+  menuOpen.value = false;
+  await router.push("/profile");
+};
+const doLogout = async () => {
+  menuOpen.value = false;
+  appStore.logout();
+  await router.replace("/login");
 };
 
-const getLanguageLabel = () => {
-  return locale.value === 'de' ? 'DE' : 'EN';
-};
+const mustChangePassword = computed(
+  () => appStore.authType === "client" && appStore.firstLoginRequired === true
+);
 
-// Для десктопа — выпадающее меню продуктов
-const productsMenuOpen = ref(false);
-let hideTimeout: ReturnType<typeof setTimeout> | null = null;
+const showChangePasswordModal = ref(false);
+const newPassword = ref("");
+const confirmPassword = ref("");
+const pwdError = ref("");
+const pwdLoading = ref(false);
 
-const showProductsMenu = () => {
-  if (hideTimeout) {
-    clearTimeout(hideTimeout);
-    hideTimeout = null;
+onMounted(async () => {
+  // подтянем me (чтобы имя было)
+  if (appStore.isAuthenticated) {
+    if (appStore.authType === "staff") await appStore.staffMe();
+    if (appStore.authType === "client") await appStore.clientMe();
   }
-  productsMenuOpen.value = true;
-};
 
-const hideProductsMenu = () => {
-  hideTimeout = setTimeout(() => {
-    productsMenuOpen.value = false;
-  }, 200);
+  if (mustChangePassword.value) {
+    showChangePasswordModal.value = true;
+  }
+});
+
+const submitChangePassword = async () => {
+  pwdError.value = "";
+
+  if (!newPassword.value || !confirmPassword.value) {
+    pwdError.value = t("header.changePassword.errors.fillBoth");
+    return;
+  }
+  if (newPassword.value.length < 8) {
+    pwdError.value = t("header.changePassword.errors.min8");
+    return;
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    pwdError.value = t("header.changePassword.errors.notMatch");
+    return;
+  }
+
+  pwdLoading.value = true;
+  try {
+    const res = await appStore.clientChangePasswordFirst({ new_password: newPassword.value });
+    if (!res?.ok) {
+      pwdError.value = t("header.changePassword.errors.failed");
+      return;
+    }
+    showChangePasswordModal.value = false;
+    newPassword.value = "";
+    confirmPassword.value = "";
+
+    appStore.logout();
+    await router.replace("/login");
+  } finally {
+    pwdLoading.value = false;
+  }
 };
 </script>
 
 <template>
-  <header class="bg-white py-4">
-    <div class="max-w-[1320px] mx-auto flex items-center justify-between px-4 sm:px-6">
-       <div class="flex gap-20">
-         <img :src="Logo" alt="DKB Das kann Bank" class="h-10 sm:h-12" />
-         <nav class="d-none d-md-flex items-center space-x-8 text-[18px] text-[#006AC7] font-medium">
-           <a href="#" class="nav-link">{{ t("header.acc") }}</a>
-           <a href="#" class="nav-link">{{ t("header.credits") }}</a>
-   
-           <div 
-             class="relative products-menu-container"
-             @mouseenter="showProductsMenu"
-             @mouseleave="hideProductsMenu"
-           >
-             <a href="#" class="nav-link cursor-pointer">
-               {{ t("header.products") }}
-             </a>
-   
-             <div 
-               v-if="productsMenuOpen"
-               @mouseenter="showProductsMenu"
-               @mouseleave="hideProductsMenu"
-               class="absolute top-full left-0 mt-6 bg-white shadow-2xl rounded-b-lg p-8 z-50 min-w-[740px]"
-               style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);"
-             >
-               <div class="grid grid-cols-3 gap-8">
-                 <div>
-                   <h3 class="font-bold text-black text-[16px] mb-1">{{ t("footer.account_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.account_text4") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div>
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.investing_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.investing_text4") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div>
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.credits_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.credits_text3") }}</a></li>
-                   </ul>
-                 </div>
-   
-                 <div class="col-span-full">
-                   <h3 class="font-bold text-[#333] text-[16px] mb-1">{{ t("footer.cards_title") }}</h3>
-                   <ul class="space-y-1 font-light text-[#0A0A0A]">
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text1") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text2") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text3") }}</a></li>
-                     <li><a href="#" class="text-[14px]">{{ t("footer.cards_text4") }}</a></li>
-                   </ul>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </nav>
-       </div>
+  <header class="w-full bg-white border-b">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <router-link to="/" class="flex items-center">
+        <img :src="Logo" alt="DKB" class="h-10 sm:h-12 cursor-pointer" />
+      </router-link>
 
-      <div class="flex items-center gap-4 align-center">
-        <v-btn
-          variant="text"
-          append-icon="mdi-chevron-down"
-          rounded="lg"
-          class="font-semibold text-xs sm:text-base uppercase text-[#006AC7]"
+      <div class="flex items-center gap-3 relative">
+        <button
+          @click="toggleLanguage"
+          class="text-gray-600 hover:text-black transition font-semibold uppercase text-sm sm:text-base"
         >
-          {{ getLanguageLabel() }}
-          <v-menu activator="parent">
-            <v-list>
-              <v-list-item title="DE" class="uppercase" @click="changeLanguage('de')" />
-              <v-list-item title="EN" class="uppercase" @click="changeLanguage('en')" />
-            </v-list>
-          </v-menu>
-        </v-btn>
-
-        <!-- Кнопка -->
-        <div>
-          <button 
-            @click="openQuiz"
-            class="bg-[#006AC7] hover:bg-[#134E8A] text-white text-[14px] sm:text-[16px] font-medium py-2 px-2 sm:px-5 rounded-md transition-colors whitespace-nowrap"
+          {{ langLabel }}
+        </button>
+        <template v-if="!isAuthed">
+          <button
+            class="bg-[#006ac7] hover:bg-[#134e8a] text-white px-4 py-2 rounded-xl font-semibold"
+            @click="router.push('/login')"
           >
-            {{ t("header.loon_now") }}
+            {{ t("header.loginBtn") }}
           </button>
+        </template>
+
+        <template v-else>
+          <button
+            class="px-4 py-2 rounded-xl border hover:bg-gray-50 font-semibold"
+            @click="menuOpen = !menuOpen"
+          >
+            {{ fullName }}
+          </button>
+
+          <div
+            v-if="menuOpen"
+            class="absolute right-0 top-[48px] w-[220px] bg-white border rounded-xl shadow-lg overflow-hidden"
+          >
+            <button class="w-full text-left px-4 py-3 hover:bg-gray-50" @click="goProfile">
+              {{ t("header.menu.profile") }}
+            </button>
+            <button
+              class="w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600"
+              @click="doLogout"
+            >
+              {{ t("header.menu.logout") }}
+            </button>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div
+      v-if="showChangePasswordModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
+    >
+      <div class="w-full max-w-[480px] bg-white rounded-2xl p-6">
+        <h2 class="text-xl font-bold mb-2">{{ t("header.changePassword.title") }}</h2>
+        <p class="text-gray-600 mb-4">
+          {{ t("header.changePassword.subtitle") }}
+        </p>
+
+        <div
+          v-if="pwdError"
+          class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
+        >
+          {{ pwdError }}
         </div>
+
+        <input
+          v-model="newPassword"
+          type="password"
+          class="w-full border rounded-lg px-3 py-2 mb-3"
+          :placeholder="t('header.changePassword.newPasswordPlaceholder')"
+        />
+        <input
+          v-model="confirmPassword"
+          type="password"
+          class="w-full border rounded-lg px-3 py-2"
+          :placeholder="t('header.changePassword.confirmPasswordPlaceholder')"
+        />
+
+        <button
+          class="mt-4 w-full bg-[#006ac7] hover:bg-[#134e8a] text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+          :disabled="pwdLoading"
+          @click="submitChangePassword"
+        >
+          {{ t("header.changePassword.saveBtn") }}
+        </button>
       </div>
     </div>
   </header>
 </template>
-
-<style scoped>
-.nav-link {
-  position: relative;
-  padding-bottom: 4px;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 0;
-  width: 0;
-  height: 4px;
-  background-color: #2AD1C9;
-  transition: width 0.4s ease;
-}
-
-.nav-link:hover::after {
-  width: 100%;
-}
-</style>
