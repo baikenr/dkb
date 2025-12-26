@@ -71,6 +71,9 @@ const submitLogin = async () => {
       errorText.value = t("login.errors.fillAll");
       return;
     }
+    if (res.ok) {
+      router.push("/");
+    }
 
     await router.replace("/");
   } catch {

@@ -238,5 +238,47 @@ export const useAppStore = defineStore("app", {
         return { ok: false };
       }
     },
+        // ==========================
+    // CLIENT DOCUMENTS: /api/client/documents/
+    // ==========================
+    async clientGetDocument() {
+      try {
+        const response = await axios.get(this.base_url + "/client/documents/", {
+          headers: this.getAuthHeaders(),
+        });
+        // бэк возвращает либо null, либо объект
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Client get document error");
+        return { ok: false, data: null };
+      }
+    },
+
+    async clientUploadDocument(file) {
+      try {
+        const form = new FormData();
+        form.append("file", file);
+
+        const response = await axios.post(this.base_url + "/client/documents/", form, {
+          headers: {
+            ...this.getAuthHeaders(),
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Client upload document error");
+        return { ok: false };
+      }
+    },
+
+    // ==========================
+    // CLIENT CARD REQUEST (пока заглушка)
+    // ==========================
+    async clientRequestCard() {
+      // позже подключим реальный эндпоинт
+      return { ok: true };
+    },
   },
 });

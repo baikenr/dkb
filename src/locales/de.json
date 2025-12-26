@@ -59,5 +59,67 @@
       "email": "E-Mail",
       "roleType": "Rolle / Typ"
     }
+  },
+
+  "sidebar": {
+    "finanzstatus": "Finanzstatus",
+    "uberweisung": "Überweisung",
+    "einstellungen": "Einstellungen",
+    "hilfe": "Hilfe & Kontakt",
+    "rechtliches": "Rechtliches"
+  },
+
+  "clientMain": {
+    "title": "Finanzstatus",
+    "sections": {
+      "accountsCards": "Konten & Karten",
+      "girokonto": "Girokonto",
+      "saldo": "Saldo",
+      "visaCard": "VISA-Card DKB-Cash",
+      "identityDocument": "Ausweisdokument",
+      "ansicht": "Ansicht",
+      "sonstiges": "Sonstiges"
+    },
+    "tabs": {
+      "transfer": "Überweisung",
+      "turnovers": "Umsatzliste",
+      "accountDetails": "Kontodetails",
+      "cardDetails": "Kartendetails"
+    },
+    "card": {
+      "holder": "Karteninhaber*in",
+      "cardNumber": "Kartennummer",
+      "limit": "Limit",
+      "expires": "Gültig bis",
+      "noCardYet": "Du hast noch keine Karte."
+    },
+    "document": {
+      "subtitle": "Das Dokument wird geprüft, nachdem du eine Kartenanfrage gestellt hast.",
+      "notUploaded": "nicht hochgeladen",
+      "uploaded": "Hochgeladen",
+      "loading": "Wird geladen...",
+      "status": {
+        "pending": "pending",
+        "approved": "approved",
+        "rejected": "rejected"
+      },
+      "rejectedFallback": "Dokument wurde abgelehnt"
+    },
+    "requestCard": {
+      "button": "Karte beantragen"
+    },
+    "right": {
+      "greeting": "Guten Morgen",
+      "totalTitle": "der Gesamtsaldo beträgt",
+      "personalManager": "Persönliche*r Berater*in",
+      "expandTurnovers": "Umsätze ausklappen",
+      "feedbackTitle": "Feedback geben",
+      "feedbackText": "Hilf uns dein Banking zu verbessern"
+    }
+  },
+
+  "common": {
+    "comingSoon": "Kommt bald",
+    "dash": "—"
   }
 }
