@@ -1,21 +1,22 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app.js";
-import Logo from "@/assets/logo_dkb.svg";
+import { useNotificationStore } from "@/stores/notification.js";
 
-const router = useRouter();
-const route = useRoute();
+const { t } = useI18n();
 const appStore = useAppStore();
 
 const loading = ref(false);
 const docLoading = ref(false);
 
 const me = computed(() => appStore.me as any);
-const card = computed(() => me.value?.bank_card || null);
-const manager = computed(() => me.value?.manager || null);
-
 const document = ref<any>(null);
+const card = computed(() => me.value?.bank_card || null);
+const hasCard = computed(() => !!card.value && me.value?.client_bank_status === "received");
+
+// Card data visibility
+const showCardData = ref(false);
 
 // ===== upload state =====
 const uploadLoading = ref(false);
@@ -35,7 +36,7 @@ const onFileSelected = async (e: Event) => {
   // простая валидация
   const maxMb = 10;
   if (file.size > maxMb * 1024 * 1024) {
-    uploadError.value = `File is too large. Max ${maxMb} MB`;
+      uploadError.value = t('clientMain.fileTooLarge', { max: maxMb });
     input.value = "";
     return;
   }
@@ -43,9 +44,21 @@ const onFileSelected = async (e: Event) => {
   uploadLoading.value = true;
   uploadError.value = "";
   try {
-    const r = await appStore.clientUploadDocument(file);
+    // If document exists, use PATCH to update, otherwise use POST to create
+    let r;
+    if (document.value) {
+      if (typeof appStore.clientUpdateDocument !== 'function') {
+        console.error('clientUpdateDocument method not found in store');
+        uploadError.value = "Update method not available. Please refresh the page.";
+        return;
+      }
+      r = await appStore.clientUpdateDocument(file);
+    } else {
+      r = await appStore.clientUploadDocument(file);
+    }
+    
     if (!r?.ok) {
-      uploadError.value = "Upload failed";
+      uploadError.value = t('clientMain.uploadFailed');
       return;
     }
     await loadDocument();
@@ -54,19 +67,6 @@ const onFileSelected = async (e: Event) => {
     input.value = "";
   }
 };
-
-// ===== sidebar =====
-const sidebarOpen = ref(true);
-
-const navItems = computed(() => [
-  { key: "finanzstatus", label: "Finanzstatus", to: "/" },
-  { key: "uberweisung", label: "Überweisung", to: "/transfer" },
-  { key: "einstellungen", label: "Einstellungen", to: "/settings" },
-  { key: "hilfe", label: "Hilfe & Kontakt", to: "/help" },
-  { key: "rechtliches", label: "Rechtliches", to: "/legal" },
-]);
-
-const isActive = (to: string) => route.path === to || route.path.startsWith(to + "/");
 
 const loadMe = async () => {
   loading.value = true;
@@ -92,341 +92,295 @@ onMounted(async () => {
   await loadDocument();
 });
 
-const fullName = computed(() => {
-  const fn = me.value?.first_name || "";
-  const ln = me.value?.last_name || "";
-  return `${fn} ${ln}`.trim() || "—";
-});
-
-const hasIssuedCard = computed(() => {
-  return !!card.value;
-});
-
-const maskedCard = computed(() => {
-  if (!card.value) return "—";
-  const a = card.value.first_four_digits || "****";
-  const b = card.value.last_four_digits || "****";
-  return `${a} •••• •••• ${b}`;
-});
-
-const iban = computed(() => card.value?.iban || "—");
-const balance = computed(() => Number(card.value?.balance ?? 0));
-const limit = computed(() => Number(card.value?.limit ?? 0));
-
 // ✅ request card only if:
-// - no card yet
 // - document exists
-// - document not rejected
+// - document status is "approved"
+// - card_status is not already "pending" or "received"
 const canRequestCard = computed(() => {
-  if (hasIssuedCard.value) return false;
   if (!document.value) return false;
-  return document.value.status !== "rejected";
+  if (document.value.status !== "approved") return false;
+  // Don't allow if card_status is already "pending" or "received"
+  const cardStatus = me.value?.client_bank_status;
+  if (cardStatus === "pending" || cardStatus === "received") return false;
+  return true;
 });
 
-const go = async (to: string) => {
-  try {
-    await router.push(to);
-  } catch {}
-};
+const requestCardLoading = ref(false);
+const requestCardError = ref("");
 
-const showTurnovers = ref(true);
+const requestCard = async () => {
+  if (!canRequestCard.value) return;
+  
+  requestCardLoading.value = true;
+  requestCardError.value = "";
+  
+  try {
+    const result = await appStore.clientRequestCard();
+    if (!result.ok) {
+      requestCardError.value = result.data?.detail || t('clientMain.cardRequestFailed');
+      return;
+    }
+    
+    // Reload client data to get updated card_status
+    await loadMe();
+    await loadDocument();
+    
+    // Show success message
+    const notificationStore = useNotificationStore();
+    notificationStore.showNotification({ 
+      type: "success", 
+      message: t('clientMain.cardRequestSuccess') 
+    });
+  } catch (error) {
+    console.error("Error requesting card:", error);
+        requestCardError.value = t('clientMain.cardRequestFailed');
+  } finally {
+    requestCardLoading.value = false;
+  }
+};
 </script>
 
 <template>
   <div class="pt-[96px] flex">
-    <aside
-      class="h-[calc(100vh-96px)] sticky top-[96px] bg-white border-r border-black/10"
-      :class="sidebarOpen ? 'w-[280px]' : 'w-[76px]'"
-    >
-      <div class="px-5 py-4 flex items-center justify-between">
-        <button
-          class="ml-2 w-9 h-9 rounded-lg hover:bg-black/5 flex items-center justify-center"
-          @click="sidebarOpen = !sidebarOpen"
-          title="Menu"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
-            <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M4 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <nav class="px-3 pb-6">
-        <button
-          v-for="it in navItems"
-          :key="it.key"
-          class="w-full flex items-center gap-3 rounded-xl px-3 py-3 mb-2 transition"
-          :class="isActive(it.to) ? 'bg-[#E8F3FF] text-[#006AC7]' : 'hover:bg-black/5 text-[#2E4A63]'"
-          @click="go(it.to)"
-        >
-          <span
-            class="w-10 h-10 rounded-xl flex items-center justify-center"
-            :class="isActive(it.to) ? 'bg-white' : 'bg-[#F3F7FB]'"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
-              <path d="M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-            </svg>
-          </span>
-
-          <span v-if="sidebarOpen" class="font-semibold text-[15px]">{{ it.label }}</span>
-        </button>
-      </nav>
-    </aside>
-
     <main class="flex-1">
       <div class="max-w-[1200px] mx-auto px-6 py-8">
         <div class="mb-6">
-          <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">Finanzstatus</h1>
+          <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">{{ t('clientMain.title') }}</h1>
           <div class="h-px bg-black/10 mt-4"></div>
         </div>
 
-        <div v-if="loading" class="text-[#2E4A63]">Loading...</div>
+        <div v-if="loading" class="text-[#2E4A63]">{{ t('clientMain.loading') }}</div>
 
-        <div v-else class="grid grid-cols-12 gap-6">
-          <section class="col-span-12 lg:col-span-8 space-y-6">
-            <!-- Konto -->
-            <div class="bg-white rounded-2xl border border-black/10 shadow-sm">
-              <div class="px-6 py-5 flex items-center justify-between">
-                <div>
-                  <div class="text-sm text-[#6B7E8B] font-semibold">Konten &amp; Karten</div>
-                  <div class="text-[18px] font-bold text-[#0B2A3C] mt-1">Girokonto</div>
-                  <div class="text-xs text-[#6B7E8B] mt-1 break-all">{{ iban }}</div>
-                </div>
-
-                <div class="text-right">
-                  <div class="text-xs text-[#6B7E8B]">Saldo</div>
-                  <div class="text-[18px] font-bold text-[#0B2A3C]">
-                    {{ balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
+        <div v-else class="space-y-6">
+          <!-- Card Details (if card exists) -->
+          <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+            <h2 class="text-[24px] font-bold text-[#0B2A3C] mb-6">{{ t('clientMain.cardDetails') }}</h2>
+            
+            <!-- Informationen Section -->
+            <div class="bg-[#F7FBFF] rounded-2xl border border-black/5 p-6 mb-6">
+              <div class="flex flex-col md:flex-row gap-6">
+                <!-- Card Image (Left) -->
+                <div class="flex-shrink-0">
+                  <div class="relative w-[340px] h-[214px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl shadow-xl overflow-hidden border border-black/20">
+                    <!-- DKB Logo (top left) -->
+                    <div class="absolute top-4 left-4">
+                      <div class="text-[#006AC7] font-bold text-xl">DKB</div>
+                    </div>
+                    
+                    <!-- Large DKB pattern in background -->
+                    <div class="absolute inset-0 opacity-10 flex items-center justify-center">
+                      <div class="text-white font-bold text-8xl tracking-wider">DKB</div>
+                    </div>
+                    
+                    <!-- Card Number (masked or shown) -->
+                    <div class="absolute bottom-16 left-4 right-4">
+                      <div class="text-white text-xl font-mono tracking-wider">
+                        <span v-if="showCardData">
+                          {{ card.first_four_digits }} •••• •••• {{ card.last_four_digits }}
+                        </span>
+                        <span v-else class="blur-sm select-none">
+                          •••• •••• •••• ••••
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- VISA Logo (bottom right) -->
+                    <div class="absolute bottom-4 right-4">
+                      <div class="bg-white rounded px-3 py-1.5">
+                        <div class="text-[#1434CB] font-bold text-sm">VISA</div>
+                        <div class="text-[#F79E1B] font-bold text-xs">Credit</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="px-6 pb-6">
-                <div class="flex gap-2 mb-4">
-                  <button class="px-4 py-2 rounded-xl bg-[#006AC7] text-white font-semibold">
-                    Überweisung
-                  </button>
-                  <button class="px-4 py-2 rounded-xl bg-[#E8F3FF] text-[#006AC7] font-semibold">
-                    Umsatzliste
-                  </button>
-                  <button class="px-4 py-2 rounded-xl bg-[#E8F3FF] text-[#006AC7] font-semibold">
-                    Kontodetails
-                  </button>
-                </div>
-
-                <div class="space-y-4">
-                  <div
-                    v-for="i in 3"
-                    :key="i"
-                    class="flex items-center justify-between rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-3"
-                  >
-                    <div class="flex items-center gap-3">
-                      <span class="w-9 h-9 rounded-xl bg-white border border-black/5 flex items-center justify-center text-[#6B7E8B]">
-                        ⇅
+                
+                <!-- Card Info (Right) -->
+                <div class="flex-1 flex flex-col justify-between">
+                  <div>
+                    <div class="text-[18px] font-bold text-[#0B2A3C] mb-2">VISA-Card DKB-Cash</div>
+                    <div class="text-sm text-[#6B7E8B] mb-4">
+                      <span v-if="showCardData" class="font-mono">
+                        {{ card.first_four_digits }} •••• •••• {{ card.last_four_digits }}
                       </span>
-                      <div>
-                        <div class="font-semibold text-[#0B2A3C]">Vorgemerkt</div>
-                        <div class="text-xs text-[#6B7E8B]">01.11.21 • Ausgang</div>
-                      </div>
-                    </div>
-                    <div class="text-[#0B2A3C] font-bold">- 90,00 €</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- VISA -->
-            <div class="bg-white rounded-2xl border border-black/10 shadow-sm">
-              <div class="px-6 py-5 flex items-center justify-between">
-                <div class="text-[18px] font-bold text-[#0B2A3C]">
-                  VISA-Card DKB-Cash
-                </div>
-                <div class="text-sm text-[#6B7E8B] font-semibold">
-                  {{ hasIssuedCard ? maskedCard : "—" }}
-                </div>
-              </div>
-
-              <div class="px-6 pb-6">
-                <div class="flex gap-2 mb-4">
-                  <button class="px-4 py-2 rounded-xl bg-[#E8F3FF] text-[#006AC7] font-semibold">
-                    Umsatzliste
-                  </button>
-                  <button class="px-4 py-2 rounded-xl bg-[#E8F3FF] text-[#006AC7] font-semibold">
-                    Kartendetails
-                  </button>
-                </div>
-
-                <div class="rounded-2xl bg-[#F7FBFF] border border-black/5 p-5">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="p-4 rounded-xl bg-white border border-black/5">
-                      <div class="text-xs text-[#6B7E8B] mb-1">Karteninhaber*in</div>
-                      <div class="font-bold text-[#0B2A3C]">{{ fullName }}</div>
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-white border border-black/5">
-                      <div class="text-xs text-[#6B7E8B] mb-1">Kartennummer</div>
-                      <div class="font-bold text-[#0B2A3C]">{{ hasIssuedCard ? maskedCard : "—" }}</div>
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-white border border-black/5">
-                      <div class="text-xs text-[#6B7E8B] mb-1">Limit</div>
-                      <div class="font-bold text-[#0B2A3C]">
-                        {{ limit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
-                      </div>
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-white border border-black/5">
-                      <div class="text-xs text-[#6B7E8B] mb-1">Ablauf</div>
-                      <div class="font-bold text-[#0B2A3C]">
-                        {{ card ? `${String(card.exp_month).padStart(2, '0')}/${card.exp_year}` : "—" }}
-                      </div>
+                      <span v-else class="blur-sm select-none">
+                        •••• •••• •••• ••••
+                      </span>
                     </div>
                   </div>
-
-                  <div v-if="!hasIssuedCard" class="mt-4 text-sm text-[#6B7E8B]">
-                    You don’t have a card yet.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Document + Request -->
-            <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-[18px] font-bold text-[#0B2A3C]">Identity document</div>
-                  <div class="text-sm text-[#6B7E8B] mt-1">
-                    Document will be checked after you submit a card request.
-                  </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <div v-if="docLoading" class="text-sm text-[#6B7E8B]">Loading...</div>
-
-                  <span
-                    v-else
-                    class="px-3 py-1 rounded-full text-sm font-semibold"
-                    :class="{
-                      'bg-[#FFF3CD] text-[#7A5D00]': !document || document.status === 'pending',
-                      'bg-[#DDF7E9] text-[#0E6B3B]': document?.status === 'approved',
-                      'bg-[#FFE0E0] text-[#B42318]': document?.status === 'rejected',
-                    }"
+                  
+                  <button
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#E8F3FF] text-[#006AC7] hover:bg-[#D0E7FF] transition font-semibold text-sm w-fit"
                   >
-                    {{ document ? document.status : "not uploaded" }}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    {{ t('clientMain.temporarilyLock') }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Detailed Card Information -->
+            <div class="space-y-4">
+              <!-- Karteninhaber*in -->
+              <div class="flex items-center justify-between py-3 border-b border-black/5">
+                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardHolder') }}</div>
+                <div class="font-bold text-[#0B2A3C]">
+                  <span v-if="showCardData">{{ card.full_name || `${me.value?.first_name || ''} ${me.value?.last_name || ''}`.trim() }}</span>
+                  <span v-else class="blur-sm select-none">•••• ••••</span>
+                </div>
+              </div>
+              
+              <!-- Kartentyp -->
+              <div class="flex items-center justify-between py-3 border-b border-black/5">
+                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardType') }}</div>
+                <div class="font-bold text-[#0B2A3C]">VISA-Card DKB-Cash</div>
+              </div>
+              
+              <!-- Gültig bis -->
+              <div class="flex items-center justify-between py-3 border-b border-black/5">
+                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.expires') }}</div>
+                <div class="font-bold text-[#0B2A3C]">
+                  <span v-if="showCardData && card.exp_month && card.exp_year">
+                    {{ String(card.exp_month).padStart(2, '0') }}/{{ card.exp_year }}
                   </span>
+                  <span v-else-if="showCardData">—</span>
+                  <span v-else class="blur-sm select-none">••/••</span>
                 </div>
               </div>
-
-              <div v-if="document?.status === 'rejected'" class="mt-3 text-sm text-[#B42318]">
-                {{ document.review_comment || "Document was rejected" }}
+              
+              <!-- Kartenlimit -->
+              <div class="flex items-center justify-between py-3 border-b border-black/5">
+                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardLimit') }}</div>
+                <div class="font-bold text-[#0B2A3C]">
+                  <span v-if="showCardData">
+                    {{ Number(card.limit || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
+                  </span>
+                  <span v-else class="blur-sm select-none">•••• €</span>
+                </div>
               </div>
-
-              <div
-                v-if="uploadError"
-                class="mt-3 text-sm text-[#B42318] bg-[#FFE0E0] border border-black/5 rounded-xl px-4 py-3"
+            </div>
+            
+            <!-- Toggle visibility button -->
+            <div class="mt-6 flex justify-center">
+              <button
+                @click="showCardData = !showCardData"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-sm text-[#0B2A3C]"
               >
-                {{ uploadError }}
-              </div>
+                <svg v-if="showCardData" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                  <path d="M6.61 6.61A13.16 13.16 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                  <line x1="2" y1="2" x2="22" y2="22"></line>
+                </svg>
+                <span>{{ showCardData ? t('clientMain.hideData') : t('clientMain.showData') }}</span>
+              </button>
+            </div>
+          </div>
 
-              <div class="mt-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div class="text-sm text-[#6B7E8B]">
-                  <template v-if="document">
-                    Uploaded
-                    <span v-if="document?.status === 'pending'"> • will be checked after card request</span>
-                  </template>
-                  <template v-else>
-                    Please upload your document to continue.
-                  </template>
-                </div>
-
-                <div class="flex items-center gap-2">
-                  <!-- hidden file input -->
-                  <input
-                    ref="fileInputRef"
-                    type="file"
-                    class="hidden"
-                    accept="image/*,application/pdf"
-                    @change="onFileSelected"
-                  />
-
-                  <!-- upload button -->
-                  <button
-                    v-if="!document || document?.status === 'rejected'"
-                    :disabled="uploadLoading"
-                    class="px-5 py-3 rounded-xl font-semibold transition border border-black/10
-                           bg-white hover:bg-[#F3F7FB]
-                           disabled:opacity-60 disabled:cursor-not-allowed"
-                    @click="openFilePicker"
-                  >
-                    <span v-if="uploadLoading">Uploading...</span>
-                    <span v-else>{{ document?.status === 'rejected' ? 'Re-upload' : 'Upload' }}</span>
-                  </button>
-
-                  <!-- request card -->
-                  <button
-                    :disabled="!canRequestCard"
-                    class="px-6 py-3 rounded-xl font-semibold transition
-                      bg-[#006AC7] text-white hover:bg-[#134e8a]
-                      disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Request card
-                  </button>
+          <!-- Document Upload & Card Request -->
+          <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+            <div class="flex items-center justify-between gap-4 mb-4">
+              <div>
+                <div class="text-[18px] font-bold text-[#0B2A3C]">{{ t('clientMain.identityDocument') }}</div>
+                <div class="text-sm text-[#6B7E8B] mt-1">
+                  {{ t('clientMain.documentSubtitle') }}
                 </div>
               </div>
-            </div>
-          </section>
 
-          <!-- RIGHT -->
-          <aside class="col-span-12 lg:col-span-4 space-y-6">
-            <div class="rounded-2xl bg-gradient-to-br from-[#0A3C63] to-[#062A46] text-white shadow-sm border border-black/5 p-6">
-              <div class="text-sm opacity-80">
-                Guten Morgen, {{ fullName }}
-              </div>
-              <div class="text-[16px] font-bold mt-3">
-                der Gesamtsaldo beträgt
-              </div>
-              <div class="text-[26px] font-extrabold mt-2">
-                {{ balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
-              </div>
+              <div class="flex items-center gap-2">
+                <div v-if="docLoading" class="text-sm text-[#6B7E8B]">{{ t('clientMain.loading') }}</div>
 
-              <div class="mt-4 text-xs opacity-80">
-                Personal manager:
-                {{ manager ? `${manager.first_name} ${manager.last_name}` : "—" }}
-                <span v-if="manager?.phone"> · {{ manager.phone }}</span>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-              <div class="text-[16px] font-bold text-[#0B2A3C] mb-3">Ansicht</div>
-
-              <div class="flex items-center justify-between rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-4">
-                <div class="text-[#2E4A63] font-semibold">Umsätze ausklappen</div>
-
-                <button
-                  class="w-12 h-7 rounded-full relative transition"
-                  :class="showTurnovers ? 'bg-[#19B6A6]' : 'bg-[#C7D4DE]'"
-                  @click="showTurnovers = !showTurnovers"
+                <span
+                  v-else
+                  class="px-3 py-1 rounded-full text-sm font-semibold"
+                  :class="{
+                    'bg-[#FFF3CD] text-[#7A5D00]': !document || document.status === 'pending',
+                    'bg-[#DDF7E9] text-[#0E6B3B]': document?.status === 'approved',
+                    'bg-[#FFE0E0] text-[#B42318]': document?.status === 'rejected',
+                  }"
                 >
-                  <span
-                    class="w-6 h-6 bg-white rounded-full absolute top-[2px] transition"
-                    :class="showTurnovers ? 'left-[22px]' : 'left-[2px]'"
-                  />
+                  {{ document ? document.status : t('clientMain.notUploaded') }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="document?.status === 'rejected'" class="mb-4 text-sm text-[#B42318] bg-[#FFE0E0] border border-black/5 rounded-xl px-4 py-3">
+              {{ document.review_comment || t('clientMain.documentStatus.rejected') }}
+            </div>
+
+            <div
+              v-if="uploadError"
+              class="mb-4 text-sm text-[#B42318] bg-[#FFE0E0] border border-black/5 rounded-xl px-4 py-3"
+            >
+              {{ uploadError }}
+            </div>
+
+            <div
+              v-if="requestCardError"
+              class="mb-4 text-sm text-[#B42318] bg-[#FFE0E0] border border-black/5 rounded-xl px-4 py-3"
+            >
+              {{ requestCardError }}
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div class="text-sm text-[#6B7E8B]">
+                <template v-if="document">
+                  <span v-if="document.status === 'pending'">{{ t('clientMain.documentMessages.pending') }}</span>
+                  <span v-else-if="document.status === 'approved'">{{ t('clientMain.documentMessages.approved') }}</span>
+                  <span v-else-if="document.status === 'rejected'">{{ t('clientMain.documentMessages.rejected') }}</span>
+                </template>
+                <template v-else>
+                  {{ t('clientMain.documentMessages.notUploaded') }}
+                </template>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <!-- hidden file input -->
+                <input
+                  ref="fileInputRef"
+                  type="file"
+                  class="hidden"
+                  accept="image/*,application/pdf"
+                  @change="onFileSelected"
+                />
+
+                <!-- upload/update button -->
+                <button
+                  v-if="!document || document?.status === 'rejected' || document?.status === 'pending'"
+                  :disabled="uploadLoading"
+                  class="px-5 py-3 rounded-xl font-semibold transition border border-black/10
+                         bg-white hover:bg-[#F3F7FB]
+                         disabled:opacity-60 disabled:cursor-not-allowed"
+                  @click="openFilePicker"
+                >
+                  <span v-if="uploadLoading">{{ t('clientMain.uploading') }}</span>
+                  <span v-else-if="document?.status === 'rejected'">{{ t('clientMain.reUpload') }}</span>
+                  <span v-else-if="document?.status === 'pending'">{{ t('clientMain.replaceDocument') }}</span>
+                  <span v-else>{{ t('clientMain.upload') }}</span>
+                </button>
+
+                <!-- request card button (only visible when document is approved) -->
+                <button
+                  v-if="document?.status === 'approved'"
+                  :disabled="!canRequestCard || requestCardLoading"
+                  @click="requestCard"
+                  class="px-6 py-3 rounded-xl font-semibold transition
+                    bg-[#006AC7] text-white hover:bg-[#134e8a]
+                    disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
+                  <span v-else-if="me?.client_bank_status === 'pending'">{{ t('clientMain.requestPending') }}</span>
+                  <span v-else>{{ t('clientMain.requestCard') }}</span>
                 </button>
               </div>
             </div>
-
-            <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-              <div class="text-[16px] font-bold text-[#0B2A3C] mb-3">Sonstiges</div>
-
-              <button class="w-full text-left rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-4 hover:bg-[#EEF6FF] transition">
-                <div class="font-semibold text-[#0B2A3C]">Feedback geben</div>
-                <div class="text-sm text-[#6B7E8B] mt-1">Hilf uns dein Banking zu verbessern</div>
-              </button>
-            </div>
-          </aside>
+          </div>
         </div>
       </div>
     </main>

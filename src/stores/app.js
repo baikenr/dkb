@@ -238,7 +238,8 @@ export const useAppStore = defineStore("app", {
         return { ok: false };
       }
     },
-        // ==========================
+
+    // ==========================
     // CLIENT DOCUMENTS: /api/client/documents/
     // ==========================
     async clientGetDocument() {
@@ -273,12 +274,260 @@ export const useAppStore = defineStore("app", {
       }
     },
 
+    async clientUpdateDocument(file) {
+      try {
+        const form = new FormData();
+        form.append("file", file);
+
+        const response = await axios.patch(this.base_url + "/client/documents/", form, {
+          headers: {
+            ...this.getAuthHeaders(),
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Client update document error");
+        return { ok: false };
+      }
+    },
+
     // ==========================
-    // CLIENT CARD REQUEST (пока заглушка)
+    // CLIENT CARD REQUEST: POST /api/client/auth/request-card/ (sets card_status = "pending")
     // ==========================
     async clientRequestCard() {
-      // позже подключим реальный эндпоинт
-      return { ok: true };
+      try {
+        // Send POST request to client endpoint to set card_status = "pending"
+        const response = await axios.post(
+          this.base_url + "/client/auth/request-card/",
+          {},
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Request card error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
+    // STAFF CREATE CARD: POST /api/cards/ (creates actual card)
+    // ==========================
+    async staffCreateCard(cardData) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/cards/",
+          cardData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Create card error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
+    // STAFF USERS: /api/users/
+    // ==========================
+    async staffUsersList(params = {}) {
+      try {
+        const response = await axios.get(this.base_url + "/users/", {
+          headers: this.getAuthHeaders(),
+          params,
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get users error");
+        return { ok: false };
+      }
+    },
+
+    async staffUserGet(id) {
+      try {
+        const response = await axios.get(this.base_url + `/users/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get user error");
+        return { ok: false };
+      }
+    },
+
+    async staffUserCreate(userData) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/users/",
+          userData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // Don't show notification for validation errors, return them to component
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Create user error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffUserUpdate(id, userData) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/users/${id}/`,
+          userData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // Don't show notification for validation errors, return them to component
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Update user error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffUserDelete(id) {
+      try {
+        await axios.delete(this.base_url + `/users/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true };
+      } catch (error) {
+        this.notifyError(error, "Delete user error");
+        return { ok: false };
+      }
+    },
+
+    // ==========================
+    // STAFF CLIENTS: /api/staff/staff/clients/
+    // ==========================
+    async staffClientsList(params = {}) {
+      try {
+        const response = await axios.get(this.base_url + "/staff/staff/clients/", {
+          headers: this.getAuthHeaders(),
+          params,
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get clients error");
+        return { ok: false };
+      }
+    },
+
+    async staffClientGet(id) {
+      try {
+        const response = await axios.get(this.base_url + `/staff/staff/clients/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get client error");
+        return { ok: false };
+      }
+    },
+
+    async staffClientCreate(clientData) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/staff/staff/clients/",
+          clientData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // Don't show notification for validation errors, return them to component
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Create client error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffClientUpdate(id, clientData) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/staff/staff/clients/${id}/`,
+          clientData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // Don't show notification for validation errors, return them to component
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Update client error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffClientDelete(id) {
+      try {
+        await axios.delete(this.base_url + `/staff/staff/clients/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true };
+      } catch (error) {
+        this.notifyError(error, "Delete client error");
+        return { ok: false };
+      }
+    },
+
+    async staffClientAssignManager(clientId, managerId) {
+      try {
+        const response = await axios.post(
+          this.base_url + `/staff/staff/clients/${clientId}/assign-manager/`,
+          { assigned_manager_id: managerId },
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Assign manager error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
+    // STAFF DOCUMENTS: /api/staff/documents/
+    // ==========================
+    async staffDocumentsList(params = {}) {
+      try {
+        const response = await axios.get(this.base_url + "/staff/documents/", {
+          headers: this.getAuthHeaders(),
+          params,
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get documents error");
+        return { ok: false };
+      }
+    },
+
+    async staffDocumentReview(docId, reviewData) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/staff/documents/${docId}/review/`,
+          reviewData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Review document error");
+        return { ok: false, data: error?.response?.data };
+      }
     },
   },
 });

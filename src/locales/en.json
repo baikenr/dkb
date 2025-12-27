@@ -1,10 +1,13 @@
 {
   "login": {
-    "title": "Mein Banking",
+    "title": "My Banking",
     "loginPlaceholder": "Login",
     "passwordPlaceholder": "Password",
     "signIn": "Sign in",
     "restoreLogin": "Forgot login?",
+    "restoreLoginLink": "Restore login",
+    "restoreMiddle": " or ",
+    "restorePasswordLink": "Restore password",
     "restorePassword": "Forgot password?",
     "contact": "Contact:",
     "cookiePolicy": "Cookie policy",
@@ -60,66 +63,289 @@
       "roleType": "Role / Type"
     }
   },
-
   "sidebar": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "clients": "Clients",
+    "cardRequests": "Card Requests",
     "finanzstatus": "Finanzstatus",
     "uberweisung": "Überweisung",
     "einstellungen": "Einstellungen",
     "hilfe": "Hilfe & Kontakt",
     "rechtliches": "Rechtliches"
   },
-
-  "clientMain": {
-    "title": "Finanzstatus",
-    "sections": {
-      "accountsCards": "Konten & Karten",
-      "girokonto": "Girokonto",
-      "saldo": "Saldo",
-      "visaCard": "VISA-Card DKB-Cash",
-      "identityDocument": "Identity document",
-      "ansicht": "Ansicht",
-      "sonstiges": "Sonstiges"
+  "usersManagement": {
+    "title": "Users Management",
+    "searchPlaceholder": "Search by email, name...",
+    "allRoles": "All Roles",
+    "createUser": "Create User",
+    "loading": "Loading...",
+    "noUsers": "No users found",
+    "table": {
+      "id": "ID",
+      "email": "Email",
+      "name": "Name",
+      "phone": "Phone",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
     },
-    "tabs": {
-      "transfer": "Überweisung",
-      "turnovers": "Umsatzliste",
-      "accountDetails": "Kontodetails",
-      "cardDetails": "Kartendetails"
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
     },
-    "card": {
-      "holder": "Karteninhaber*in",
-      "cardNumber": "Kartennummer",
-      "limit": "Limit",
-      "expires": "Expires",
-      "noCardYet": "You don’t have a card yet."
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
     },
-    "document": {
-      "subtitle": "Document will be checked after you submit a card request.",
-      "notUploaded": "not uploaded",
-      "uploaded": "Uploaded",
-      "loading": "Loading...",
-      "status": {
-        "pending": "pending",
-        "approved": "approved",
-        "rejected": "rejected"
-      },
-      "rejectedFallback": "Document was rejected"
+    "modal": {
+      "editUser": "Edit User",
+      "createUser": "Create User",
+      "email": "Email",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phone": "Phone",
+      "role": "Role",
+      "password": "Password",
+      "passwordHint": "(leave empty to keep current)",
+      "passwordPlaceholder": "Enter password",
+      "passwordRequirement": "Password must be at least 8 characters with uppercase, lowercase, and number",
+      "active": "Active",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create"
     },
-    "requestCard": {
-      "button": "Request card"
+    "pagination": {
+      "showing": "Showing {{from}} to {{to}} of {{total}} users",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
     },
-    "right": {
-      "greeting": "Guten Morgen",
-      "totalTitle": "der Gesamtsaldo beträgt",
-      "personalManager": "Personal manager",
-      "expandTurnovers": "Umsätze ausklappen",
-      "feedbackTitle": "Feedback geben",
-      "feedbackText": "Hilf uns dein Banking zu verbessern"
+    "delete": {
+      "confirm": "Are you sure you want to delete user {{email}}?"
+    },
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email format",
+      "firstNameRequired": "First name is required",
+      "firstNameMin": "First name must be at least 2 characters",
+      "firstNameMax": "First name must be less than 150 characters",
+      "lastNameRequired": "Last name is required",
+      "lastNameMin": "Last name must be at least 2 characters",
+      "lastNameMax": "Last name must be less than 150 characters",
+      "phoneMax": "Phone must be less than 30 characters",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "roleRequired": "Role is required",
+      "roleInvalid": "Role must be either 'admin' or 'manager'"
     }
   },
-
+  "clientsManagement": {
+    "title": "Clients Management",
+    "searchPlaceholder": "Search by name, email, phone...",
+    "allCardStatuses": "All Card Statuses",
+    "allDocumentStatuses": "All Document Statuses",
+    "createClient": "Create Client",
+    "loading": "Loading...",
+    "noClients": "No clients found",
+    "table": {
+      "id": "ID",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "workPlace": "Work Place",
+      "assignedManager": "Assigned Manager",
+      "login": "Login",
+      "cardStatus": "Card Status",
+      "documentStatus": "Document Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "declined": "Declined",
+      "received": "Received"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "modal": {
+      "editClient": "Edit Client",
+      "createClient": "Create Client",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "phone": "Phone",
+      "birthDate": "Birth Date",
+      "workPlace": "Work Place",
+      "assignedManager": "Assigned Manager",
+      "noManager": "No Manager",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create"
+    },
+    "credentials": {
+      "title": "Client Credentials",
+      "subtitle": "Save these credentials. They won't be shown again.",
+      "login": "Login (11 digits)",
+      "tempPassword": "Temporary Password",
+      "note": "Note: The client must change their password on first login.",
+      "ok": "OK"
+    },
+    "pagination": {
+      "showing": "Showing {{from}} to {{to}} of {{total}} clients",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
+    },
+    "delete": {
+      "confirm": "Are you sure you want to delete client {{name}}?"
+    },
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "firstNameMin": "First name must be at least 2 characters",
+      "firstNameMax": "First name must be less than 150 characters",
+      "lastNameRequired": "Last name is required",
+      "lastNameMin": "Last name must be at least 2 characters",
+      "lastNameMax": "Last name must be less than 150 characters",
+      "emailInvalid": "Invalid email format",
+      "phoneMax": "Phone must be less than 30 characters",
+      "workPlaceMax": "Work place must be less than 255 characters"
+    }
+  },
+  "cardRequests": {
+    "title": "Card Requests",
+    "subtitle": "Review documents and approve card requests. Approve documents to allow clients to request cards.",
+    "loading": "Loading...",
+    "noClients": "No clients with documents or pending card requests",
+    "table": {
+      "id": "ID",
+      "clientName": "Client Name",
+      "email": "Email",
+      "phone": "Phone",
+      "documentStatus": "Document Status",
+      "cardStatus": "Card Status",
+      "document": "Document",
+      "actions": "Actions",
+      "noDocument": "No document"
+    },
+    "actions": {
+      "view": "View",
+      "reviewProcess": "Review & Process",
+      "createCard": "Create Card"
+    },
+    "documentViewer": {
+      "title": "Document Viewer",
+      "clientId": "Client ID",
+      "status": "Status",
+      "uploaded": "Uploaded",
+      "openInNewTab": "Open in new tab",
+      "fileNotAvailable": "Document file not available"
+    },
+    "reviewModal": {
+      "title": "Review Document",
+      "subtitle": "Approve or reject the uploaded document",
+      "reviewStatus": "Review Status",
+      "reviewComment": "Review Comment",
+      "commentPlaceholder": "Add a comment about your review...",
+      "approveCard": "Create card for client (approve card request)",
+      "approveCardHint": "Check this to approve both document and card request together",
+      "rejectNote": "Note: Rejecting the document will automatically decline the card request.",
+      "approveNote": "Note: Document will be approved, but card request will remain pending. Check the box above to approve the card request as well.",
+      "cancel": "Cancel",
+      "submitting": "Submitting...",
+      "submitReview": "Submit Review"
+    },
+    "createCardModal": {
+      "title": "Create Card",
+      "subtitle": "Create card for client: {{name}}",
+      "bankName": "Bank Name",
+      "fullName": "Full Name",
+      "cardNumber": "Card Number",
+      "cardNumberPlaceholder": "16 digits",
+      "cardNumberHint": "13-19 digits",
+      "expMonth": "Exp Month",
+      "expYear": "Exp Year",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "createCard": "Create Card"
+    }
+  },
+  "clientMain": {
+    "title": "Finanzstatus",
+    "cardDetails": "Card Details",
+    "cardType": "Card Type",
+    "cardHolder": "Card Holder",
+    "expires": "Expires",
+    "cardLimit": "Card Limit",
+    "temporarilyLock": "Temporarily Lock",
+    "showData": "Show Data",
+    "hideData": "Hide Data",
+    "identityDocument": "Identity document",
+    "documentSubtitle": "Upload your document for manager review. After approval, you can request a card.",
+    "loading": "Loading...",
+    "notUploaded": "not uploaded",
+    "uploaded": "Uploaded",
+    "documentStatus": {
+      "pending": "pending",
+      "approved": "approved",
+      "rejected": "rejected"
+    },
+    "documentMessages": {
+      "pending": "Document uploaded. Waiting for manager approval.",
+      "approved": "Document approved. You can now request a card.",
+      "rejected": "Document rejected. Please upload a new document.",
+      "notUploaded": "Please upload your document to continue."
+    },
+    "upload": "Upload",
+    "reUpload": "Re-upload",
+    "replaceDocument": "Replace Document",
+    "uploading": "Uploading...",
+    "requestCard": "Request card",
+    "requestPending": "Request Pending",
+    "submitting": "Submitting...",
+    "uploadFailed": "Upload failed",
+    "fileTooLarge": "File is too large. Max {{max}} MB",
+    "cardRequestSuccess": "Card request submitted successfully",
+    "cardRequestFailed": "Failed to request card"
+  },
   "common": {
     "comingSoon": "Coming soon",
-    "dash": "—"
+    "dash": "—",
+    "logoAlt": "DKB Das kann Bank",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "declined": "Declined",
+    "received": "Received",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "showing": "Showing",
+    "to": "to",
+    "ofTotal": "of",
+    "note": "Note"
   }
 }
