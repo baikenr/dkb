@@ -40,6 +40,27 @@ const routes = [
 		component: () => import('@/pages/Index.vue'),
 		meta: { requiresAdmin: true },
 	},
+	{
+		path: '/staff/faq',
+		name: 'StaffFAQ',
+		component: () => import('@/pages/Index.vue'),
+	},
+	// Client routes
+	{
+		path: '/card',
+		name: 'ClientCard',
+		component: () => import('@/pages/Index.vue'),
+	},
+	{
+		path: '/document',
+		name: 'ClientDocument',
+		component: () => import('@/pages/Index.vue'),
+	},
+	{
+		path: '/faq',
+		name: 'ClientFAQ',
+		component: () => import('@/pages/Index.vue'),
+	},
 ]
 
 const router = createRouter({

@@ -68,6 +68,7 @@
     "users": "Benutzer",
     "clients": "Kunden",
     "cardRequests": "Kartenanfragen",
+    "faq": "Benachrichtigungen & Nachrichten",
     "finanzstatus": "Finanzstatus",
     "uberweisung": "Überweisung",
     "einstellungen": "Einstellungen",
@@ -171,6 +172,7 @@
     },
     "actions": {
       "edit": "Bearbeiten",
+      "resetPassword": "Passwort zurücksetzen",
       "delete": "Löschen"
     },
     "modal": {
@@ -216,6 +218,20 @@
       "emailInvalid": "Ungültiges E-Mail-Format",
       "phoneMax": "Telefon muss weniger als 30 Zeichen lang sein",
       "workPlaceMax": "Arbeitsplatz muss weniger als 255 Zeichen lang sein"
+    },
+    "passwordReset": {
+      "title": "Passwort zurücksetzen",
+      "subtitle": "Neues Passwort für Kunden festlegen: {{name}}",
+      "newPassword": "Neues Passwort",
+      "passwordPlaceholder": "Neues Passwort eingeben",
+      "passwordHint": "Passwort muss mindestens 8 Zeichen mit Großbuchstaben, Kleinbuchstaben und Zahl enthalten",
+      "reset": "Passwort zurücksetzen",
+      "resetting": "Wird zurückgesetzt...",
+      "success": "Passwort wurde erfolgreich zurückgesetzt. Der Kunde muss es beim ersten Login ändern.",
+      "errors": {
+        "minLength": "Passwort muss mindestens 8 Zeichen lang sein",
+        "failed": "Passwort konnte nicht zurückgesetzt werden"
+      }
     }
   },
   "cardRequests": {
@@ -261,6 +277,23 @@
       "submitting": "Wird übermittelt...",
       "submitReview": "Überprüfung übermitteln"
     },
+    "cardForm": {
+      "title": "Kartendetails",
+      "bankName": "Bankname",
+      "fullName": "Vollständiger Name",
+      "cardNumber": "Kartennummer",
+      "cardNumberHint": "Geben Sie 16 Ziffern ein",
+      "expMonth": "Ablaufmonat",
+      "expYear": "Ablaufjahr",
+      "errors": {
+        "bankNameRequired": "Bankname ist erforderlich",
+        "fullNameRequired": "Vollständiger Name ist erforderlich",
+        "cardNumberRequired": "Kartennummer ist erforderlich",
+        "cardNumberInvalid": "Kartennummer muss genau 16 Ziffern haben",
+        "expMonthInvalid": "Ablaufmonat muss zwischen 1 und 12 liegen",
+        "expYearInvalid": "Ablaufjahr muss das aktuelle Jahr oder später sein"
+      }
+    },
     "createCardModal": {
       "title": "Karte erstellen",
       "subtitle": "Karte für Kunden erstellen: {{name}}",
@@ -276,12 +309,40 @@
       "createCard": "Karte erstellen"
     }
   },
+  "clientSidebar": {
+    "home": "Startseite",
+    "card": "Karte",
+    "document": "Dokument",
+    "faq": "Support kontaktieren"
+  },
   "clientMain": {
     "title": "Finanzstatus",
+    "home": {
+      "girokonto": "Girokonto",
+      "visaKreditkarte": "Visa Kreditkarte",
+      "uberweisung": "Überweisung",
+      "kontodetails": "Kontodetails",
+      "vorgemerkt": "Vorgemerkt",
+      "eingang": "Eingang",
+      "ausgang": "Ausgang",
+      "noTransactions": "Noch keine Transaktionen",
+      "availableBalance": "Verfügbares Guthaben",
+      "totalBalance": "Gesamtguthaben",
+      "limit": "Limit",
+      "bankName": "Bankname",
+      "bankBic": "BIC",
+      "fullName": "Karteninhaber"
+    },
     "cardDetails": "Kartendetails",
+    "cardId": "Karten-ID",
+    "iban": "IBAN",
+    "cardNumber": "Kartennummer",
+    "cvv": "CVV",
     "cardType": "Kartentyp",
     "cardHolder": "Karteninhaber*in",
     "expires": "Gültig bis",
+    "cardStatus": "Kartenstatus",
+    "balance": "Guthaben",
     "cardLimit": "Kartenlimit",
     "temporarilyLock": "Temporär sperren",
     "showData": "Daten anzeigen",
@@ -302,6 +363,21 @@
       "rejected": "Dokument abgelehnt. Bitte laden Sie ein neues Dokument hoch.",
       "notUploaded": "Bitte laden Sie Ihr Dokument hoch, um fortzufahren."
     },
+    "documentSteps": {
+      "step1Title": "Ausweisdokument hochladen",
+      "step1Description": "Laden Sie ein klares Foto oder einen Scan Ihres Ausweisdokuments hoch (Reisepass, Personalausweis oder Führerschein). Maximale Dateigröße: 10 MB.",
+      "step2Title": "Dokumentenprüfung",
+      "step2DescriptionWaiting": "Nach dem Hochladen Ihres Dokuments wird unser Team es überprüfen. Dies dauert normalerweise 1-2 Werktage.",
+      "step2DescriptionPending": "Ihr Dokument wird von unserem Team überprüft. Wir benachrichtigen Sie, sobald die Überprüfung abgeschlossen ist.",
+      "step2DescriptionApproved": "Ihr Dokument wurde genehmigt! Sie können jetzt Ihre Karte anfordern.",
+      "step2DescriptionRejected": "Ihr Dokument wurde nicht genehmigt. Bitte überprüfen Sie das Feedback und laden Sie ein neues Dokument hoch.",
+      "step3Title": "Ihre Karte anfordern",
+      "step3DescriptionWaiting": "Bitte vervollständigen Sie die Schritte 1 und 2, bevor Sie Ihre Karte anfordern.",
+      "step3DescriptionReady": "Ihr Dokument wurde genehmigt. Klicken Sie auf die Schaltfläche unten, um Ihre Karte anzufordern.",
+      "step3DescriptionPending": "Ihre Kartenanfrage wurde übermittelt und wird bearbeitet. Sie erhalten Ihre Karte in Kürze.",
+      "step3DescriptionReceived": "Herzlichen Glückwunsch! Ihre Karte wurde erstellt und ist einsatzbereit.",
+      "cardReceived": "Karte erhalten"
+    },
     "upload": "Hochladen",
     "reUpload": "Erneut hochladen",
     "replaceDocument": "Dokument ersetzen",
@@ -312,7 +388,15 @@
     "uploadFailed": "Upload fehlgeschlagen",
     "fileTooLarge": "Datei ist zu groß. Max {{max}} MB",
     "cardRequestSuccess": "Kartenanfrage erfolgreich übermittelt",
-    "cardRequestFailed": "Kartenanfrage fehlgeschlagen"
+    "cardRequestFailed": "Kartenanfrage fehlgeschlagen",
+    "profileMenu": {
+      "profile": "Mein Profil",
+      "mailbox": "Postfach",
+      "security": "Sicherheit",
+      "feedback": "Feedback",
+      "referFriends": "Freunde werben",
+      "logout": "Abmelden"
+    }
   },
   "common": {
     "comingSoon": "Kommt bald",
@@ -347,5 +431,92 @@
     "to": "bis",
     "ofTotal": "von",
     "note": "Hinweis"
+  },
+  "clientFAQ": {
+    "title": "Support kontaktieren",
+    "subtitle": "Senden Sie eine Nachricht an Ihren Manager. Wir werden so schnell wie möglich antworten.",
+    "form": {
+      "title": "Betreff",
+      "titlePlaceholder": "Geben Sie den Betreff Ihrer Nachricht ein",
+      "message": "Nachricht",
+      "messagePlaceholder": "Schreiben Sie hier Ihre Nachricht...",
+      "send": "Nachricht senden",
+      "sending": "Wird gesendet..."
+    },
+    "errors": {
+      "titleRequired": "Betreff ist erforderlich",
+      "messageRequired": "Nachricht ist erforderlich",
+      "sendFailed": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    },
+    "success": {
+      "title": "Nachricht gesendet",
+      "message": "Ihre Nachricht wurde erfolgreich gesendet. Wir werden so schnell wie möglich antworten."
+    }
+  },
+  "staffFAQ": {
+    "title": "FAQ-Anfragen",
+    "subtitle": "Anzeigen und verwalten Sie FAQ-Anfragen von Kunden.",
+    "loading": "Wird geladen...",
+    "noFAQ": "Keine FAQ-Anfragen gefunden",
+    "searchPlaceholder": "Suche nach Betreff, Nachricht, Kundename oder E-Mail...",
+    "filters": {
+      "all": "Alle",
+      "read": "Gelesen",
+      "unread": "Ungelesen"
+    },
+    "new": "Neu",
+    "from": "Von",
+    "noTitle": "Kein Betreff",
+    "detail": {
+      "from": "Von Kunde",
+      "date": "Datum",
+      "message": "Nachricht",
+      "close": "Schließen"
+    }
+  },
+  "staffNotifications": {
+    "title": "Benachrichtigungen & Nachrichten",
+    "subtitle": "Anzeigen und verwalten Sie alle Benachrichtigungen und Nachrichten von Kunden.",
+    "loading": "Wird geladen...",
+    "noNotifications": "Keine Benachrichtigungen gefunden",
+    "searchPlaceholder": "Suche nach Betreff, Nachricht, Kundename oder E-Mail...",
+    "unreadCount": "{{count}} ungelesen",
+    "filters": {
+      "type": "Typ",
+      "status": "Status",
+      "allTypes": "Alle Typen",
+      "faq": "FAQ",
+      "request": "Anfrage",
+      "all": "Alle",
+      "read": "Gelesen",
+      "unread": "Ungelesen"
+    },
+    "types": {
+      "faq": "FAQ",
+      "request": "Anfrage"
+    },
+    "new": "Neu",
+    "from": "Von",
+    "noTitle": "Kein Betreff",
+    "read": "Gelesen",
+    "unread": "Ungelesen",
+    "markRead": "Als gelesen markieren",
+    "markUnread": "Als ungelesen markieren",
+    "delete": "Löschen",
+    "deleteConfirm": "Möchten Sie diese Benachrichtigung wirklich löschen?",
+    "deleteSuccess": "Benachrichtigung erfolgreich gelöscht",
+    "detail": {
+      "from": "Von Kunde",
+      "date": "Datum",
+      "status": "Status",
+      "message": "Nachricht",
+      "close": "Schließen"
+    },
+    "pagination": {
+      "showing": "Zeige {{from}} bis {{to}} von {{total}} Benachrichtigungen",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {{current}} von {{total}}"
+    }
   }
 }

@@ -19,6 +19,20 @@ const reviewingClient = ref<any>(null);
 const reviewComment = ref("");
 const reviewStatus = ref<"approved" | "rejected">("approved");
 const approveCardRequest = ref(false);
+const cardData = ref({
+  bank_name: "DKB",
+  full_name: "",
+  card_number: "",
+  exp_month: null as number | null,
+  exp_year: null as number | null,
+});
+const cardDataErrors = ref({
+  bank_name: "",
+  full_name: "",
+  card_number: "",
+  exp_month: "",
+  exp_year: "",
+});
 
 const showCreateCardModal = ref(false);
 const creatingCardClient = ref<any>(null);
@@ -105,6 +119,24 @@ const openReviewModal = (client: any) => {
     reviewComment.value = doc.review_comment || "";
     reviewStatus.value = doc.status === "approved" ? "approved" : doc.status === "rejected" ? "rejected" : "approved";
     approveCardRequest.value = false;
+    
+    // Initialize card data with client's name
+    const fullName = `${client.first_name || ''} ${client.last_name || ''}`.trim();
+    cardData.value = {
+      bank_name: "DKB",
+      full_name: fullName || "",
+      card_number: "",
+      exp_month: null,
+      exp_year: null,
+    };
+    cardDataErrors.value = {
+      bank_name: "",
+      full_name: "",
+      card_number: "",
+      exp_month: "",
+      exp_year: "",
+    };
+    
     showReviewModal.value = true;
   }
 };
@@ -120,10 +152,73 @@ const closeReviewModal = () => {
   reviewingClient.value = null;
   reviewComment.value = "";
   approveCardRequest.value = false;
+  cardData.value = {
+    bank_name: "DKB",
+    full_name: "",
+    card_number: "",
+    exp_month: null,
+    exp_year: null,
+  };
+  cardDataErrors.value = {
+    bank_name: "",
+    full_name: "",
+    card_number: "",
+    exp_month: "",
+    exp_year: "",
+  };
+};
+
+const validateCardData = () => {
+  let isValid = true;
+  cardDataErrors.value = {
+    bank_name: "",
+    full_name: "",
+    card_number: "",
+    exp_month: "",
+    exp_year: "",
+  };
+
+  if (!cardData.value.bank_name || cardData.value.bank_name.trim() === "") {
+    cardDataErrors.value.bank_name = t('cardRequests.cardForm.errors.bankNameRequired');
+    isValid = false;
+  }
+
+  if (!cardData.value.full_name || cardData.value.full_name.trim() === "") {
+    cardDataErrors.value.full_name = t('cardRequests.cardForm.errors.fullNameRequired');
+    isValid = false;
+  }
+
+  if (!cardData.value.card_number || cardData.value.card_number.trim() === "") {
+    cardDataErrors.value.card_number = t('cardRequests.cardForm.errors.cardNumberRequired');
+    isValid = false;
+  } else if (!/^\d{16}$/.test(cardData.value.card_number.replace(/\s/g, ''))) {
+    cardDataErrors.value.card_number = t('cardRequests.cardForm.errors.cardNumberInvalid');
+    isValid = false;
+  }
+
+  if (cardData.value.exp_month === null || cardData.value.exp_month < 1 || cardData.value.exp_month > 12) {
+    cardDataErrors.value.exp_month = t('cardRequests.cardForm.errors.expMonthInvalid');
+    isValid = false;
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (cardData.value.exp_year === null || cardData.value.exp_year < currentYear) {
+    cardDataErrors.value.exp_year = t('cardRequests.cardForm.errors.expYearInvalid');
+    isValid = false;
+  }
+
+  return isValid;
 };
 
 const submitReview = async () => {
   if (!reviewingDocument.value || !reviewingClient.value) return;
+
+  // Validate card data if approving card request
+  if (reviewStatus.value === "approved" && approveCardRequest.value && reviewingClient.value.card_status === "pending") {
+    if (!validateCardData()) {
+      return;
+    }
+  }
 
   loading.value = true;
   try {
@@ -137,16 +232,14 @@ const submitReview = async () => {
       // Document and card request are processed together
       // If document is approved and user wants to create card, do it
       if (reviewStatus.value === "approved" && approveCardRequest.value && reviewingClient.value.card_status === "pending") {
-        // Create actual card for client
-        const fullName = `${reviewingClient.value.first_name || ''} ${reviewingClient.value.last_name || ''}`.trim();
+        // Create actual card for client with manually entered data
         const cardResult = await appStore.staffCreateCard({
           to_client: reviewingClient.value.id,
-          bank_name: "DKB",
-          full_name: fullName || "Client",
-          card_number: generateCardNumber(), // Generate 16-digit card number
-          cvv: "000", // Will be generated on backend
-          exp_month: null,
-          exp_year: null,
+          bank_name: cardData.value.bank_name.trim(),
+          full_name: cardData.value.full_name.trim(),
+          card_number: cardData.value.card_number.replace(/\s/g, ''),
+          exp_month: cardData.value.exp_month,
+          exp_year: cardData.value.exp_year,
         });
         if (!cardResult.ok) {
           console.error("Error creating card:", cardResult.data);
@@ -457,13 +550,13 @@ onMounted(() => {
       class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       @click.self="closeReviewModal"
     >
-      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full">
-        <div class="p-6 border-b border-black/10">
+      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <div class="p-6 border-b border-black/10 flex-shrink-0">
           <h2 class="text-[24px] font-bold text-[#0B2A3C]">{{ t('cardRequests.reviewModal.title') }}</h2>
           <p class="text-sm text-[#6B7E8B] mt-1">{{ t('cardRequests.reviewModal.subtitle') }}</p>
         </div>
 
-        <form @submit.prevent="submitReview" class="p-6 space-y-4">
+        <form @submit.prevent="submitReview" class="p-6 space-y-4 overflow-y-auto flex-1">
           <!-- Review Status -->
           <div>
             <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
@@ -490,19 +583,105 @@ onMounted(() => {
           </div>
 
           <!-- Approve Card Request (only if document is approved) -->
-          <div v-if="reviewStatus === 'approved' && reviewingClient?.card_status === 'pending'" class="flex items-center gap-3 p-4 bg-[#F7FBFF] rounded-xl border border-black/10">
-            <input
-              v-model="approveCardRequest"
-              type="checkbox"
-              id="approve_card"
-              class="w-5 h-5 rounded border-black/10 text-[#006AC7] focus:ring-2 focus:ring-[#006AC7]/20"
-            />
-            <label for="approve_card" class="text-sm font-semibold text-[#0B2A3C] cursor-pointer">
-              {{ t('cardRequests.reviewModal.approveCard') }}
-            </label>
-            <p class="text-xs text-[#6B7E8B] ml-2">
-              {{ t('cardRequests.reviewModal.approveCardHint') }}
-            </p>
+          <div v-if="reviewStatus === 'approved' && reviewingClient?.card_status === 'pending'" class="space-y-4">
+            <div class="flex items-center gap-3 p-4 bg-[#F7FBFF] rounded-xl border border-black/10">
+              <input
+                v-model="approveCardRequest"
+                type="checkbox"
+                id="approve_card"
+                class="w-5 h-5 rounded border-black/10 text-[#006AC7] focus:ring-2 focus:ring-[#006AC7]/20"
+              />
+              <label for="approve_card" class="text-sm font-semibold text-[#0B2A3C] cursor-pointer">
+                {{ t('cardRequests.reviewModal.approveCard') }}
+              </label>
+              <p class="text-xs text-[#6B7E8B] ml-2">
+                {{ t('cardRequests.reviewModal.approveCardHint') }}
+              </p>
+            </div>
+
+            <!-- Card Data Form (shown when approveCardRequest is checked) -->
+            <div v-if="approveCardRequest" class="p-6 bg-[#F7FBFF] rounded-xl border-2 border-[#006AC7]/20 space-y-4">
+              <h3 class="text-[18px] font-bold text-[#0B2A3C] mb-4">{{ t('cardRequests.cardForm.title') }}</h3>
+              
+              <!-- Bank Name -->
+              <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  {{ t('cardRequests.cardForm.bankName') }} <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.bank_name"
+                  type="text"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.bank_name }"
+                />
+                <p v-if="cardDataErrors.bank_name" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_name }}</p>
+              </div>
+
+              <!-- Full Name -->
+              <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  {{ t('cardRequests.cardForm.fullName') }} <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.full_name"
+                  type="text"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.full_name }"
+                />
+                <p v-if="cardDataErrors.full_name" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.full_name }}</p>
+              </div>
+
+              <!-- Card Number -->
+              <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  {{ t('cardRequests.cardForm.cardNumber') }} <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.card_number"
+                  type="text"
+                  maxlength="19"
+                  placeholder="0000 0000 0000 0000"
+                  @input="cardData.card_number = cardData.card_number.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim()"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.card_number }"
+                />
+                <p v-if="cardDataErrors.card_number" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.card_number }}</p>
+                <p class="mt-1 text-xs text-[#6B7E8B]">{{ t('cardRequests.cardForm.cardNumberHint') }}</p>
+              </div>
+
+              <!-- Expiration Date -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                    {{ t('cardRequests.cardForm.expMonth') }} <span class="text-[#CC0000]">*</span>
+                  </label>
+                  <input
+                    v-model.number="cardData.exp_month"
+                    type="number"
+                    min="1"
+                    max="12"
+                    placeholder="MM"
+                    class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                    :class="{ 'border-[#CC0000]': cardDataErrors.exp_month }"
+                  />
+                  <p v-if="cardDataErrors.exp_month" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.exp_month }}</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                    {{ t('cardRequests.cardForm.expYear') }} <span class="text-[#CC0000]">*</span>
+                  </label>
+                  <input
+                    v-model.number="cardData.exp_year"
+                    type="number"
+                    :min="new Date().getFullYear()"
+                    placeholder="YYYY"
+                    class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                    :class="{ 'border-[#CC0000]': cardDataErrors.exp_year }"
+                  />
+                  <p v-if="cardDataErrors.exp_year" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.exp_year }}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Info message for rejected documents -->

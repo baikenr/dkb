@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from "vue";
+import { onMounted, ref, computed, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app.js";
 import StaffSidebar from "@/components/StaffSidebar.vue";
 import UsersManagement from "@/components/UsersManagement.vue";
 import ClientsManagement from "@/components/ClientsManagement.vue";
 import CardRequests from "@/components/CardRequests.vue";
+import StaffFAQ from "@/components/StaffFAQ.vue";
 
 const router = useRouter();
 const route = useRoute();
 const appStore = useAppStore();
+const { t, locale } = useI18n();
 
 const loading = ref(false);
 const me = computed(() => appStore.me as any);
@@ -42,13 +45,104 @@ const pageTitle = computed(() => {
   if (path.includes("/card-requests")) return "Card Requests";
   return "Dashboard";
 });
+
+// Language toggle
+const changeLanguage = (lang: string) => {
+  locale.value = lang;
+  sessionStorage.setItem("lang", lang);
+};
+const toggleLanguage = () => changeLanguage(locale.value === "de" ? "en" : "de");
+const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
+
+// Profile menu
+const profileMenuOpen = ref(false);
+const goProfile = async () => {
+  profileMenuOpen.value = false;
+  await router.push("/profile");
+};
+
+const doLogout = async () => {
+  profileMenuOpen.value = false;
+  appStore.logout();
+  await router.replace("/login");
+};
+
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  if (!target.closest('.profile-menu-container')) {
+    profileMenuOpen.value = false;
+  }
+};
+
+onMounted(async () => {
+  await loadMe();
+  // Close profile menu when clicking outside
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
-  <div class="pt-[96px] flex">
-  <!-- Right Sidebar -->
+  <div class="flex min-h-screen">
+  <!-- Left Sidebar -->
   <StaffSidebar />
-    <main class="flex-1">
+    <main class="flex-1 relative">
+      <!-- Profile Menu & Language Toggle - Top Right -->
+      <div class="absolute top-0 right-0 z-10 p-6 profile-menu-container">
+        <div class="flex items-center gap-3">
+          <!-- Language Toggle -->
+          <button
+            @click="toggleLanguage"
+            class="px-3 py-2 rounded-xl border border-black/10 bg-white hover:bg-black/5 transition font-semibold text-sm text-[#0B2A3C]"
+          >
+            {{ langLabel }}
+          </button>
+          
+          <!-- Profile Menu -->
+          <div class="relative">
+            <button
+              class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-black/5 transition font-semibold text-[#0B2A3C]"
+              @click="profileMenuOpen = !profileMenuOpen"
+            >
+              <div class="w-8 h-8 rounded-full bg-[#006AC7] flex items-center justify-center text-white text-sm font-bold">
+                {{ fullName.charAt(0).toUpperCase() }}
+              </div>
+              <span class="text-sm">{{ fullName }}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            <div
+              v-if="profileMenuOpen"
+              class="absolute right-0 top-[48px] w-[220px] bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden z-20"
+            >
+              <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" @click="goProfile">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                {{ t("header.menu.profile") }}
+              </button>
+              <div class="border-t border-black/10"></div>
+              <button
+                class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3 text-[#B42318]"
+                @click="doLogout"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                {{ t("header.menu.logout") }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="max-w-[1200px] mx-auto px-6 py-8">
         <div class="mb-6">
           <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">{{ pageTitle }}</h1>
@@ -134,6 +228,7 @@ const pageTitle = computed(() => {
             <UsersManagement v-if="route.path.includes('/users')" />
             <ClientsManagement v-else-if="route.path.includes('/clients')" />
             <CardRequests v-else-if="route.path.includes('/card-requests')" />
+            <StaffFAQ v-else-if="route.path.includes('/faq')" />
             <div v-else class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
               <div class="text-[#6B7E8B]">
                 <p>Page content - coming soon</p>

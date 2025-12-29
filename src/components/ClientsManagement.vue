@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app.js";
+import { useNotificationStore } from "@/stores/notification.js";
 
 const { t } = useI18n();
 const appStore = useAppStore();
@@ -21,6 +22,12 @@ const formLoading = ref(false);
 const showCredentialsModal = ref(false);
 const createdCredentials = ref<any>(null);
 const managers = ref<any[]>([]);
+const showPasswordModal = ref(false);
+const resettingPasswordClient = ref<any>(null);
+const newPassword = ref("");
+const passwordError = ref("");
+const passwordLoading = ref(false);
+const showPassword = ref(false);
 
 const isAdmin = computed(() => appStore.staffRole === "admin");
 
@@ -282,6 +289,64 @@ const handleDelete = async (client: any) => {
   }
 };
 
+const openPasswordModal = (client: any) => {
+  resettingPasswordClient.value = client;
+  newPassword.value = "";
+  passwordError.value = "";
+  showPasswordModal.value = true;
+};
+
+const closePasswordModal = () => {
+  showPasswordModal.value = false;
+  resettingPasswordClient.value = null;
+  newPassword.value = "";
+  passwordError.value = "";
+  showPassword.value = false;
+};
+
+const handleResetPassword = async () => {
+  passwordError.value = "";
+  
+  if (!newPassword.value || newPassword.value.length < 8) {
+    passwordError.value = t("clientsManagement.passwordReset.errors.minLength");
+    return;
+  }
+
+  if (!resettingPasswordClient.value) return;
+
+  passwordLoading.value = true;
+  try {
+    const result = await appStore.staffClientSetPassword(resettingPasswordClient.value.id, newPassword.value);
+    if (result.ok) {
+      closePasswordModal();
+      // Show success notification
+      const notificationStore = useNotificationStore();
+      notificationStore.showNotification({ 
+        type: "success", 
+        message: t("clientsManagement.passwordReset.success") 
+      });
+    } else {
+      // Handle validation errors
+      if (result.data) {
+        if (result.data.detail) {
+          passwordError.value = result.data.detail;
+        } else if (result.data.new_password) {
+          passwordError.value = Array.isArray(result.data.new_password) 
+            ? result.data.new_password[0] 
+            : result.data.new_password;
+        } else {
+          passwordError.value = t("clientsManagement.passwordReset.errors.failed");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    passwordError.value = t("clientsManagement.passwordReset.errors.failed");
+  } finally {
+    passwordLoading.value = false;
+  }
+};
+
 const handleAssignManager = async (client: any, managerId: number) => {
   if (!isAdmin.value) return;
   
@@ -477,6 +542,13 @@ onMounted(() => {
                     class="px-3 py-1.5 text-sm text-[#006AC7] hover:bg-[#E8F3FF] rounded-lg transition"
                   >
                     {{ t('clientsManagement.actions.edit') }}
+                  </button>
+                  <button
+                    @click="openPasswordModal(client)"
+                    class="px-3 py-1.5 text-sm text-[#F79E1B] hover:bg-[#FFF3CD] rounded-lg transition"
+                    :title="t('clientsManagement.actions.resetPassword')"
+                  >
+                    {{ t('clientsManagement.actions.resetPassword') }}
                   </button>
                   <button
                     @click="handleDelete(client)"
@@ -678,6 +750,75 @@ onMounted(() => {
             {{ t('clientsManagement.credentials.ok') }}
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Password Reset Modal -->
+    <div
+      v-if="showPasswordModal && resettingPasswordClient"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="closePasswordModal"
+    >
+      <div class="bg-white rounded-2xl shadow-xl max-w-md w-full">
+        <div class="p-6 border-b border-black/10">
+          <h2 class="text-[24px] font-bold text-[#0B2A3C]">{{ t('clientsManagement.passwordReset.title') }}</h2>
+          <p class="text-sm text-[#6B7E8B] mt-1">
+            {{ t('clientsManagement.passwordReset.subtitle', { 
+              name: `${resettingPasswordClient.first_name || ''} ${resettingPasswordClient.last_name || ''}`.trim() || resettingPasswordClient.email || `ID: ${resettingPasswordClient.id}`
+            }) }}
+          </p>
+        </div>
+
+        <form @submit.prevent="handleResetPassword" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+              {{ t('clientsManagement.passwordReset.newPassword') }} <span class="text-[#CC0000]">*</span>
+            </label>
+            <div class="relative">
+              <input
+                v-model="newPassword"
+                :type="showPassword ? 'text' : 'password'"
+                class="w-full px-4 py-2.5 pr-12 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :placeholder="t('clientsManagement.passwordReset.passwordPlaceholder')"
+              />
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7E8B] hover:text-[#0B2A3C] transition-colors"
+              >
+                <svg v-if="showPassword" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                  <path d="M6.61 6.61A13.16 13.16 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                  <line x1="2" y1="2" x2="22" y2="22"></line>
+                </svg>
+              </button>
+            </div>
+            <p v-if="passwordError" class="mt-1 text-sm text-[#CC0000]">{{ passwordError }}</p>
+            <p class="mt-1 text-xs text-[#6B7E8B]">{{ t('clientsManagement.passwordReset.passwordHint') }}</p>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-black/10">
+            <button
+              type="button"
+              @click="closePasswordModal"
+              class="px-6 py-2.5 rounded-xl border border-black/10 text-[#0B2A3C] font-semibold hover:bg-black/5 transition"
+            >
+              {{ t('clientsManagement.modal.cancel') }}
+            </button>
+            <button
+              type="submit"
+              :disabled="passwordLoading"
+              class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ passwordLoading ? t('clientsManagement.passwordReset.resetting') : t('clientsManagement.passwordReset.reset') }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

@@ -239,7 +239,7 @@ export const useAppStore = defineStore("app", {
       }
     },
 
-    // ==========================
+        // ==========================
     // CLIENT DOCUMENTS: /api/client/documents/
     // ==========================
     async clientGetDocument() {
@@ -479,7 +479,7 @@ export const useAppStore = defineStore("app", {
         await axios.delete(this.base_url + `/staff/staff/clients/${id}/`, {
           headers: this.getAuthHeaders(),
         });
-        return { ok: true };
+      return { ok: true };
       } catch (error) {
         this.notifyError(error, "Delete client error");
         return { ok: false };
@@ -496,6 +496,24 @@ export const useAppStore = defineStore("app", {
         return { ok: true, data: response.data };
       } catch (error) {
         this.notifyError(error, "Assign manager error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffClientSetPassword(clientId, newPassword) {
+      try {
+        const response = await axios.post(
+          this.base_url + `/client/staff/clients/${clientId}/password/set/`,
+          { new_password: newPassword },
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // Don't show notification for validation errors, return them to component
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Set password error");
         return { ok: false, data: error?.response?.data };
       }
     },
@@ -528,6 +546,111 @@ export const useAppStore = defineStore("app", {
         this.notifyError(error, "Review document error");
         return { ok: false, data: error?.response?.data };
       }
+    },
+
+    // ==========================
+    // CLIENT FAQ: /api/support/faq-notifications/
+    // ==========================
+    async clientSendFAQ(title, message) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/support/faq-notifications/",
+          { title, message },
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Send FAQ error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
+    // STAFF NOTIFICATIONS: /api/stm/notification/
+    // ==========================
+    async staffNotificationsList(params = {}) {
+      try {
+        const response = await axios.get(this.base_url + "/stm/notification/", {
+          headers: this.getAuthHeaders(),
+          params,
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get notifications list error");
+        return { ok: false };
+      }
+    },
+
+    async staffNotificationGet(id) {
+      try {
+        const response = await axios.get(this.base_url + `/stm/notification/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get notification error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffNotificationUpdate(id, data) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/stm/notification/${id}/`,
+          data,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Update notification error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffNotificationDelete(id) {
+      try {
+        await axios.delete(this.base_url + `/stm/notification/${id}/`, {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true };
+      } catch (error) {
+        this.notifyError(error, "Delete notification error");
+        return { ok: false };
+      }
+    },
+
+    async staffNotificationCount() {
+      try {
+        const response = await axios.get(this.base_url + "/stm/notification/count/", {
+          headers: this.getAuthHeaders(),
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get notification count error");
+        return { ok: false };
+      }
+    },
+
+    async staffNotificationShort(count = 3) {
+      try {
+        const response = await axios.get(this.base_url + "/stm/notification/short/", {
+          headers: this.getAuthHeaders(),
+          params: { count },
+        });
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get short notifications error");
+        return { ok: false };
+      }
+    },
+
+    // Legacy methods for backward compatibility
+    async staffFAQList(params = {}) {
+      return this.staffNotificationsList({ ...params, type_notification: 'faq' });
+    },
+
+    async staffFAQMarkRead(notificationId) {
+      return this.staffNotificationUpdate(notificationId, { is_read: true });
     },
   },
 });

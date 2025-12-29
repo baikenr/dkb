@@ -68,6 +68,7 @@
     "users": "Users",
     "clients": "Clients",
     "cardRequests": "Card Requests",
+    "faq": "Notifications & Messages",
     "finanzstatus": "Finanzstatus",
     "uberweisung": "Überweisung",
     "einstellungen": "Einstellungen",
@@ -171,6 +172,7 @@
     },
     "actions": {
       "edit": "Edit",
+      "resetPassword": "Reset Password",
       "delete": "Delete"
     },
     "modal": {
@@ -216,6 +218,20 @@
       "emailInvalid": "Invalid email format",
       "phoneMax": "Phone must be less than 30 characters",
       "workPlaceMax": "Work place must be less than 255 characters"
+    },
+    "passwordReset": {
+      "title": "Reset Password",
+      "subtitle": "Set a new password for client: {{name}}",
+      "newPassword": "New Password",
+      "passwordPlaceholder": "Enter new password",
+      "passwordHint": "Password must be at least 8 characters with uppercase, lowercase, and number",
+      "reset": "Reset Password",
+      "resetting": "Resetting...",
+      "success": "Password has been reset successfully. Client must change it on first login.",
+      "errors": {
+        "minLength": "Password must be at least 8 characters",
+        "failed": "Failed to reset password"
+      }
     }
   },
   "cardRequests": {
@@ -261,6 +277,23 @@
       "submitting": "Submitting...",
       "submitReview": "Submit Review"
     },
+    "cardForm": {
+      "title": "Card Details",
+      "bankName": "Bank Name",
+      "fullName": "Full Name",
+      "cardNumber": "Card Number",
+      "cardNumberHint": "Enter 16 digits",
+      "expMonth": "Expiration Month",
+      "expYear": "Expiration Year",
+      "errors": {
+        "bankNameRequired": "Bank name is required",
+        "fullNameRequired": "Full name is required",
+        "cardNumberRequired": "Card number is required",
+        "cardNumberInvalid": "Card number must be exactly 16 digits",
+        "expMonthInvalid": "Expiration month must be between 1 and 12",
+        "expYearInvalid": "Expiration year must be current year or later"
+      }
+    },
     "createCardModal": {
       "title": "Create Card",
       "subtitle": "Create card for client: {{name}}",
@@ -276,12 +309,40 @@
       "createCard": "Create Card"
     }
   },
+  "clientSidebar": {
+    "home": "Home",
+    "card": "Card",
+    "document": "Document",
+    "faq": "Contact Support"
+  },
   "clientMain": {
     "title": "Finanzstatus",
+    "home": {
+      "girokonto": "Girokonto",
+      "visaKreditkarte": "Visa Kreditkarte",
+      "uberweisung": "Überweisung",
+      "kontodetails": "Kontodetails",
+      "vorgemerkt": "Vorgemerkt",
+      "eingang": "Eingang",
+      "ausgang": "Ausgang",
+      "noTransactions": "No transactions yet",
+      "availableBalance": "Available Balance",
+      "totalBalance": "Total Balance",
+      "limit": "Limit",
+      "bankName": "Bank Name",
+      "bankBic": "BIC",
+      "fullName": "Cardholder"
+    },
     "cardDetails": "Card Details",
+    "cardId": "Card ID",
+    "iban": "IBAN",
+    "cardNumber": "Card Number",
+    "cvv": "CVV",
     "cardType": "Card Type",
     "cardHolder": "Card Holder",
     "expires": "Expires",
+    "cardStatus": "Card Status",
+    "balance": "Balance",
     "cardLimit": "Card Limit",
     "temporarilyLock": "Temporarily Lock",
     "showData": "Show Data",
@@ -302,6 +363,21 @@
       "rejected": "Document rejected. Please upload a new document.",
       "notUploaded": "Please upload your document to continue."
     },
+    "documentSteps": {
+      "step1Title": "Upload Identity Document",
+      "step1Description": "Upload a clear photo or scan of your identity document (passport, ID card, or driver's license). Maximum file size: 10 MB.",
+      "step2Title": "Document Review",
+      "step2DescriptionWaiting": "After uploading your document, our team will review it. This usually takes 1-2 business days.",
+      "step2DescriptionPending": "Your document is being reviewed by our team. We will notify you once the review is complete.",
+      "step2DescriptionApproved": "Your document has been approved! You can now proceed to request your card.",
+      "step2DescriptionRejected": "Your document was not approved. Please review the feedback and upload a new document.",
+      "step3Title": "Request Your Card",
+      "step3DescriptionWaiting": "Please complete steps 1 and 2 before requesting your card.",
+      "step3DescriptionReady": "Your document has been approved. Click the button below to request your card.",
+      "step3DescriptionPending": "Your card request has been submitted and is being processed. You will receive your card soon.",
+      "step3DescriptionReceived": "Congratulations! Your card has been created and is ready to use.",
+      "cardReceived": "Card Received"
+    },
     "upload": "Upload",
     "reUpload": "Re-upload",
     "replaceDocument": "Replace Document",
@@ -312,7 +388,15 @@
     "uploadFailed": "Upload failed",
     "fileTooLarge": "File is too large. Max {{max}} MB",
     "cardRequestSuccess": "Card request submitted successfully",
-    "cardRequestFailed": "Failed to request card"
+    "cardRequestFailed": "Failed to request card",
+    "profileMenu": {
+      "profile": "My Profile",
+      "mailbox": "Mailbox",
+      "security": "Security",
+      "feedback": "Feedback",
+      "referFriends": "Refer Friends",
+      "logout": "Log Out"
+    }
   },
   "common": {
     "comingSoon": "Coming soon",
@@ -347,5 +431,92 @@
     "to": "to",
     "ofTotal": "of",
     "note": "Note"
+  },
+  "clientFAQ": {
+    "title": "Contact Support",
+    "subtitle": "Send a message to your manager. We will respond as soon as possible.",
+    "form": {
+      "title": "Subject",
+      "titlePlaceholder": "Enter the subject of your message",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "send": "Send Message",
+      "sending": "Sending..."
+    },
+    "errors": {
+      "titleRequired": "Subject is required",
+      "messageRequired": "Message is required",
+      "sendFailed": "Failed to send message. Please try again."
+    },
+    "success": {
+      "title": "Message Sent",
+      "message": "Your message has been sent successfully. We will respond as soon as possible."
+    }
+  },
+  "staffFAQ": {
+    "title": "FAQ Requests",
+    "subtitle": "View and manage FAQ requests from clients.",
+    "loading": "Loading...",
+    "noFAQ": "No FAQ requests found",
+    "searchPlaceholder": "Search by title, message, client name or email...",
+    "filters": {
+      "all": "All",
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "new": "New",
+    "from": "From",
+    "noTitle": "No Subject",
+    "detail": {
+      "from": "From Client",
+      "date": "Date",
+      "message": "Message",
+      "close": "Close"
+    }
+  },
+  "staffNotifications": {
+    "title": "Notifications & Messages",
+    "subtitle": "View and manage all notifications and messages from clients.",
+    "loading": "Loading...",
+    "noNotifications": "No notifications found",
+    "searchPlaceholder": "Search by title, message, client name or email...",
+    "unreadCount": "{{count}} unread",
+    "filters": {
+      "type": "Type",
+      "status": "Status",
+      "allTypes": "All Types",
+      "faq": "FAQ",
+      "request": "Request",
+      "all": "All",
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "types": {
+      "faq": "FAQ",
+      "request": "Request"
+    },
+    "new": "New",
+    "from": "From",
+    "noTitle": "No Subject",
+    "read": "Read",
+    "unread": "Unread",
+    "markRead": "Mark as Read",
+    "markUnread": "Mark as Unread",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this notification?",
+    "deleteSuccess": "Notification deleted successfully",
+    "detail": {
+      "from": "From Client",
+      "date": "Date",
+      "status": "Status",
+      "message": "Message",
+      "close": "Close"
+    },
+    "pagination": {
+      "showing": "Showing {{from}} to {{to}} of {{total}} notifications",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
+    }
   }
 }

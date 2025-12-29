@@ -12,31 +12,26 @@ const appStore = useAppStore();
 
 const sidebarOpen = ref(true);
 
+const me = computed(() => appStore.me as any);
+const card = computed(() => me.value?.bank_card || null);
+const hasCard = computed(() => !!card.value && me.value?.client_bank_status === "received");
+
 const navItems = computed(() => {
-  const isAdmin = appStore.staffRole === "admin";
-  
-  const baseItems = [
-    { key: "dashboard", label: t("sidebar.dashboard"), to: "/staff", icon: "dashboard" },
-    { key: "clients", label: t("sidebar.clients"), to: "/staff/clients", icon: "clients" },
-    { key: "card-requests", label: t("sidebar.cardRequests"), to: "/staff/card-requests", icon: "card" },
-    { key: "faq", label: t("sidebar.faq"), to: "/staff/faq", icon: "faq" },
+  const items = [
+    { key: "home", label: t("clientSidebar.home"), to: "/", icon: "home" },
+    { key: "document", label: t("clientSidebar.document"), to: "/document", icon: "document" },
+    { key: "faq", label: t("clientSidebar.faq"), to: "/faq", icon: "faq" },
   ];
-
-  // Если админ, добавляем пункт Users (создание менеджеров и админов)
-  if (isAdmin) {
-    baseItems.splice(1, 0, { key: "users", label: t("sidebar.users"), to: "/staff/users", icon: "users" });
+  
+  // Показываем вкладку "Карты" только если карта создана
+  if (hasCard.value) {
+    items.splice(1, 0, { key: "card", label: t("clientSidebar.card"), to: "/card", icon: "card" });
   }
-
-  return baseItems;
+  
+  return items;
 });
 
-const isActive = (to: string) => {
-  // Для точного совпадения
-  if (route.path === to) return true;
-  // Для подмаршрутов (но не для корневого /staff, чтобы он не подсвечивался на других страницах)
-  if (to !== "/staff" && route.path.startsWith(to + "/")) return true;
-  return false;
-};
+const isActive = (to: string) => route.path === to || route.path.startsWith(to + "/");
 
 const go = async (to: string) => {
   try {
@@ -53,7 +48,7 @@ const go = async (to: string) => {
     <!-- Logo Section -->
     <div class="px-3 py-6 border-b border-black/10">
       <div class="flex items-center justify-center">
-        <router-link to="/staff" class="flex items-center justify-center">
+        <router-link to="/" class="flex items-center justify-center">
           <img :src="Logo" alt="DKB Das kann Bank" class="cursor-pointer object-contain" style="width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px;" />
         </router-link>
       </div>
@@ -90,29 +85,11 @@ const go = async (to: string) => {
           class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           :class="isActive(it.to) ? 'bg-white' : 'bg-[#F3F7FB]'"
         >
-          <!-- Dashboard Icon -->
-          <svg v-if="it.icon === 'dashboard'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
+          <!-- Home Icon -->
+          <svg v-if="it.icon === 'home'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
             :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
-            <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          <!-- Users Icon -->
-          <svg v-else-if="it.icon === 'users'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
-            :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <!-- Clients Icon -->
-          <svg v-else-if="it.icon === 'clients'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
-            :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <!-- Card Icon -->
           <svg v-else-if="it.icon === 'card'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
@@ -120,12 +97,14 @@ const go = async (to: string) => {
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
             <line x1="1" y1="10" x2="23" y2="10" stroke="currentColor" stroke-width="2"/>
           </svg>
-          <!-- FAQ Icon -->
-          <svg v-else-if="it.icon === 'faq'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
+          <!-- Document Icon -->
+          <svg v-else-if="it.icon === 'document'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
             :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13 8H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M17 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
           <!-- Default Icon -->
           <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"

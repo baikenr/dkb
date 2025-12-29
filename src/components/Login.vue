@@ -118,72 +118,72 @@ const submitLogin = async () => {
     <!-- Main Content -->
     <main class="flex-1 flex items-center justify-center py-8">
       <section class="w-full">
-        <div
+    <div
           class="bg-white p-8 rounded-[14px] w-full max-w-lg mx-auto"
-          style="border: 1px solid #CBD9E4;"
+      style="border: 1px solid #CBD9E4;"
         >
-          <h2 class="text-[32px] font-bold text-center mb-6 text-[#31373D]">
-            {{ t("login.title") }}
-          </h2>
+      <h2 class="text-[32px] font-bold text-center mb-6 text-[#31373D]">
+        {{ t("login.title") }}
+      </h2>
 
-          <div
-            v-if="errorText"
-            class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2"
+      <div
+        v-if="errorText"
+        class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-4 py-2"
+      >
+        {{ errorText }}
+      </div>
+
+      <form @submit.prevent="submitLogin" class="space-y-6">
+        <v-text-field
+          v-model="login"
+          :label="t('login.loginPlaceholder')"
+          variant="solo"
+          hide-details
+          bg-color="#F2F9FF"
+        />
+
+        <v-text-field
+          v-model="password"
+          :label="t('login.passwordPlaceholder')"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+          @click:append-inner="togglePasswordVisibility"
+          variant="solo"
+          hide-details
+          bg-color="#F2F9FF"
+        />
+
+        <button
+          type="submit"
+          :disabled="loading"
+          class="w-full mt-10 h-[50px] rounded-[5px] text-[19px] font-semibold
+                 bg-[#006AC7] text-white hover:bg-[#134E8A]
+                 transition disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {{ t("login.signIn") }}
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-[17px] text-[#31373D]">
+        <span>
+          {{ t("login.restoreLogin") }}
+          <router-link
+            to="/forgot-login"
+            class="text-[#006ACA] hover:text-[#134E8A] underline"
           >
-            {{ errorText }}
-          </div>
-
-          <form @submit.prevent="submitLogin" class="space-y-6">
-            <v-text-field
-              v-model="login"
-              :label="t('login.loginPlaceholder')"
-              variant="solo"
-              hide-details
-              bg-color="#F2F9FF"
-            />
-
-            <v-text-field
-              v-model="password"
-              :label="t('login.passwordPlaceholder')"
-              :type="showPassword ? 'text' : 'password'"
-              :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-              @click:append-inner="togglePasswordVisibility"
-              variant="solo"
-              hide-details
-              bg-color="#F2F9FF"
-            />
-
-            <button
-              type="submit"
-              :disabled="loading"
-              class="w-full mt-10 h-[50px] rounded-[5px] text-[19px] font-semibold
-                     bg-[#006AC7] text-white hover:bg-[#134E8A]
-                     transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {{ t("login.signIn") }}
-            </button>
-          </form>
-
-          <div class="mt-6 text-center text-[17px] text-[#31373D]">
-            <span>
-              {{ t("login.restoreLogin") }}
-              <router-link
-                to="/forgot-login"
-                class="text-[#006ACA] hover:text-[#134E8A] underline"
-              >
-                {{ t("login.restoreLoginLink") }}
-              </router-link>
-              {{ t("login.restoreMiddle") }}
-              <router-link
-                to="/forgot-password"
-                class="text-[#006ACA] hover:text-[#134E8A] underline"
-              >
-                {{ t("login.restorePasswordLink") }}
-              </router-link>
-            </span>
-          </div>
-        </div>
-      </section>
+            {{ t("login.restoreLoginLink") }}
+          </router-link>
+          {{ t("login.restoreMiddle") }}
+          <router-link
+            to="/forgot-password"
+            class="text-[#006ACA] hover:text-[#134E8A] underline"
+          >
+            {{ t("login.restorePasswordLink") }}
+          </router-link>
+        </span>
+      </div>
+    </div>
+  </section>
     </main>
 
     <!-- Footer -->
