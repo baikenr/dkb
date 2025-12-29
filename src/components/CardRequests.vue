@@ -23,15 +23,24 @@ const cardData = ref({
   bank_name: "DKB",
   full_name: "",
   card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
   exp_month: null as number | null,
   exp_year: null as number | null,
+  limit: "-", // строка, как в примере
 });
+
 const cardDataErrors = ref({
   bank_name: "",
   full_name: "",
   card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
   exp_month: "",
   exp_year: "",
+  limit: "",
 });
 
 const showCreateCardModal = ref(false);
@@ -40,8 +49,12 @@ const cardFormData = ref({
   bank_name: "DKB",
   full_name: "",
   card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
   exp_month: null as number | null,
   exp_year: null as number | null,
+  limit: "-",
 });
 
 const loadCardRequests = async () => {
@@ -126,15 +139,23 @@ const openReviewModal = (client: any) => {
       bank_name: "DKB",
       full_name: fullName || "",
       card_number: "",
+      cvv: "",
+      iban: "",
+      bank_bic: "",
       exp_month: null,
       exp_year: null,
+      limit: "-",
     };
     cardDataErrors.value = {
       bank_name: "",
       full_name: "",
       card_number: "",
+      cvv: "",
+      iban: "",
+      bank_bic: "",
       exp_month: "",
       exp_year: "",
+      limit: "",
     };
     
     showReviewModal.value = true;
@@ -156,15 +177,23 @@ const closeReviewModal = () => {
     bank_name: "DKB",
     full_name: "",
     card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
     exp_month: null,
     exp_year: null,
+    limit: "-",
   };
   cardDataErrors.value = {
     bank_name: "",
     full_name: "",
     card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
     exp_month: "",
     exp_year: "",
+    limit: "",
   };
 };
 
@@ -174,9 +203,14 @@ const validateCardData = () => {
     bank_name: "",
     full_name: "",
     card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
     exp_month: "",
     exp_year: "",
+    limit: "",
   };
+
 
   if (!cardData.value.bank_name || cardData.value.bank_name.trim() === "") {
     cardDataErrors.value.bank_name = t('cardRequests.cardForm.errors.bankNameRequired');
@@ -235,11 +269,15 @@ const submitReview = async () => {
         // Create actual card for client with manually entered data
         const cardResult = await appStore.staffCreateCard({
           to_client: reviewingClient.value.id,
-          bank_name: cardData.value.bank_name.trim(),
-          full_name: cardData.value.full_name.trim(),
-          card_number: cardData.value.card_number.replace(/\s/g, ''),
+          bank_name: cardData.value.bank_name,
+          full_name: cardData.value.full_name,
+          card_number: cardData.value.card_number, // уже нормализован
+          cvv: cardData.value.cvv,
+          iban: cardData.value.iban,
+          bank_bic: cardData.value.bank_bic,
           exp_month: cardData.value.exp_month,
           exp_year: cardData.value.exp_year,
+          limit: cardData.value.limit,
         });
         if (!cardResult.ok) {
           console.error("Error creating card:", cardResult.data);
@@ -317,8 +355,12 @@ const openCreateCardModal = (client: any) => {
     bank_name: "DKB",
     full_name: fullName || "Client",
     card_number: generateCardNumber(),
+    cvv: "",
+    iban: "",
+    bank_bic: "",
     exp_month: null,
     exp_year: null,
+    limit: "-",
   };
   showCreateCardModal.value = true;
 };
@@ -330,8 +372,12 @@ const closeCreateCardModal = () => {
     bank_name: "DKB",
     full_name: "",
     card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
     exp_month: null,
     exp_year: null,
+    limit: "-",
   };
 };
 
@@ -648,7 +694,66 @@ onMounted(() => {
                 <p v-if="cardDataErrors.card_number" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.card_number }}</p>
                 <p class="mt-1 text-xs text-[#6B7E8B]">{{ t('cardRequests.cardForm.cardNumberHint') }}</p>
               </div>
-
+              <!-- cvv -->
+              <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  CVV <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.cvv"
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="4"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.cvv }"
+                  @input="cardData.cvv = cardData.cvv.replace(/\\D/g, '').slice(0,4)"
+                />
+                <p v-if="cardDataErrors.cvv" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.cvv }}</p>
+              </div>
+              <!-- IBAN -->
+               <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  IBAN <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.iban"
+                  type="text"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.iban }"
+                  placeholder="KZ00...."
+                  @input="cardData.iban = cardData.iban.toUpperCase()"
+                />
+                <p v-if="cardDataErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.iban }}</p>
+              </div>
+              <!-- BIC -->
+               <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  BIC / SWIFT <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.bank_bic"
+                  type="text"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.bank_bic }"
+                  placeholder="ABCDEFGH or ABCDEFGHXXX"
+                  @input="cardData.bank_bic = cardData.bank_bic.toUpperCase()"
+                />
+                <p v-if="cardDataErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_bic }}</p>
+              </div>
+              <!-- LIMIT -->
+               <div>
+                <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+                  Limit <span class="text-[#CC0000]">*</span>
+                </label>
+                <input
+                  v-model="cardData.limit"
+                  type="text"
+                  class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.limit }"
+                  placeholder='- or 100000'
+                />
+                <p v-if="cardDataErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.limit }}</p>
+              </div>
               <!-- Expiration Date -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -773,7 +878,48 @@ onMounted(() => {
             />
             <p class="text-xs text-[#6B7E8B] mt-1">{{ t('cardRequests.createCardModal.cardNumberHint') }}</p>
           </div>
-
+          <!-- cvv -->
+           <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">CVV</label>
+            <input
+              v-model="cardFormData.cvv"
+              type="text"
+              inputmode="numeric"
+              maxlength="4"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+              @input="cardFormData.cvv = cardFormData.cvv.replace(/\\D/g, '').slice(0,4)"
+            />
+          </div>
+          <!-- IBAN -->
+           <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">IBAN</label>
+            <input
+              v-model="cardFormData.iban"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+              @input="cardFormData.iban = cardFormData.iban.toUpperCase()"
+            />
+          </div>
+          <!-- BIC -->
+           <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">BIC / SWIFT</label>
+            <input
+              v-model="cardFormData.bank_bic"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+              @input="cardFormData.bank_bic = cardFormData.bank_bic.toUpperCase()"
+            />
+          </div>
+          <!-- LIMIT -->
+           <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">Limit</label>
+            <input
+              v-model="cardFormData.limit"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              placeholder='- or 100000'
+            />
+          </div>
           <!-- Exp Month -->
           <div>
             <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.createCardModal.expMonth') }}</label>
