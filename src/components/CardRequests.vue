@@ -2,9 +2,11 @@
 import { ref, computed, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import { useAppStore } from "@/stores/app.js";
+import { useNotificationStore } from "@/stores/notification.js";
 
 const { t } = useI18n();
 const appStore = useAppStore();
+const notificationStore = useNotificationStore();
 
 const loading = ref(false);
 const cardRequests = ref<any[]>([]);
@@ -55,6 +57,35 @@ const cardFormData = ref({
   exp_month: null as number | null,
   exp_year: null as number | null,
   limit: "-",
+});
+
+// Card view/edit modal
+const showCardModal = ref(false);
+const viewingCardClient = ref<any>(null);
+const currentCardId = ref<number | null>(null);
+const cardLoading = ref(false);
+const cardSaving = ref(false);
+const cardViewData = ref({
+  bank_name: "",
+  full_name: "",
+  card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
+  exp_month: null as number | null,
+  exp_year: null as number | null,
+  limit: "",
+});
+const cardViewErrors = ref({
+  bank_name: "",
+  full_name: "",
+  card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
+  exp_month: "",
+  exp_year: "",
+  limit: "",
 });
 
 const loadCardRequests = async () => {
@@ -118,7 +149,7 @@ const getDocumentForClient = (clientId: number) => {
 
 const openDocumentViewer = (client: any) => {
   const doc = getDocumentForClient(client.id);
-  if (doc && doc.file) {
+  if (doc && (doc.file || doc.front_side || doc.back_side || doc.bank_statement)) {
     selectedDocument.value = doc;
     showDocumentModal.value = true;
   }
@@ -406,6 +437,173 @@ const createCard = async () => {
   }
 };
 
+const openCardModal = async (client: any) => {
+  viewingCardClient.value = client;
+  cardLoading.value = true;
+  showCardModal.value = true;
+  cardViewErrors.value = {};
+  
+  try {
+    const result = await appStore.staffGetCardByClient(client.id);
+    if (result.ok && result.data) {
+      currentCardId.value = result.data.id;
+      cardViewData.value = {
+        bank_name: result.data.bank_name || "",
+        full_name: result.data.full_name || "",
+        card_number: result.data.card_number || "",
+        cvv: result.data.cvv || "",
+        iban: result.data.iban || "",
+        bank_bic: result.data.bank_bic || "",
+        exp_month: result.data.exp_month || null,
+        exp_year: result.data.exp_year || null,
+        limit: result.data.limit || "",
+      };
+    } else {
+      // Card not found
+      cardViewData.value = {
+        bank_name: "DKB",
+        full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
+        card_number: "",
+        cvv: "",
+        iban: "",
+        bank_bic: "",
+        exp_month: null,
+        exp_year: null,
+        limit: "",
+      };
+      currentCardId.value = null;
+    }
+  } catch (error) {
+    console.error("Error loading card:", error);
+  } finally {
+    cardLoading.value = false;
+  }
+};
+
+const closeCardModal = () => {
+  showCardModal.value = false;
+  viewingCardClient.value = null;
+  currentCardId.value = null;
+  cardViewData.value = {
+    bank_name: "",
+    full_name: "",
+    card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
+    exp_month: null,
+    exp_year: null,
+    limit: "",
+  };
+  cardViewErrors.value = {};
+};
+
+const formatCardNumber = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  return digits.match(/.{1,4}/g)?.join(" ") || digits;
+};
+
+const validateCardViewData = () => {
+  cardViewErrors.value = {};
+  let isValid = true;
+
+  if (!cardViewData.value.bank_name || cardViewData.value.bank_name.trim() === "") {
+    cardViewErrors.value.bank_name = "Bank name is required";
+    isValid = false;
+  }
+
+  if (!cardViewData.value.full_name || cardViewData.value.full_name.trim() === "") {
+    cardViewErrors.value.full_name = "Full name is required";
+    isValid = false;
+  }
+
+  if (!cardViewData.value.card_number || cardViewData.value.card_number.trim() === "") {
+    cardViewErrors.value.card_number = "Card number is required";
+    isValid = false;
+  } else {
+    const digits = cardViewData.value.card_number.replace(/\D/g, "");
+    if (digits.length < 13 || digits.length > 19) {
+      cardViewErrors.value.card_number = "Card number must be 13-19 digits";
+      isValid = false;
+    }
+  }
+
+  if (!cardViewData.value.cvv || cardViewData.value.cvv.trim() === "") {
+    cardViewErrors.value.cvv = "CVV is required";
+    isValid = false;
+  } else {
+    const digits = cardViewData.value.cvv.replace(/\D/g, "");
+    if (digits.length !== 3 && digits.length !== 4) {
+      cardViewErrors.value.cvv = "CVV must be 3 or 4 digits";
+      isValid = false;
+    }
+  }
+
+  if (cardViewData.value.exp_month === null || cardViewData.value.exp_month < 1 || cardViewData.value.exp_month > 12) {
+    cardViewErrors.value.exp_month = "Expiration month must be 1-12";
+    isValid = false;
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (cardViewData.value.exp_year === null || cardViewData.value.exp_year < currentYear) {
+    cardViewErrors.value.exp_year = "Expiration year must be current or future year";
+    isValid = false;
+  }
+
+  return isValid;
+};
+
+const saveCard = async () => {
+  if (!validateCardViewData()) {
+    return;
+  }
+
+  cardSaving.value = true;
+  try {
+    const cardNumberDigits = cardViewData.value.card_number.replace(/\D/g, "");
+    const cvvDigits = cardViewData.value.cvv.replace(/\D/g, "");
+    
+    const cardPayload: any = {
+      bank_name: cardViewData.value.bank_name,
+      full_name: cardViewData.value.full_name,
+      card_number: cardNumberDigits,
+      cvv: cvvDigits,
+      iban: cardViewData.value.iban || "",
+      bank_bic: cardViewData.value.bank_bic || "",
+      exp_month: cardViewData.value.exp_month,
+      exp_year: cardViewData.value.exp_year,
+      limit: cardViewData.value.limit || "0",
+    };
+
+    let result;
+    if (currentCardId.value) {
+      // Update existing card
+      result = await appStore.staffUpdateCard(currentCardId.value, cardPayload);
+    } else {
+      // Create new card
+      cardPayload.to_client = viewingCardClient.value.id;
+      result = await appStore.staffCreateCard(cardPayload);
+    }
+
+    if (result.ok) {
+      notificationStore.showNotification({
+        type: "success",
+        message: currentCardId.value ? "Card updated successfully" : "Card created successfully"
+      });
+      closeCardModal();
+      await loadCardRequests();
+    } else {
+      if (result.data) {
+        cardViewErrors.value = result.data;
+      }
+    }
+  } catch (error) {
+    console.error("Error saving card:", error);
+  } finally {
+    cardSaving.value = false;
+  }
+};
+
 const getDocumentUrl = (filePath: string) => {
   if (!filePath) return "";
   // If already a full URL, return as is
@@ -450,69 +648,80 @@ onMounted(() => {
       </div>
 
       <div v-else class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full min-w-[1200px]">
           <thead class="bg-[#F7FBFF] border-b border-black/10">
             <tr>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.id') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.clientName') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.email') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.phone') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.documentStatus') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.cardStatus') }}</th>
-              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.document') }}</th>
-              <th class="px-6 py-4 text-right text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.table.actions') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-16">{{ t('cardRequests.table.id') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-40">{{ t('cardRequests.table.clientName') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-48">{{ t('cardRequests.table.email') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-32">{{ t('cardRequests.table.phone') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-36">{{ t('cardRequests.table.documentStatus') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-32">{{ t('cardRequests.table.cardStatus') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-24">{{ t('cardRequests.table.document') }}</th>
+              <th class="px-4 py-4 text-left text-sm font-semibold text-[#0B2A3C] w-24">{{ t('cardRequests.table.card') }}</th>
+              <th class="px-4 py-4 text-right text-sm font-semibold text-[#0B2A3C] w-40">{{ t('cardRequests.table.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-black/5">
             <tr v-for="client in cardRequests" :key="client.id" class="hover:bg-[#F7FBFF]/50">
-              <td class="px-6 py-4 text-sm text-[#0B2A3C]">{{ client.id }}</td>
-              <td class="px-6 py-4 text-sm text-[#0B2A3C]">
+              <td class="px-4 py-4 text-sm text-[#0B2A3C]">{{ client.id }}</td>
+              <td class="px-4 py-4 text-sm text-[#0B2A3C] truncate">
                 {{ `${client.first_name || ''} ${client.last_name || ''}`.trim() || '—' }}
               </td>
-              <td class="px-6 py-4 text-sm text-[#0B2A3C]">{{ client.email || '—' }}</td>
-              <td class="px-6 py-4 text-sm text-[#0B2A3C]">{{ client.phone || '—' }}</td>
-              <td class="px-6 py-4">
+              <td class="px-4 py-4 text-sm text-[#0B2A3C] truncate">{{ client.email || '—' }}</td>
+              <td class="px-4 py-4 text-sm text-[#0B2A3C]">{{ client.phone || '—' }}</td>
+              <td class="px-4 py-4">
                 <span
                   v-if="getDocumentForClient(client.id)"
-                  class="px-3 py-1 rounded-full text-xs font-semibold"
+                  class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                   :class="getDocumentStatusBadgeClass(getDocumentForClient(client.id).status)"
                 >
                   {{ getDocumentForClient(client.id).status }}
                 </span>
                 <span v-else class="text-sm text-[#6B7E8B]">{{ t('cardRequests.table.noDocument') }}</span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-4 py-4">
                 <span
                   v-if="client.card_status"
-                  class="px-3 py-1 rounded-full text-xs font-semibold"
+                  class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                   :class="getCardStatusBadgeClass(client.card_status)"
                 >
                   {{ client.card_status }}
                 </span>
                 <span v-else class="text-sm text-[#6B7E8B]">—</span>
               </td>
-              <td class="px-6 py-4">
+              <td class="px-4 py-4">
                 <div class="flex items-center gap-2">
                   <button
                     v-if="getDocumentForClient(client.id)"
                     @click="openDocumentViewer(client)"
-                    class="px-3 py-1.5 text-sm text-[#006AC7] hover:bg-[#E8F3FF] rounded-lg transition"
+                    class="px-2 py-1 text-xs text-[#006AC7] hover:bg-[#E8F3FF] rounded-lg transition whitespace-nowrap"
                   >
                     {{ t('cardRequests.actions.view') }}
                   </button>
                   <span v-else class="text-sm text-[#6B7E8B]">{{ t('common.dash') }}</span>
                 </div>
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="px-4 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="openCardModal(client)"
+                    class="px-2 py-1 text-xs text-[#0E6B3B] hover:bg-[#DDF7E9] rounded-lg transition whitespace-nowrap"
+                  >
+                    {{ t('cardRequests.actions.viewCard') }}
+                  </button>
+                </div>
+              </td>
+              <td class="px-4 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
                     v-if="getDocumentForClient(client.id)"
                     @click="openReviewModal(client)"
-                    class="px-3 py-1.5 text-sm bg-[#006AC7] text-white rounded-lg hover:bg-[#0055A3] transition"
+                    class="px-2 py-1 text-xs whitespace-nowrap bg-[#006AC7] text-white rounded-lg hover:bg-[#0055A3] transition"
                   >
                     {{ t('cardRequests.actions.reviewProcess') }}
                   </button>
-                  <span v-else class="text-sm text-[#6B7E8B]">
+                  <span v-else class="text-xs text-[#6B7E8B]">
                     {{ t('cardRequests.table.noDocument') }}
                   </span>
                 </div>
@@ -556,33 +765,134 @@ onMounted(() => {
             <p class="text-sm text-[#6B7E8B]">{{ t('cardRequests.documentViewer.uploaded') }}: {{ new Date(selectedDocument.uploaded_at).toLocaleString() }}</p>
           </div>
 
-          <div class="border border-black/10 rounded-xl overflow-hidden">
-            <div v-if="selectedDocument.file" class="w-full">
-              <!-- For images -->
-              <img
-                v-if="isImageFile(selectedDocument.file)"
-                :src="getDocumentUrl(selectedDocument.file)"
-                :alt="t('cardRequests.documentViewer.title')"
-                class="w-full h-auto max-h-[600px] object-contain"
-              />
-              <!-- For PDF and other files -->
-              <iframe
-                v-else
-                :src="getDocumentUrl(selectedDocument.file)"
-                class="w-full h-[600px]"
-                frameborder="0"
-              ></iframe>
-              <div class="p-4 border-t border-black/10 bg-[#F7FBFF]">
-                <a
-                  :href="getDocumentUrl(selectedDocument.file)"
-                  target="_blank"
-                  class="text-[#006AC7] hover:underline text-sm font-semibold"
-                >
-                  {{ t('cardRequests.documentViewer.openInNewTab') }}
-                </a>
+          <div class="space-y-6">
+            <!-- Front Side -->
+            <div v-if="selectedDocument.front_side" class="border border-black/10 rounded-xl overflow-hidden">
+              <div class="p-3 bg-[#F7FBFF] border-b border-black/10">
+                <h3 class="text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.documentViewer.frontSide') }}</h3>
+              </div>
+              <div class="w-full">
+                <!-- For images -->
+                <img
+                  v-if="isImageFile(selectedDocument.front_side)"
+                  :src="getDocumentUrl(selectedDocument.front_side)"
+                  :alt="t('cardRequests.documentViewer.frontSide')"
+                  class="w-full h-auto max-h-[600px] object-contain"
+                />
+                <!-- For PDF and other files -->
+                <iframe
+                  v-else
+                  :src="getDocumentUrl(selectedDocument.front_side)"
+                  class="w-full h-[600px]"
+                  frameborder="0"
+                ></iframe>
+                <div class="p-4 border-t border-black/10 bg-[#F7FBFF]">
+                  <a
+                    :href="getDocumentUrl(selectedDocument.front_side)"
+                    target="_blank"
+                    class="text-[#006AC7] hover:underline text-sm font-semibold"
+                  >
+                    {{ t('cardRequests.documentViewer.openInNewTab') }}
+                  </a>
+                </div>
               </div>
             </div>
-            <div v-else class="p-8 text-center text-[#6B7E8B]">
+
+            <!-- Back Side -->
+            <div v-if="selectedDocument.back_side" class="border border-black/10 rounded-xl overflow-hidden">
+              <div class="p-3 bg-[#F7FBFF] border-b border-black/10">
+                <h3 class="text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.documentViewer.backSide') }}</h3>
+              </div>
+              <div class="w-full">
+                <!-- For images -->
+                <img
+                  v-if="isImageFile(selectedDocument.back_side)"
+                  :src="getDocumentUrl(selectedDocument.back_side)"
+                  :alt="t('cardRequests.documentViewer.backSide')"
+                  class="w-full h-auto max-h-[600px] object-contain"
+                />
+                <!-- For PDF and other files -->
+                <iframe
+                  v-else
+                  :src="getDocumentUrl(selectedDocument.back_side)"
+                  class="w-full h-[600px]"
+                  frameborder="0"
+                ></iframe>
+                <div class="p-4 border-t border-black/10 bg-[#F7FBFF]">
+                  <a
+                    :href="getDocumentUrl(selectedDocument.back_side)"
+                    target="_blank"
+                    class="text-[#006AC7] hover:underline text-sm font-semibold"
+                  >
+                    {{ t('cardRequests.documentViewer.openInNewTab') }}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bank Statement -->
+            <div v-if="selectedDocument.bank_statement" class="border border-black/10 rounded-xl overflow-hidden">
+              <div class="p-3 bg-[#F7FBFF] border-b border-black/10">
+                <h3 class="text-sm font-semibold text-[#0B2A3C]">{{ t('cardRequests.documentViewer.bankStatement') }}</h3>
+              </div>
+              <div class="w-full">
+                <!-- For images -->
+                <img
+                  v-if="isImageFile(selectedDocument.bank_statement)"
+                  :src="getDocumentUrl(selectedDocument.bank_statement)"
+                  :alt="t('cardRequests.documentViewer.bankStatement')"
+                  class="w-full h-auto max-h-[600px] object-contain"
+                />
+                <!-- For PDF and other files -->
+                <iframe
+                  v-else
+                  :src="getDocumentUrl(selectedDocument.bank_statement)"
+                  class="w-full h-[600px]"
+                  frameborder="0"
+                ></iframe>
+                <div class="p-4 border-t border-black/10 bg-[#F7FBFF]">
+                  <a
+                    :href="getDocumentUrl(selectedDocument.bank_statement)"
+                    target="_blank"
+                    class="text-[#006AC7] hover:underline text-sm font-semibold"
+                  >
+                    {{ t('cardRequests.documentViewer.openInNewTab') }}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legacy file field (for backward compatibility) -->
+            <div v-if="selectedDocument.file && !selectedDocument.front_side && !selectedDocument.back_side && !selectedDocument.bank_statement" class="border border-black/10 rounded-xl overflow-hidden">
+              <div class="w-full">
+                <!-- For images -->
+                <img
+                  v-if="isImageFile(selectedDocument.file)"
+                  :src="getDocumentUrl(selectedDocument.file)"
+                  :alt="t('cardRequests.documentViewer.title')"
+                  class="w-full h-auto max-h-[600px] object-contain"
+                />
+                <!-- For PDF and other files -->
+                <iframe
+                  v-else
+                  :src="getDocumentUrl(selectedDocument.file)"
+                  class="w-full h-[600px]"
+                  frameborder="0"
+                ></iframe>
+                <div class="p-4 border-t border-black/10 bg-[#F7FBFF]">
+                  <a
+                    :href="getDocumentUrl(selectedDocument.file)"
+                    target="_blank"
+                    class="text-[#006AC7] hover:underline text-sm font-semibold"
+                  >
+                    {{ t('cardRequests.documentViewer.openInNewTab') }}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <!-- No files available -->
+            <div v-if="!selectedDocument.file && !selectedDocument.front_side && !selectedDocument.back_side && !selectedDocument.bank_statement" class="p-8 text-center text-[#6B7E8B] border border-black/10 rounded-xl">
               {{ t('cardRequests.documentViewer.fileNotAvailable') }}
             </div>
           </div>
@@ -960,6 +1270,168 @@ onMounted(() => {
             >
               <span v-if="loading">{{ t('cardRequests.createCardModal.creating') }}</span>
               <span v-else>{{ t('cardRequests.createCardModal.createCard') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Card View/Edit Modal -->
+    <div
+      v-if="showCardModal && viewingCardClient"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="closeCardModal"
+    >
+      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-black/10">
+          <h2 class="text-[24px] font-bold text-[#0B2A3C]">{{ currentCardId ? 'Edit Card' : 'View Card' }}</h2>
+          <p class="text-sm text-[#6B7E8B] mt-1">
+            {{ `${viewingCardClient.first_name || ''} ${viewingCardClient.last_name || ''}`.trim() || viewingCardClient.email || `ID: ${viewingCardClient.id}` }}
+          </p>
+        </div>
+
+        <div v-if="cardLoading" class="p-6 text-center text-[#6B7E8B]">
+          {{ t('common.loading') || 'Loading...' }}
+        </div>
+
+        <form v-else @submit.prevent="saveCard" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Bank Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bankName') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardViewData.bank_name"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :class="{ 'border-[#CC0000]': cardViewErrors.bank_name }"
+              />
+              <p v-if="cardViewErrors.bank_name" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.bank_name }}</p>
+            </div>
+
+            <!-- Full Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.fullName') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardViewData.full_name"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :class="{ 'border-[#CC0000]': cardViewErrors.full_name }"
+              />
+              <p v-if="cardViewErrors.full_name" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.full_name }}</p>
+            </div>
+
+            <!-- Card Number -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.cardNumber') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardViewData.card_number"
+                @input="cardViewData.card_number = formatCardNumber(cardViewData.card_number)"
+                type="text"
+                maxlength="19"
+                placeholder="0000 0000 0000 0000"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                :class="{ 'border-[#CC0000]': cardViewErrors.card_number }"
+              />
+              <p v-if="cardViewErrors.card_number" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.card_number }}</p>
+            </div>
+
+            <!-- CVV -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.cvv') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardViewData.cvv"
+                type="text"
+                maxlength="4"
+                placeholder="000"
+                @input="cardViewData.cvv = cardViewData.cvv.replace(/\D/g, '').slice(0, 4)"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                :class="{ 'border-[#CC0000]': cardViewErrors.cvv }"
+              />
+              <p v-if="cardViewErrors.cvv" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.cvv }}</p>
+            </div>
+
+            <!-- IBAN -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.iban') }}</label>
+              <input
+                v-model="cardViewData.iban"
+                type="text"
+                @input="cardViewData.iban = cardViewData.iban.toUpperCase()"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                :class="{ 'border-[#CC0000]': cardViewErrors.iban }"
+              />
+              <p v-if="cardViewErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.iban }}</p>
+            </div>
+
+            <!-- BIC -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bic') }}</label>
+              <input
+                v-model="cardViewData.bank_bic"
+                type="text"
+                @input="cardViewData.bank_bic = cardViewData.bank_bic.toUpperCase()"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
+                :class="{ 'border-[#CC0000]': cardViewErrors.bank_bic }"
+              />
+              <p v-if="cardViewErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.bank_bic }}</p>
+            </div>
+
+            <!-- Exp Month -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.expMonth') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model.number="cardViewData.exp_month"
+                type="number"
+                min="1"
+                max="12"
+                placeholder="12"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :class="{ 'border-[#CC0000]': cardViewErrors.exp_month }"
+              />
+              <p v-if="cardViewErrors.exp_month" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.exp_month }}</p>
+            </div>
+
+            <!-- Exp Year -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.expYear') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model.number="cardViewData.exp_year"
+                type="number"
+                :min="new Date().getFullYear()"
+                placeholder="2026"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :class="{ 'border-[#CC0000]': cardViewErrors.exp_year }"
+              />
+              <p v-if="cardViewErrors.exp_year" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.exp_year }}</p>
+            </div>
+
+            <!-- Limit -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.limit') }}</label>
+              <input
+                v-model="cardViewData.limit"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :class="{ 'border-[#CC0000]': cardViewErrors.limit }"
+              />
+              <p v-if="cardViewErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.limit }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-black/10">
+            <button
+              type="button"
+              @click="closeCardModal"
+              class="px-6 py-2.5 rounded-xl border border-black/10 text-[#0B2A3C] font-semibold hover:bg-black/5 transition"
+            >
+              {{ t('cardRequests.createCardModal.cancel') || 'Cancel' }}
+            </button>
+            <button
+              type="submit"
+              :disabled="cardSaving"
+              class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ cardSaving ? (t('cardRequests.createCardModal.creating') || 'Saving...') : (currentCardId ? 'Update Card' : 'Create Card') }}
             </button>
           </div>
         </form>

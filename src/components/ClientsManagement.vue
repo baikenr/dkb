@@ -674,6 +674,7 @@ onMounted(() => {
               <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('clientsManagement.table.login') }}</th>
               <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('clientsManagement.table.cardStatus') }}</th>
               <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('clientsManagement.table.documentStatus') }}</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-[#0B2A3C]">{{ t('clientsManagement.table.card') || 'Card' }}</th>
               <th class="px-6 py-4 text-right text-sm font-semibold text-[#0B2A3C]">{{ t('clientsManagement.table.actions') }}</th>
             </tr>
           </thead>
@@ -709,6 +710,16 @@ onMounted(() => {
                   {{ client.document_status }}
                 </span>
                 <span v-else class="text-sm text-[#6B7E8B]">—</span>
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <button
+                    @click="openCardModal(client)"
+                    class="px-3 py-1.5 text-sm text-[#0E6B3B] hover:bg-[#DDF7E9] rounded-lg transition"
+                  >
+                    {{ t('clientsManagement.actions.viewCard') }}
+                  </button>
+                </div>
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">

@@ -95,38 +95,33 @@ const submitAllDocuments = async () => {
 
   isUploading.value = true;
   uploadError.value.general = "";
+  uploadError.value.frontSide = "";
+  uploadError.value.backSide = "";
+  uploadError.value.bankStatement = "";
 
   try {
-    // Отправляем файлы последовательно
-    // Порядок: frontSide, backSide, bankStatement
-    // Последний файл (bankStatement) будет сохранен в бэкенде
-    const filesToUpload = [
-      { file: selectedFiles.value.frontSide!, type: 'frontSide' },
-      { file: selectedFiles.value.backSide!, type: 'backSide' },
-      { file: selectedFiles.value.bankStatement!, type: 'bankStatement' }
-    ];
-
-    for (const { file, type } of filesToUpload) {
-      uploadError.value[type] = "";
-      
-      let r;
-      if (clientDocument.value) {
-        if (typeof appStore.clientUpdateDocument !== 'function') {
-          console.error('clientUpdateDocument method not found in store');
-          uploadError.value[type] = "Update method not available. Please refresh the page.";
-          isUploading.value = false;
-          return;
-        }
-        r = await appStore.clientUpdateDocument(file);
-      } else {
-        r = await appStore.clientUploadDocument(file);
-      }
-      
-      if (!r?.ok) {
-        uploadError.value[type] = t('clientMain.uploadFailed');
+    // Отправляем все 3 файла одним запросом
+    const frontSide = selectedFiles.value.frontSide!;
+    const backSide = selectedFiles.value.backSide!;
+    const bankStatement = selectedFiles.value.bankStatement!;
+    
+    let r;
+    if (clientDocument.value) {
+      if (typeof appStore.clientUpdateDocument !== 'function') {
+        console.error('clientUpdateDocument method not found in store');
+        uploadError.value.general = "Update method not available. Please refresh the page.";
         isUploading.value = false;
         return;
       }
+      r = await appStore.clientUpdateDocument(frontSide, backSide, bankStatement);
+    } else {
+      r = await appStore.clientUploadDocument(frontSide, backSide, bankStatement);
+    }
+    
+    if (!r?.ok) {
+      uploadError.value.general = t('clientMain.uploadFailed');
+      isUploading.value = false;
+      return;
     }
 
     // После успешной загрузки всех файлов очищаем выбранные файлы и обновляем документ
@@ -836,10 +831,10 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 <div class="text-[15px] text-[#B42318]">{{ requestCardError }}</div>
             </div>
 
-              <!-- Step-by-Step Process -->
-              <div class="space-y-4">
-                <!-- Step 1: Upload Front Side -->
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+              <!-- Documents Upload Container -->
+              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                <div class="space-y-6">
+                  <!-- Step 1: Upload Front Side -->
                   <div class="flex items-start gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
@@ -857,8 +852,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         {{ t('clientMain.documentFields.frontSideDescription') }}
                       </p>
 
-                      <!-- Upload Button -->
-                      <div class="flex items-center gap-4">
+                      <!-- File Selection -->
+                      <div class="space-y-3">
                         <input
                           :ref="el => fileInputRefs.frontSide = el as HTMLInputElement"
                           type="file"
@@ -880,16 +875,37 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           </svg>
                           <span>{{ t('clientMain.upload') }}</span>
                         </button>
+                        <div v-if="selectedFiles.frontSide" class="flex items-center gap-3 p-3 bg-[#F0FDF4] border border-[#0E6B3B]/20 rounded-xl">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
+                          <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.frontSide.name }}</span>
+                          <button
+                            @click="removeFile('frontSide')"
+                            class="text-[#B42318] hover:text-[#B42318]/80 transition"
+                            :disabled="isUploading"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
                         <p v-if="uploadError.frontSide" class="text-[15px] text-[#B42318]">
                           {{ uploadError.frontSide }}
                         </p>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Step 2: Upload Back Side -->
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                  <!-- Divider -->
+                  <div class="border-t border-black/10"></div>
+
+                  <!-- Step 2: Upload Back Side -->
                   <div class="flex items-start gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
@@ -956,10 +972,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Step 3: Upload Bank Statement -->
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                  <!-- Divider -->
+                  <div class="border-t border-black/10"></div>
+
+                  <!-- Step 3: Upload Bank Statement -->
                   <div class="flex items-start gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
@@ -1026,11 +1043,12 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Submit All Documents Button -->
-                <div v-if="canSubmit || isUploading" class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                  <div class="flex items-center justify-between">
+                  <!-- Divider -->
+                  <div class="border-t border-black/10"></div>
+
+                  <!-- Submit All Documents Button -->
+                  <div class="flex items-center justify-between pt-2">
                     <div>
                       <h3 class="text-[20px] font-bold text-[#0B2A3C] mb-2">
                         {{ t('clientMain.submitAllDocuments') }}
@@ -1060,17 +1078,18 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                     {{ uploadError.general }}
                   </p>
                 </div>
+              </div>
 
-                <!-- Step 2: Document Review -->
-                <div 
-                  class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
-                  :class="{
-                    'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved',
-                    'border-[#FFF3CD] bg-[#FFFBEB]': clientDocument?.status === 'pending',
-                    'border-black/10': !clientDocument || clientDocument?.status === 'rejected',
-                  }"
-                >
-                  <div class="flex items-start gap-6">
+              <!-- Step 2: Document Review -->
+              <div 
+                class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
+                :class="{
+                  'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved',
+                  'border-[#FFF3CD] bg-[#FFFBEB]': clientDocument?.status === 'pending',
+                  'border-black/10': !clientDocument || clientDocument?.status === 'rejected',
+                }"
+              >
+                <div class="flex items-start gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
                       <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
@@ -1121,92 +1140,91 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Step 3: Request Card -->
-                <div 
-                  class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
-                  :class="{
-                    'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved' && (me?.client_bank_status === 'received' || me?.client_bank_status === 'pending'),
-                    'border-black/10': !clientDocument || clientDocument?.status !== 'approved',
-                  }"
-                >
-                  <div class="flex items-start gap-6">
-                    <!-- Step Number -->
-                    <div class="flex-shrink-0">
-                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
-                        :class="{
-                          'bg-[#E5E7EB] text-[#6B7280]': !clientDocument || clientDocument.status !== 'approved',
-                          'bg-[#006AC7] text-white': clientDocument?.status === 'approved' && canRequestCard && me?.client_bank_status !== 'pending' && me?.client_bank_status !== 'received',
-                          'bg-[#DDF7E9] text-[#0E6B3B]': clientDocument?.status === 'approved' && (me?.client_bank_status === 'pending' || me?.client_bank_status === 'received'),
-                        }"
+              <!-- Step 3: Request Card -->
+              <div 
+                class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
+                :class="{
+                  'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved' && (me?.client_bank_status === 'received' || me?.client_bank_status === 'pending'),
+                  'border-black/10': !clientDocument || clientDocument?.status !== 'approved',
+                }"
+              >
+                <div class="flex items-start gap-6">
+                  <!-- Step Number -->
+                  <div class="flex-shrink-0">
+                    <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
+                      :class="{
+                        'bg-[#E5E7EB] text-[#6B7280]': !clientDocument || clientDocument.status !== 'approved',
+                        'bg-[#006AC7] text-white': clientDocument?.status === 'approved' && canRequestCard && me?.client_bank_status !== 'pending' && me?.client_bank_status !== 'received',
+                        'bg-[#DDF7E9] text-[#0E6B3B]': clientDocument?.status === 'approved' && (me?.client_bank_status === 'pending' || me?.client_bank_status === 'received'),
+                      }"
+                    >
+                      <span v-if="!clientDocument || clientDocument.status !== 'approved'">3</span>
+                      <svg v-else-if="me?.client_bank_status === 'pending' || me?.client_bank_status === 'received'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span v-else>3</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Step Content -->
+                  <div class="flex-1">
+                    <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                      {{ t('clientMain.documentSteps.step3Title') }}
+                    </h3>
+                    <p class="text-[15px] text-[#6B7E8B] mb-6">
+                      <template v-if="!clientDocument || clientDocument.status !== 'approved'">
+                        {{ t('clientMain.documentSteps.step3DescriptionWaiting') }}
+                      </template>
+                      <template v-else-if="me?.client_bank_status === 'pending'">
+                        {{ t('clientMain.documentSteps.step3DescriptionPending') }}
+                      </template>
+                      <template v-else-if="me?.client_bank_status === 'received'">
+                        {{ t('clientMain.documentSteps.step3DescriptionReceived') }}
+                      </template>
+                      <template v-else>
+                        {{ t('clientMain.documentSteps.step3DescriptionReady') }}
+                      </template>
+                    </p>
+
+                    <!-- Request Card Button -->
+                    <div v-if="clientDocument?.status === 'approved'">
+                      <button
+                        v-if="canRequestCard"
+                        :disabled="requestCardLoading"
+                        @click="requestCard"
+                        class="px-8 py-4 rounded-xl font-semibold text-[16px] transition
+                          bg-[#006AC7] text-white hover:bg-[#0055A3]
+                          disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
                       >
-                        <span v-if="!clientDocument || clientDocument.status !== 'approved'">3</span>
-                        <svg v-else-if="me?.client_bank_status === 'pending' || me?.client_bank_status === 'received'" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <svg v-if="!requestCardLoading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                          <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                        <svg v-else class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                        </svg>
+                        <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
+                        <span v-else>{{ t('clientMain.requestCard') }}</span>
+                      </button>
+                      <div v-else-if="me?.client_bank_status === 'pending'" class="flex items-center gap-3 px-6 py-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span class="text-[15px] font-semibold text-[#7A5D00]">{{ t('clientMain.requestPending') }}</span>
+                      </div>
+                      <div v-else-if="me?.client_bank_status === 'received'" class="flex items-center gap-3 px-6 py-4 bg-[#DDF7E9] border border-[#0E6B3B]/20 rounded-xl">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        <span v-else>3</span>
-                      </div>
-                    </div>
-                    
-                    <!-- Step Content -->
-                    <div class="flex-1">
-                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
-                        {{ t('clientMain.documentSteps.step3Title') }}
-                      </h3>
-                      <p class="text-[15px] text-[#6B7E8B] mb-6">
-                        <template v-if="!clientDocument || clientDocument.status !== 'approved'">
-                          {{ t('clientMain.documentSteps.step3DescriptionWaiting') }}
-                        </template>
-                        <template v-else-if="me?.client_bank_status === 'pending'">
-                          {{ t('clientMain.documentSteps.step3DescriptionPending') }}
-                        </template>
-                        <template v-else-if="me?.client_bank_status === 'received'">
-                          {{ t('clientMain.documentSteps.step3DescriptionReceived') }}
-                        </template>
-                        <template v-else>
-                          {{ t('clientMain.documentSteps.step3DescriptionReady') }}
-                        </template>
-                      </p>
-
-                      <!-- Request Card Button -->
-                      <div v-if="clientDocument?.status === 'approved'">
-                        <button
-                          v-if="canRequestCard"
-                          :disabled="requestCardLoading"
-                  @click="requestCard"
-                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition
-                            bg-[#006AC7] text-white hover:bg-[#0055A3]
-                            disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
-                >
-                          <svg v-if="!requestCardLoading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                            <line x1="1" y1="10" x2="23" y2="10"></line>
-                          </svg>
-                          <svg v-else class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-                          </svg>
-                  <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
-                  <span v-else>{{ t('clientMain.requestCard') }}</span>
-                </button>
-                        <div v-else-if="me?.client_bank_status === 'pending'" class="flex items-center gap-3 px-6 py-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          <span class="text-[15px] font-semibold text-[#7A5D00]">{{ t('clientMain.requestPending') }}</span>
-                        </div>
-                        <div v-else-if="me?.client_bank_status === 'received'" class="flex items-center gap-3 px-6 py-4 bg-[#DDF7E9] border border-[#0E6B3B]/20 rounded-xl">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <span class="text-[15px] font-semibold text-[#0E6B3B]">{{ t('clientMain.documentSteps.cardReceived') }}</span>
-                        </div>
+                        <span class="text-[15px] font-semibold text-[#0E6B3B]">{{ t('clientMain.documentSteps.cardReceived') }}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
           </template>
 
           <!-- FAQ Page -->

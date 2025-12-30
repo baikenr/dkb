@@ -255,10 +255,12 @@ export const useAppStore = defineStore("app", {
       }
     },
 
-    async clientUploadDocument(file) {
+    async clientUploadDocument(frontSide, backSide, bankStatement) {
       try {
         const form = new FormData();
-        form.append("file", file);
+        form.append("front_side", frontSide);
+        form.append("back_side", backSide);
+        form.append("bank_statement", bankStatement);
 
         const response = await axios.post(this.base_url + "/client/documents/", form, {
           headers: {
@@ -274,10 +276,12 @@ export const useAppStore = defineStore("app", {
       }
     },
 
-    async clientUpdateDocument(file) {
+    async clientUpdateDocument(frontSide, backSide, bankStatement) {
       try {
         const form = new FormData();
-        form.append("file", file);
+        form.append("front_side", frontSide);
+        form.append("back_side", backSide);
+        form.append("bank_statement", bankStatement);
 
         const response = await axios.patch(this.base_url + "/client/documents/", form, {
           headers: {

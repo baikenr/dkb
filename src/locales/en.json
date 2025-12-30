@@ -194,6 +194,7 @@
     },
     "actions": {
       "edit": "Edit",
+      "viewCard": "Review",
       "viewEditCard": "View/Edit Card",
       "resetPassword": "Reset Password",
       "delete": "Delete"
@@ -278,11 +279,13 @@
       "documentStatus": "Document Status",
       "cardStatus": "Card Status",
       "document": "Document",
+      "card": "Card",
       "actions": "Actions",
       "noDocument": "No document"
     },
     "actions": {
       "view": "View",
+      "viewCard": "Review",
       "reviewProcess": "Review & Process",
       "createCard": "Create Card"
     },
@@ -292,7 +295,10 @@
       "status": "Status",
       "uploaded": "Uploaded",
       "openInNewTab": "Open in new tab",
-      "fileNotAvailable": "Document file not available"
+      "fileNotAvailable": "Document file not available",
+      "frontSide": "Front Side",
+      "backSide": "Back Side",
+      "bankStatement": "Bank Statement"
     },
     "reviewModal": {
       "title": "Review Document",

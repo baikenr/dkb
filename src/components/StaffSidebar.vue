@@ -80,14 +80,14 @@ const go = async (to: string) => {
         :key="it.key"
         class="w-full flex items-center rounded-xl mb-2 transition-all duration-300"
         :class="[
-          sidebarOpen ? 'gap-3 py-3' : 'px-3 py-3',
+          sidebarOpen ? 'gap-3 py-3' : 'px-2.5 py-3',
           sidebarOpen ? (isActive(it.to) ? 'px-0' : 'px-0') : '',
           isActive(it.to) ? 'bg-[#E8F3FF] text-[#006AC7]' : 'hover:bg-black/5 text-[#2E4A63]'
         ]"
         @click="go(it.to)"
       >
         <span
-          class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mx-2"
           :class="isActive(it.to) ? 'bg-white' : 'bg-[#F3F7FB]'"
         >
           <!-- Dashboard Icon -->

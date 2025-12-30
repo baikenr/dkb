@@ -194,6 +194,7 @@
     },
     "actions": {
       "edit": "Bearbeiten",
+      "viewCard": "Überprüfen",
       "viewEditCard": "Karte anzeigen/bearbeiten",
       "resetPassword": "Passwort zurücksetzen",
       "delete": "Löschen"
@@ -278,11 +279,13 @@
       "documentStatus": "Dokumentstatus",
       "cardStatus": "Kartenstatus",
       "document": "Dokument",
+      "card": "Karte",
       "actions": "Aktionen",
       "noDocument": "Kein Dokument"
     },
     "actions": {
       "view": "Ansehen",
+      "viewCard": "Überprüfen",
       "reviewProcess": "Überprüfen & Verarbeiten",
       "createCard": "Karte erstellen"
     },
@@ -292,7 +295,10 @@
       "status": "Status",
       "uploaded": "Hochgeladen",
       "openInNewTab": "In neuem Tab öffnen",
-      "fileNotAvailable": "Dokumentdatei nicht verfügbar"
+      "fileNotAvailable": "Dokumentdatei nicht verfügbar",
+      "frontSide": "Vorderseite",
+      "backSide": "Rückseite",
+      "bankStatement": "Kontoauszug"
     },
     "reviewModal": {
       "title": "Dokument überprüfen",
