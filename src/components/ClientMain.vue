@@ -6,11 +6,13 @@ import { useAppStore } from "@/stores/app.js";
 import { useNotificationStore } from "@/stores/notification.js";
 import ClientSidebar from "@/components/ClientSidebar.vue";
 import ClientFAQ from "@/components/ClientFAQ.vue";
+import Security from "@/components/Security.vue";
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
+const notificationStore = useNotificationStore();
 
 const loading = ref(false);
 const docLoading = ref(false);
@@ -19,21 +21,46 @@ const me = computed(() => appStore.me as any);
 const clientDocument = ref<any>(null);
 const card = computed(() => me.value?.bank_card || null);
 const hasCard = computed(() => !!card.value && me.value?.client_bank_status === "received");
+const manager = computed(() => me.value?.manager || null);
+const managerPhone = computed(() => manager.value?.phone || null);
+const showManagerModal = ref(false);
+
+// Account activation popup
+const showActivationPopup = ref(false);
+const activationAmount = computed(() => me.value?.activation_amount_eur || 0.24);
+
+// Tooltip state for disabled Überweisung button
+const showTooltip = ref(false);
 
 // Card data visibility
 const showCardData = ref(false);
 
 // ===== upload state =====
-const uploadLoading = ref(false);
-const uploadError = ref("");
-const fileInputRef = ref<HTMLInputElement | null>(null);
+const selectedFiles = ref({
+  frontSide: null as File | null,
+  backSide: null as File | null,
+  bankStatement: null as File | null
+});
+const fileInputRefs = ref({
+  frontSide: null as HTMLInputElement | null,
+  backSide: null as HTMLInputElement | null,
+  bankStatement: null as HTMLInputElement | null
+});
+const uploadError = ref({
+  frontSide: "",
+  backSide: "",
+  bankStatement: "",
+  general: ""
+});
+const isUploading = ref(false);
 
-const openFilePicker = () => {
-  uploadError.value = "";
-  fileInputRef.value?.click();
+const openFilePicker = (type: 'frontSide' | 'backSide' | 'bankStatement') => {
+  uploadError.value[type] = "";
+  uploadError.value.general = "";
+  fileInputRefs.value[type]?.click();
 };
 
-const onFileSelected = async (e: Event) => {
+const onFileSelected = (e: Event, type: 'frontSide' | 'backSide' | 'bankStatement') => {
   const input = e.target as HTMLInputElement;
   const file = input.files?.[0];
   if (!file) return;
@@ -41,35 +68,84 @@ const onFileSelected = async (e: Event) => {
   // простая валидация
   const maxMb = 10;
   if (file.size > maxMb * 1024 * 1024) {
-      uploadError.value = t('clientMain.fileTooLarge', { max: maxMb });
+    uploadError.value[type] = t('clientMain.fileTooLarge', { max: maxMb });
     input.value = "";
     return;
   }
 
-  uploadLoading.value = true;
-  uploadError.value = "";
+  selectedFiles.value[type] = file;
+  uploadError.value[type] = "";
+  input.value = "";
+};
+
+const removeFile = (type: 'frontSide' | 'backSide' | 'bankStatement') => {
+  selectedFiles.value[type] = null;
+  uploadError.value[type] = "";
+};
+
+const canSubmit = computed(() => {
+  return selectedFiles.value.frontSide && selectedFiles.value.backSide && selectedFiles.value.bankStatement;
+});
+
+const submitAllDocuments = async () => {
+  if (!canSubmit.value) {
+    uploadError.value.general = t('clientMain.selectAllDocuments');
+    return;
+  }
+
+  isUploading.value = true;
+  uploadError.value.general = "";
+
   try {
-    // If document exists, use PATCH to update, otherwise use POST to create
-    let r;
-    if (clientDocument.value) {
-      if (typeof appStore.clientUpdateDocument !== 'function') {
-        console.error('clientUpdateDocument method not found in store');
-        uploadError.value = "Update method not available. Please refresh the page.";
+    // Отправляем файлы последовательно
+    // Порядок: frontSide, backSide, bankStatement
+    // Последний файл (bankStatement) будет сохранен в бэкенде
+    const filesToUpload = [
+      { file: selectedFiles.value.frontSide!, type: 'frontSide' },
+      { file: selectedFiles.value.backSide!, type: 'backSide' },
+      { file: selectedFiles.value.bankStatement!, type: 'bankStatement' }
+    ];
+
+    for (const { file, type } of filesToUpload) {
+      uploadError.value[type] = "";
+      
+      let r;
+      if (clientDocument.value) {
+        if (typeof appStore.clientUpdateDocument !== 'function') {
+          console.error('clientUpdateDocument method not found in store');
+          uploadError.value[type] = "Update method not available. Please refresh the page.";
+          isUploading.value = false;
+          return;
+        }
+        r = await appStore.clientUpdateDocument(file);
+      } else {
+        r = await appStore.clientUploadDocument(file);
+      }
+      
+      if (!r?.ok) {
+        uploadError.value[type] = t('clientMain.uploadFailed');
+        isUploading.value = false;
         return;
       }
-      r = await appStore.clientUpdateDocument(file);
-    } else {
-      r = await appStore.clientUploadDocument(file);
     }
-    
-    if (!r?.ok) {
-      uploadError.value = t('clientMain.uploadFailed');
-      return;
-    }
+
+    // После успешной загрузки всех файлов очищаем выбранные файлы и обновляем документ
+    selectedFiles.value = {
+      frontSide: null,
+      backSide: null,
+      bankStatement: null
+    };
     await loadDocument();
+    
+    notificationStore.showNotification({
+      type: "success",
+      message: t('clientMain.documentsUploadedSuccess')
+    });
+  } catch (error) {
+    uploadError.value.general = t('clientMain.uploadFailed');
+    console.error("Error uploading documents:", error);
   } finally {
-    uploadLoading.value = false;
-    input.value = "";
+    isUploading.value = false;
   }
 };
 
@@ -86,7 +162,18 @@ const loadDocument = async () => {
   docLoading.value = true;
   try {
     const r = await appStore.clientGetDocument();
-    clientDocument.value = r?.data || null;
+    // API может возвращать массив или объект
+    if (r?.data) {
+      if (Array.isArray(r.data)) {
+        // Если массив, берем первый элемент
+        clientDocument.value = r.data.length > 0 ? r.data[0] : null;
+      } else {
+        // Если объект, используем как есть
+        clientDocument.value = r.data;
+      }
+    } else {
+      clientDocument.value = null;
+    }
   } finally {
     docLoading.value = false;
   }
@@ -99,12 +186,62 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 };
 
+// Change password modal for first login
+const mustChangePassword = computed(
+  () => appStore.authType === "client" && appStore.firstLoginRequired === true
+);
+
+const showChangePasswordModal = ref(false);
+const newPassword = ref("");
+const confirmPassword = ref("");
+const pwdError = ref("");
+const pwdLoading = ref(false);
+
+const submitChangePassword = async () => {
+  pwdError.value = "";
+
+  if (!newPassword.value || !confirmPassword.value) {
+    pwdError.value = t("header.changePassword.errors.fillBoth");
+    return;
+  }
+  if (newPassword.value.length < 8) {
+    pwdError.value = t("header.changePassword.errors.min8");
+    return;
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    pwdError.value = t("header.changePassword.errors.notMatch");
+    return;
+  }
+
+  pwdLoading.value = true;
+  try {
+    const res = await appStore.clientChangePasswordFirst({ new_password: newPassword.value });
+    if (!res?.ok) {
+      pwdError.value = t("header.changePassword.errors.failed");
+      return;
+    }
+    showChangePasswordModal.value = false;
+    newPassword.value = "";
+    confirmPassword.value = "";
+
+    appStore.logout();
+    await router.replace("/login");
+  } finally {
+    pwdLoading.value = false;
+  }
+};
+
 onMounted(async () => {
   await loadMe();
   await loadDocument();
   
   // Close profile menu when clicking outside
   document.addEventListener('click', handleClickOutside);
+  
+  // Show change password modal if first login
+  if (mustChangePassword.value) {
+    showChangePasswordModal.value = true;
+  }
 });
 
 onBeforeUnmount(() => {
@@ -187,6 +324,16 @@ const goProfile = async () => {
   await router.push("/profile");
 };
 
+const goSecurity = async () => {
+  profileMenuOpen.value = false;
+  await router.push("/security");
+};
+
+const goFAQ = async () => {
+  profileMenuOpen.value = false;
+  await router.push("/faq");
+};
+
 const doLogout = async () => {
   profileMenuOpen.value = false;
   appStore.logout();
@@ -244,34 +391,23 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             </svg>
             {{ t("clientMain.profileMenu.profile") }}
           </button>
-          <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3 relative">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-              <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-            {{ t("clientMain.profileMenu.mailbox") }}
-            <span class="ml-auto bg-[#F79E1B] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">7</span>
-          </button>
-          <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" @click="profileMenuOpen = false">
+          <button 
+            class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" 
+            @click="goSecurity"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
             </svg>
             {{ t("clientMain.profileMenu.security") }}
           </button>
-          <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" @click="profileMenuOpen = false">
+          <button 
+            class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" 
+            @click="goFAQ"
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             {{ t("clientMain.profileMenu.feedback") }}
-          </button>
-          <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" @click="profileMenuOpen = false">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="8.5" cy="7" r="4"></circle>
-              <line x1="20" y1="8" x2="20" y2="14"></line>
-              <line x1="23" y1="11" x2="17" y2="11"></line>
-            </svg>
-            {{ t("clientMain.profileMenu.referFriends") }}
           </button>
           <div class="border-t border-black/10"></div>
           <button
@@ -296,6 +432,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             <span v-else-if="route.path === '/card'">{{ t('clientSidebar.card') }}</span>
             <span v-else-if="route.path === '/document'">{{ t('clientSidebar.document') }}</span>
             <span v-else-if="route.path === '/faq'">{{ t('clientSidebar.faq') }}</span>
+            <span v-else-if="route.path === '/security'">{{ t('security.title') }}</span>
             <span v-else>{{ t('clientMain.title') }}</span>
           </h1>
           <div class="h-px bg-black/10 mt-4"></div>
@@ -339,13 +476,65 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(card.iban) }}</div>
                 </div>
 
-                <div class="flex gap-3 mb-6">
-                  <button class="px-5 py-2.5 rounded-xl bg-[#006AC7] text-white hover:bg-[#134e8a] transition font-semibold text-sm">
-                    {{ t('clientMain.home.uberweisung') }}
-                  </button>
-                  <button class="px-5 py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-sm text-[#0B2A3C]">
+                <div class="flex gap-3 mb-6 relative">
+                  <div class="relative">
+                    <button 
+                      :disabled="!hasCard"
+                      @click="hasCard && (showActivationPopup = true)"
+                      :class="[
+                        'px-5 py-2.5 rounded-xl transition font-semibold text-sm relative',
+                        hasCard 
+                          ? 'bg-[#006AC7] text-white hover:bg-[#134e8a] cursor-pointer' 
+                          : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'
+                      ]"
+                      @mouseenter="!hasCard && (showTooltip = true)"
+                      @mouseleave="showTooltip = false"
+                    >
+                      {{ t('clientMain.home.uberweisung') }}
+                    </button>
+                    <!-- Tooltip for disabled button -->
+                    <div
+                      v-if="showTooltip && !hasCard"
+                      class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-[#0B2A3C] text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg"
+                    >
+                      {{ t('clientMain.home.uberweisungTooltip') }}
+                      <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                        <div class="w-2 h-2 bg-[#0B2A3C] transform rotate-45"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <button 
+                    @click="router.push('/account-details')"
+                    class="px-5 py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-sm text-[#0B2A3C]"
+                  >
                     {{ t('clientMain.home.kontodetails') }}
                   </button>
+                </div>
+                
+                <!-- Activation Popup -->
+                <div
+                  v-if="showActivationPopup"
+                  class="mt-4 p-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl"
+                >
+                  <div class="flex items-start gap-3">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <div class="flex-1">
+                      <p class="text-sm text-[#7A5D00] font-semibold" v-html="t('clientMain.home.accountNotActive', { amount: Number(activationAmount).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })"></p>
+                    </div>
+                    <button
+                      @click="showActivationPopup = false"
+                      class="text-[#7A5D00] hover:text-[#7A5D00]/80 transition"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -639,111 +828,237 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 </div>
               </div>
 
-              <div
-                v-if="uploadError"
-                class="bg-[#FFE0E0] border border-[#B42318]/20 rounded-2xl p-6"
-              >
-                <div class="text-[15px] text-[#B42318]">{{ uploadError }}</div>
-              </div>
 
-              <div
+            <div
                 v-if="requestCardError"
                 class="bg-[#FFE0E0] border border-[#B42318]/20 rounded-2xl p-6"
-              >
+            >
                 <div class="text-[15px] text-[#B42318]">{{ requestCardError }}</div>
-              </div>
+            </div>
 
               <!-- Step-by-Step Process -->
               <div class="space-y-4">
-                <!-- Step 1: Upload Document -->
+                <!-- Step 1: Upload Front Side -->
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
                   <div class="flex items-start gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
-                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
-                        :class="{
-                          'bg-[#006AC7] text-white': !clientDocument || clientDocument.status === 'rejected',
-                          'bg-[#DDF7E9] text-[#0E6B3B]': clientDocument?.status === 'pending' || clientDocument?.status === 'approved',
-                        }"
-                      >
-                        <span v-if="!clientDocument || clientDocument.status === 'rejected'">1</span>
-                        <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
+                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold bg-[#006AC7] text-white">
+                        1
                       </div>
                     </div>
-                    
+
                     <!-- Step Content -->
                     <div class="flex-1">
                       <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
-                        {{ t('clientMain.documentSteps.step1Title') }}
+                        {{ t('clientMain.documentFields.frontSide') }}
                       </h3>
                       <p class="text-[15px] text-[#6B7E8B] mb-6">
-                        {{ t('clientMain.documentSteps.step1Description') }}
+                        {{ t('clientMain.documentFields.frontSideDescription') }}
                       </p>
-
-                      <!-- Status Badge -->
-                      <div v-if="docLoading" class="mb-6">
-                        <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.loading') }}</div>
-                      </div>
-                      <div v-else-if="clientDocument" class="mb-6">
-                        <span
-                          class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                          :class="{
-                            'bg-[#FFF3CD] text-[#7A5D00]': clientDocument.status === 'pending',
-                            'bg-[#DDF7E9] text-[#0E6B3B]': clientDocument.status === 'approved',
-                            'bg-[#FFE0E0] text-[#B42318]': clientDocument.status === 'rejected',
-                          }"
-                        >
-                          <svg v-if="clientDocument.status === 'approved'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <svg v-else-if="clientDocument.status === 'pending'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
-                          {{ clientDocument.status === 'pending' ? t('common.pending') : 
-                             clientDocument.status === 'approved' ? t('common.approved') : 
-                             t('common.rejected') }}
-                        </span>
-                      </div>
 
                       <!-- Upload Button -->
                       <div class="flex items-center gap-4">
                         <input
-                          ref="fileInputRef"
+                          :ref="el => fileInputRefs.frontSide = el as HTMLInputElement"
                           type="file"
                           class="hidden"
                           accept="image/*,application/pdf"
-                          @change="onFileSelected"
+                          @change="(e) => onFileSelected(e, 'frontSide')"
                         />
                         <button
-                          v-if="!clientDocument || clientDocument?.status === 'rejected' || clientDocument?.status === 'pending'"
-                          :disabled="uploadLoading"
+                          :disabled="isUploading"
                           class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
                                  disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
-                          @click="openFilePicker"
+                          @click="openFilePicker('frontSide')"
                         >
-                          <svg v-if="!uploadLoading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                           </svg>
-                          <svg v-else class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-                          </svg>
-                          <span v-if="uploadLoading">{{ t('clientMain.uploading') }}</span>
-                          <span v-else-if="clientDocument?.status === 'rejected'">{{ t('clientMain.reUpload') }}</span>
-                          <span v-else-if="clientDocument?.status === 'pending'">{{ t('clientMain.replaceDocument') }}</span>
-                          <span v-else>{{ t('clientMain.upload') }}</span>
+                          <span>{{ t('clientMain.upload') }}</span>
                         </button>
-                        <p v-if="clientDocument?.status === 'pending'" class="text-[15px] text-[#6B7E8B]">
-                          {{ t('clientMain.documentMessages.pending') }}
+                        <p v-if="uploadError.frontSide" class="text-[15px] text-[#B42318]">
+                          {{ uploadError.frontSide }}
                         </p>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <!-- Step 2: Upload Back Side -->
+                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                  <div class="flex items-start gap-6">
+                    <!-- Step Number -->
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold bg-[#006AC7] text-white">
+                        2
+                      </div>
+                    </div>
+
+                    <!-- Step Content -->
+                    <div class="flex-1">
+                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                        {{ t('clientMain.documentFields.backSide') }}
+                      </h3>
+                      <p class="text-[15px] text-[#6B7E8B] mb-6">
+                        {{ t('clientMain.documentFields.backSideDescription') }}
+                      </p>
+
+                      <!-- File Selection -->
+                      <div class="space-y-3">
+                        <input
+                          :ref="el => fileInputRefs.backSide = el as HTMLInputElement"
+                          type="file"
+                          class="hidden"
+                          accept="image/*,application/pdf"
+                          @change="(e) => onFileSelected(e, 'backSide')"
+                        />
+                        <button
+                          :disabled="isUploading"
+                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                                 border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
+                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                          @click="openFilePicker('backSide')"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          <span>{{ t('clientMain.upload') }}</span>
+                        </button>
+                        <div v-if="selectedFiles.backSide" class="flex items-center gap-3 p-3 bg-[#F0FDF4] border border-[#0E6B3B]/20 rounded-xl">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
+                          <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.backSide.name }}</span>
+                          <button
+                            @click="removeFile('backSide')"
+                            class="text-[#B42318] hover:text-[#B42318]/80 transition"
+                            :disabled="isUploading"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                        <p v-if="uploadError.backSide" class="text-[15px] text-[#B42318]">
+                          {{ uploadError.backSide }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 3: Upload Bank Statement -->
+                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                  <div class="flex items-start gap-6">
+                    <!-- Step Number -->
+                    <div class="flex-shrink-0">
+                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold bg-[#006AC7] text-white">
+                        3
+                      </div>
+                    </div>
+
+                    <!-- Step Content -->
+                    <div class="flex-1">
+                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                        {{ t('clientMain.documentFields.bankStatement') }}
+                      </h3>
+                      <p class="text-[15px] text-[#6B7E8B] mb-6">
+                        {{ t('clientMain.documentFields.bankStatementDescription') }}
+                      </p>
+
+                      <!-- File Selection -->
+                      <div class="space-y-3">
+                        <input
+                          :ref="el => fileInputRefs.bankStatement = el as HTMLInputElement"
+                          type="file"
+                          class="hidden"
+                          accept="image/*,application/pdf"
+                          @change="(e) => onFileSelected(e, 'bankStatement')"
+                        />
+                        <button
+                          :disabled="isUploading"
+                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                                 border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
+                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                          @click="openFilePicker('bankStatement')"
+                        >
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          <span>{{ t('clientMain.upload') }}</span>
+                        </button>
+                        <div v-if="selectedFiles.bankStatement" class="flex items-center gap-3 p-3 bg-[#F0FDF4] border border-[#0E6B3B]/20 rounded-xl">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
+                          <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.bankStatement.name }}</span>
+                          <button
+                            @click="removeFile('bankStatement')"
+                            class="text-[#B42318] hover:text-[#B42318]/80 transition"
+                            :disabled="isUploading"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                        <p v-if="uploadError.bankStatement" class="text-[15px] text-[#B42318]">
+                          {{ uploadError.bankStatement }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit All Documents Button -->
+                <div v-if="canSubmit || isUploading" class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="text-[20px] font-bold text-[#0B2A3C] mb-2">
+                        {{ t('clientMain.submitAllDocuments') }}
+                      </h3>
+                      <p class="text-[15px] text-[#6B7E8B]">
+                        {{ t('clientMain.submitAllDocumentsDescription') }}
+                      </p>
+                    </div>
+                    <button
+                      :disabled="!canSubmit || isUploading"
+                      class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                             border-[#0E6B3B] bg-[#0E6B3B] text-white hover:bg-[#0C5A2F] hover:border-[#0C5A2F]
+                             disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                      @click="submitAllDocuments"
+                    >
+                      <svg v-if="!isUploading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <svg v-else class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                      </svg>
+                      <span v-if="isUploading">{{ t('clientMain.uploading') }}</span>
+                      <span v-else>{{ t('clientMain.submitAll') }}</span>
+                    </button>
+                  </div>
+                  <p v-if="uploadError.general" class="text-[15px] text-[#B42318] mt-4">
+                    {{ uploadError.general }}
+                  </p>
                 </div>
 
                 <!-- Step 2: Document Review -->
@@ -794,6 +1109,15 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           {{ t('clientMain.documentSteps.step2DescriptionRejected') }}
                         </template>
                       </p>
+                      <!-- Status Badge for Approved -->
+                      <div v-if="clientDocument?.status === 'approved'" class="mt-4">
+                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[#DDF7E9] text-[#0E6B3B]">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          {{ t('common.approved') }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -849,11 +1173,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         <button
                           v-if="canRequestCard"
                           :disabled="requestCardLoading"
-                          @click="requestCard"
+                  @click="requestCard"
                           class="px-8 py-4 rounded-xl font-semibold text-[16px] transition
                             bg-[#006AC7] text-white hover:bg-[#0055A3]
                             disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
-                        >
+                >
                           <svg v-if="!requestCardLoading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                             <line x1="1" y1="10" x2="23" y2="10"></line>
@@ -861,9 +1185,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           <svg v-else class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
                           </svg>
-                          <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
-                          <span v-else>{{ t('clientMain.requestCard') }}</span>
-                        </button>
+                  <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
+                  <span v-else>{{ t('clientMain.requestCard') }}</span>
+                </button>
                         <div v-else-if="me?.client_bank_status === 'pending'" class="flex items-center gap-3 px-6 py-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -889,8 +1213,152 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <template v-else-if="route.path === '/faq'">
             <ClientFAQ />
           </template>
+
+          <!-- Security Page -->
+          <template v-else-if="route.path === '/security'">
+            <Security />
+          </template>
         </div>
       </div>
     </main>
+    
+    <!-- Change Password Modal for First Login -->
+    <div
+      v-if="showChangePasswordModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
+    >
+      <div class="w-full max-w-[480px] bg-white rounded-2xl p-6">
+        <h2 class="text-xl font-bold mb-2">{{ t("header.changePassword.title") }}</h2>
+        <p class="text-gray-600 mb-4">
+          {{ t("header.changePassword.subtitle") }}
+        </p>
+
+        <div
+          v-if="pwdError"
+          class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
+        >
+          {{ pwdError }}
+        </div>
+
+        <input
+          v-model="newPassword"
+          type="password"
+          class="w-full border rounded-lg px-3 py-2 mb-3"
+          :placeholder="t('header.changePassword.newPasswordPlaceholder')"
+        />
+        <input
+          v-model="confirmPassword"
+          type="password"
+          class="w-full border rounded-lg px-3 py-2"
+          :placeholder="t('header.changePassword.confirmPasswordPlaceholder')"
+        />
+
+        <button
+          class="mt-4 w-full bg-[#006ac7] hover:bg-[#134e8a] text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+          :disabled="pwdLoading"
+          @click="submitChangePassword"
+        >
+          {{ t("header.changePassword.saveBtn") }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Manager Contact Icon - Fixed Bottom Right -->
+    <div
+      v-if="managerPhone"
+      class="fixed bottom-6 right-6 z-40"
+    >
+      <button
+        @click="showManagerModal = true"
+        class="w-14 h-14 rounded-full bg-[#006AC7] text-white shadow-lg hover:bg-[#0055A3] transition-all duration-300 flex items-center justify-center hover:scale-110"
+        :title="t('clientMain.managerContact.title')"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Manager Contact Modal -->
+    <div
+      v-if="showManagerModal"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
+      @click.self="showManagerModal = false"
+    >
+      <div 
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] transform transition-all duration-300"
+        :class="showManagerModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
+      >
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-[#006AC7] to-[#0055A3] p-6 rounded-t-2xl">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-[20px] font-bold text-white mb-1">
+                  {{ t('clientMain.managerContact.title') }}
+                </h3>
+                <p class="text-sm text-white/80">
+                  {{ t('clientMain.managerContact.subtitle') }}
+                </p>
+              </div>
+            </div>
+            <button
+              @click="showManagerModal = false"
+              class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 space-y-6">
+          <!-- Manager Name -->
+          <div v-if="manager?.first_name || manager?.last_name" class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+            <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
+              {{ t('clientMain.managerContact.name') }}
+            </div>
+            <div class="text-[18px] font-bold text-[#0B2A3C]">
+              {{ `${manager.first_name || ''} ${manager.last_name || ''}`.trim() }}
+            </div>
+          </div>
+
+          <!-- Manager Phone -->
+          <div class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+            <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
+              {{ t('clientMain.managerContact.phone') }}
+            </div>
+            <a 
+              :href="`tel:${managerPhone}`"
+              class="text-[18px] font-bold text-[#006AC7] hover:text-[#0055A3] transition break-all flex items-center gap-2"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              {{ managerPhone }}
+            </a>
+          </div>
+
+          <!-- Call Button -->
+          <a
+            :href="`tel:${managerPhone}`"
+            class="w-full px-6 py-4 rounded-xl bg-[#006AC7] text-white hover:bg-[#0055A3] transition font-semibold text-[16px] flex items-center justify-center gap-3"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            {{ t('clientMain.managerContact.callButton') }}
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>

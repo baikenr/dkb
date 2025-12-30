@@ -562,7 +562,7 @@ onMounted(() => {
               <img
                 v-if="isImageFile(selectedDocument.file)"
                 :src="getDocumentUrl(selectedDocument.file)"
-                alt="Document"
+                :alt="t('cardRequests.documentViewer.title')"
                 class="w-full h-auto max-h-[600px] object-contain"
               />
               <!-- For PDF and other files -->
@@ -697,7 +697,7 @@ onMounted(() => {
               <!-- cvv -->
               <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  CVV <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.cvv') }} <span class="text-[#CC0000]">*</span>
                 </label>
                 <input
                   v-model="cardData.cvv"
@@ -713,14 +713,14 @@ onMounted(() => {
               <!-- IBAN -->
                <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  IBAN <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.iban') }} <span class="text-[#CC0000]">*</span>
                 </label>
                 <input
                   v-model="cardData.iban"
                   type="text"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
                   :class="{ 'border-[#CC0000]': cardDataErrors.iban }"
-                  placeholder="KZ00...."
+                  :placeholder="t('cardRequests.placeholders.iban')"
                   @input="cardData.iban = cardData.iban.toUpperCase()"
                 />
                 <p v-if="cardDataErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.iban }}</p>
@@ -728,14 +728,14 @@ onMounted(() => {
               <!-- BIC -->
                <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  BIC / SWIFT <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.bic') }} <span class="text-[#CC0000]">*</span>
                 </label>
                 <input
                   v-model="cardData.bank_bic"
                   type="text"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
                   :class="{ 'border-[#CC0000]': cardDataErrors.bank_bic }"
-                  placeholder="ABCDEFGH or ABCDEFGHXXX"
+                  :placeholder="t('cardRequests.placeholders.bic')"
                   @input="cardData.bank_bic = cardData.bank_bic.toUpperCase()"
                 />
                 <p v-if="cardDataErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_bic }}</p>
@@ -743,14 +743,14 @@ onMounted(() => {
               <!-- LIMIT -->
                <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  Limit <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.limit') }} <span class="text-[#CC0000]">*</span>
                 </label>
                 <input
                   v-model="cardData.limit"
                   type="text"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
                   :class="{ 'border-[#CC0000]': cardDataErrors.limit }"
-                  placeholder='- or 100000'
+                  :placeholder="t('cardRequests.placeholders.limit')"
                 />
                 <p v-if="cardDataErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.limit }}</p>
               </div>
@@ -765,7 +765,7 @@ onMounted(() => {
                     type="number"
                     min="1"
                     max="12"
-                    placeholder="MM"
+                    :placeholder="t('cardRequests.placeholders.expMonth')"
                     class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
                     :class="{ 'border-[#CC0000]': cardDataErrors.exp_month }"
                   />
@@ -779,7 +779,7 @@ onMounted(() => {
                     v-model.number="cardData.exp_year"
                     type="number"
                     :min="new Date().getFullYear()"
-                    placeholder="YYYY"
+                    :placeholder="t('cardRequests.placeholders.expYear')"
                     class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
                     :class="{ 'border-[#CC0000]': cardDataErrors.exp_year }"
                   />
@@ -880,7 +880,7 @@ onMounted(() => {
           </div>
           <!-- cvv -->
            <div>
-            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">CVV</label>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.cvv') }}</label>
             <input
               v-model="cardFormData.cvv"
               type="text"
@@ -892,7 +892,7 @@ onMounted(() => {
           </div>
           <!-- IBAN -->
            <div>
-            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">IBAN</label>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.iban') }}</label>
             <input
               v-model="cardFormData.iban"
               type="text"
@@ -902,7 +902,7 @@ onMounted(() => {
           </div>
           <!-- BIC -->
            <div>
-            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">BIC / SWIFT</label>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bic') }}</label>
             <input
               v-model="cardFormData.bank_bic"
               type="text"
@@ -912,7 +912,7 @@ onMounted(() => {
           </div>
           <!-- LIMIT -->
            <div>
-            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">Limit</label>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.limit') }}</label>
             <input
               v-model="cardFormData.limit"
               type="text"

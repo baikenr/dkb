@@ -49,7 +49,7 @@ const go = async (to: string) => {
     <div class="px-3 py-6 border-b border-black/10">
       <div class="flex items-center justify-center">
         <router-link to="/" class="flex items-center justify-center">
-          <img :src="Logo" alt="DKB Das kann Bank" class="cursor-pointer object-contain" style="width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px;" />
+          <img :src="Logo" :alt="t('common.logoAlt')" class="cursor-pointer object-contain" style="width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px;" />
         </router-link>
       </div>
     </div>
@@ -59,7 +59,7 @@ const go = async (to: string) => {
       <button
         class="w-9 h-9 rounded-lg hover:bg-black/5 flex items-center justify-center transition-colors duration-200"
         @click="sidebarOpen = !sidebarOpen"
-        title="Menu"
+        :title="t('common.menu')"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
           <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -106,6 +106,13 @@ const go = async (to: string) => {
             <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
+          <!-- FAQ/Support Icon -->
+          <svg v-else-if="it.icon === 'faq'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
+            :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13 8H11a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="13" y1="8" x2="13" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           <!-- Default Icon -->
           <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
             :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
@@ -116,7 +123,7 @@ const go = async (to: string) => {
 
         <span 
           v-if="sidebarOpen" 
-          class="font-semibold text-[15px] flex-shrink-0 whitespace-nowrap transition-opacity duration-300 opacity-100"
+          class="font-semibold text-[15px] flex-1 min-w-0 truncate transition-opacity duration-300 opacity-100"
         >
           {{ it.label }}
         </span>

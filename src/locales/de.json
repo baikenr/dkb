@@ -60,7 +60,10 @@
       "firstName": "Vorname",
       "lastName": "Nachname",
       "email": "E-Mail",
-      "roleType": "Rolle / Typ"
+      "roleType": "Rolle / Typ",
+      "phone": "Telefon",
+      "workPlace": "Arbeitsplatz",
+      "birthDate": "Geburtsdatum"
     }
   },
   "sidebar": {
@@ -74,6 +77,25 @@
     "einstellungen": "Einstellungen",
     "hilfe": "Hilfe & Kontakt",
     "rechtliches": "Rechtliches"
+  },
+  "staffDashboard": {
+    "welcome": "Willkommen, {name}",
+    "welcomeNoName": "Willkommen",
+    "greeting": "Guten Tag, {name}",
+    "greetingNoName": "Guten Tag",
+    "staffDashboard": "Mitarbeiter-Dashboard",
+    "role": "Rolle",
+    "totalClients": "Gesamtkunden",
+    "pendingDocuments": "Ausstehende Dokumente",
+    "recentActivity": "Letzte Aktivität",
+    "noRecentActivity": "Keine letzte Aktivität",
+    "quickActions": "Schnellaktionen",
+    "viewClients": "Kunden anzeigen",
+    "manageClientAccounts": "Kundenkonten verwalten",
+    "cardRequests": "Kartenanfragen",
+    "reviewCardRequests": "Kartenausstellungsanfragen überprüfen",
+    "notificationsMessages": "Benachrichtigungen & Nachrichten",
+    "viewNotifications": "Benachrichtigungen von Kunden anzeigen und verwalten"
   },
   "usersManagement": {
     "title": "Benutzerverwaltung",
@@ -172,6 +194,7 @@
     },
     "actions": {
       "edit": "Bearbeiten",
+      "viewEditCard": "Karte anzeigen/bearbeiten",
       "resetPassword": "Passwort zurücksetzen",
       "delete": "Löschen"
     },
@@ -219,6 +242,14 @@
       "phoneMax": "Telefon muss weniger als 30 Zeichen lang sein",
       "workPlaceMax": "Arbeitsplatz muss weniger als 255 Zeichen lang sein"
     },
+    "cardModal": {
+      "title": "Karte anzeigen/bearbeiten",
+      "subtitle": "Karteninformationen für Kunden anzeigen und bearbeiten: {name}",
+      "update": "Karte aktualisieren",
+      "create": "Karte erstellen"
+    },
+    "cardUpdated": "Karte erfolgreich aktualisiert",
+    "cardCreated": "Karte erfolgreich erstellt",
     "passwordReset": {
       "title": "Passwort zurücksetzen",
       "subtitle": "Neues Passwort für Kunden festlegen: {{name}}",
@@ -283,6 +314,10 @@
       "fullName": "Vollständiger Name",
       "cardNumber": "Kartennummer",
       "cardNumberHint": "Geben Sie 16 Ziffern ein",
+      "cvv": "CVV",
+      "iban": "IBAN",
+      "bic": "BIC / SWIFT",
+      "limit": "Limit",
       "expMonth": "Ablaufmonat",
       "expYear": "Ablaufjahr",
       "errors": {
@@ -307,6 +342,14 @@
       "cancel": "Abbrechen",
       "creating": "Wird erstellt...",
       "createCard": "Karte erstellen"
+    },
+    "placeholders": {
+      "cardNumber": "0000 0000 0000 0000",
+      "iban": "KZ00....",
+      "bic": "ABCDEFGH oder ABCDEFGHXXX",
+      "limit": "- oder 100000",
+      "expMonth": "MM",
+      "expYear": "JJJJ"
     }
   },
   "clientSidebar": {
@@ -322,6 +365,8 @@
       "visaKreditkarte": "Visa Kreditkarte",
       "uberweisung": "Überweisung",
       "kontodetails": "Kontodetails",
+      "uberweisungTooltip": "Zur Aktivierung wenden Sie sich bitte an Ihren persönlichen Manager.",
+      "accountNotActive": "Ihr Konto ist noch nicht aktivert. Zur Aktivierung müssen Sie Ihr Guthaben um <strong>{amount}</strong> aufladen",
       "vorgemerkt": "Vorgemerkt",
       "eingang": "Eingang",
       "ausgang": "Ausgang",
@@ -332,6 +377,27 @@
       "bankName": "Bankname",
       "bankBic": "BIC",
       "fullName": "Karteninhaber"
+    },
+    "accountDetails": {
+      "title": "Kontodetails",
+      "subtitle": "Ihre Bankkontoinformationen",
+      "accountOwner": "Kontoinhaber",
+      "accountNumber": "Kontonummer, IBAN",
+      "bankCode": "Bankleitzahl, BIC/SWIFT",
+      "bankName": "Bankname",
+      "cardNotCreated": "Karte noch nicht erstellt",
+      "waitingForCard": "Warten auf Kartenerstellung",
+      "waitingForCardDescription": "Einige Kontodaten werden verfügbar sein, nachdem Ihre Karte erstellt und aktiviert wurde.",
+      "copy": "In Zwischenablage kopieren",
+      "copied": "{field} in Zwischenablage kopiert",
+      "infoNote": "Sie können auf das Kopiersymbol neben IBAN oder BIC klicken, um die Informationen schnell in Ihre Zwischenablage zu kopieren."
+    },
+    "managerContact": {
+      "title": "Persönlicher Manager",
+      "subtitle": "Kontaktieren Sie Ihren persönlichen Manager",
+      "name": "Name",
+      "phone": "Telefon",
+      "callButton": "Manager anrufen"
     },
     "cardDetails": "Kartendetails",
     "cardId": "Karten-ID",
@@ -378,10 +444,23 @@
       "step3DescriptionReceived": "Herzlichen Glückwunsch! Ihre Karte wurde erstellt und ist einsatzbereit.",
       "cardReceived": "Karte erhalten"
     },
+    "documentFields": {
+      "frontSide": "Ausweisdokument hochladen - Vorderseite",
+      "frontSideDescription": "Laden Sie ein klares Foto oder einen Scan der Vorderseite Ihres Ausweisdokuments hoch (Reisepass, Personalausweis oder Führerschein). Maximale Dateigröße: 10 MB.",
+      "backSide": "Ausweisdokument hochladen - Rückseite",
+      "backSideDescription": "Laden Sie ein klares Foto oder einen Scan der Rückseite Ihres Ausweisdokuments hoch. Maximale Dateigröße: 10 MB.",
+      "bankStatement": "Kontoauszug hochladen",
+      "bankStatementDescription": "Laden Sie Ihren Kontoauszug hoch. Maximale Dateigröße: 10 MB."
+    },
     "upload": "Hochladen",
     "reUpload": "Erneut hochladen",
     "replaceDocument": "Dokument ersetzen",
     "uploading": "Wird hochgeladen...",
+    "submitAllDocuments": "Alle Dokumente einreichen",
+    "submitAllDocumentsDescription": "Alle drei Dokumente wurden ausgewählt. Klicken Sie auf die Schaltfläche unten, um sie alle auf einmal einzureichen.",
+    "submitAll": "Alle Dokumente einreichen",
+    "selectAllDocuments": "Bitte wählen Sie alle drei Dokumente aus, bevor Sie sie einreichen.",
+    "documentsUploadedSuccess": "Alle Dokumente wurden erfolgreich hochgeladen!",
     "requestCard": "Karte beantragen",
     "requestPending": "Anfrage ausstehend",
     "submitting": "Wird übermittelt...",
@@ -391,11 +470,36 @@
     "cardRequestFailed": "Kartenanfrage fehlgeschlagen",
     "profileMenu": {
       "profile": "Mein Profil",
-      "mailbox": "Postfach",
       "security": "Sicherheit",
       "feedback": "Feedback",
       "referFriends": "Freunde werben",
       "logout": "Abmelden"
+    }
+  },
+  "security": {
+    "title": "Sicherheit",
+    "subtitle": "Ihr Kontosicherheitsstatus und Informationen",
+    "allGood": "Alles in Ordnung!",
+    "message": "Ihr Konto ist sicher. Alle Sicherheitsmaßnahmen sind vorhanden und funktionieren einwandfrei.",
+    "confirmed": "Telefon und E-Mail sind bestätigt. Es ist keine Handlung erforderlich.",
+    "features": {
+      "title": "Sicherheitsfunktionen",
+      "encryption": {
+        "title": "Datenverschlüsselung",
+        "description": "Alle Ihre Daten werden mit branchenüblichen Verschlüsselungsprotokollen verschlüsselt."
+      },
+      "authentication": {
+        "title": "Sichere Authentifizierung",
+        "description": "Ihr Konto ist mit sicheren Authentifizierungsmethoden geschützt."
+      },
+      "monitoring": {
+        "title": "24/7 Überwachung",
+        "description": "Wir überwachen Ihr Konto kontinuierlich auf verdächtige Aktivitäten."
+      },
+      "compliance": {
+        "title": "Regulatorische Compliance",
+        "description": "Wir halten alle Bankvorschriften und Sicherheitsstandards ein."
+      }
     }
   },
   "common": {
@@ -430,7 +534,12 @@
     "showing": "Zeige",
     "to": "bis",
     "ofTotal": "von",
-    "note": "Hinweis"
+    "note": "Hinweis",
+    "menu": "Menü",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "id": "ID",
+    "clientId": "Kunden-ID"
   },
   "clientFAQ": {
     "title": "Support kontaktieren",
@@ -480,7 +589,7 @@
     "loading": "Wird geladen...",
     "noNotifications": "Keine Benachrichtigungen gefunden",
     "searchPlaceholder": "Suche nach Betreff, Nachricht, Kundename oder E-Mail...",
-    "unreadCount": "{{count}} ungelesen",
+    "unreadCount": "{count} ungelesen",
     "filters": {
       "type": "Typ",
       "status": "Status",

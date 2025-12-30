@@ -54,7 +54,7 @@ const go = async (to: string) => {
     <div class="px-3 py-6 border-b border-black/10">
       <div class="flex items-center justify-center">
         <router-link to="/staff" class="flex items-center justify-center">
-          <img :src="Logo" alt="DKB Das kann Bank" class="cursor-pointer object-contain" style="width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px;" />
+          <img :src="Logo" :alt="t('common.logoAlt')" class="cursor-pointer object-contain" style="width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px;" />
         </router-link>
       </div>
     </div>
@@ -64,7 +64,7 @@ const go = async (to: string) => {
       <button
         class="w-9 h-9 rounded-lg hover:bg-black/5 flex items-center justify-center transition-colors duration-200"
         @click="sidebarOpen = !sidebarOpen"
-        title="Menu"
+        :title="t('common.menu')"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
           <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -137,7 +137,7 @@ const go = async (to: string) => {
 
         <span 
           v-if="sidebarOpen" 
-          class="font-semibold text-[15px] flex-shrink-0 whitespace-nowrap transition-opacity duration-300 opacity-100"
+          class="font-semibold text-[15px] flex-1 min-w-0 truncate transition-opacity duration-300 opacity-100"
         >
           {{ it.label }}
         </span>

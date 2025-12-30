@@ -32,68 +32,20 @@ const doLogout = async () => {
   await router.replace("/login");
 };
 
-const mustChangePassword = computed(
-  () => appStore.authType === "client" && appStore.firstLoginRequired === true
-);
-
-const showChangePasswordModal = ref(false);
-const newPassword = ref("");
-const confirmPassword = ref("");
-const pwdError = ref("");
-const pwdLoading = ref(false);
-
 onMounted(async () => {
   // подтянем me (чтобы имя было)
   if (appStore.isAuthenticated) {
     if (appStore.authType === "staff") await appStore.staffMe();
     if (appStore.authType === "client") await appStore.clientMe();
   }
-
-  if (mustChangePassword.value) {
-    showChangePasswordModal.value = true;
-  }
 });
-
-const submitChangePassword = async () => {
-  pwdError.value = "";
-
-  if (!newPassword.value || !confirmPassword.value) {
-    pwdError.value = t("header.changePassword.errors.fillBoth");
-    return;
-  }
-  if (newPassword.value.length < 8) {
-    pwdError.value = t("header.changePassword.errors.min8");
-    return;
-  }
-  if (newPassword.value !== confirmPassword.value) {
-    pwdError.value = t("header.changePassword.errors.notMatch");
-    return;
-  }
-
-  pwdLoading.value = true;
-  try {
-    const res = await appStore.clientChangePasswordFirst({ new_password: newPassword.value });
-    if (!res?.ok) {
-      pwdError.value = t("header.changePassword.errors.failed");
-      return;
-    }
-    showChangePasswordModal.value = false;
-    newPassword.value = "";
-    confirmPassword.value = "";
-
-    appStore.logout();
-    await router.replace("/login");
-  } finally {
-    pwdLoading.value = false;
-  }
-};
 </script>
 
 <template>
   <header class="w-full bg-white border-b">
     <div class="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
       <router-link to="/" class="flex items-center">
-        <img :src="Logo" alt="DKB" class="h-10 sm:h-12 cursor-pointer" />
+        <img :src="Logo" :alt="t('common.logoAlt')" class="h-10 sm:h-12 cursor-pointer" />
       </router-link>
 
       <div class="flex items-center gap-3 relative">
@@ -135,45 +87,6 @@ const submitChangePassword = async () => {
             </button>
           </div>
         </template>
-      </div>
-    </div>
-    <div
-      v-if="showChangePasswordModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
-    >
-      <div class="w-full max-w-[480px] bg-white rounded-2xl p-6">
-        <h2 class="text-xl font-bold mb-2">{{ t("header.changePassword.title") }}</h2>
-        <p class="text-gray-600 mb-4">
-          {{ t("header.changePassword.subtitle") }}
-        </p>
-
-        <div
-          v-if="pwdError"
-          class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
-        >
-          {{ pwdError }}
-        </div>
-
-        <input
-          v-model="newPassword"
-          type="password"
-          class="w-full border rounded-lg px-3 py-2 mb-3"
-          :placeholder="t('header.changePassword.newPasswordPlaceholder')"
-        />
-        <input
-          v-model="confirmPassword"
-          type="password"
-          class="w-full border rounded-lg px-3 py-2"
-          :placeholder="t('header.changePassword.confirmPasswordPlaceholder')"
-        />
-
-        <button
-          class="mt-4 w-full bg-[#006ac7] hover:bg-[#134e8a] text-white py-3 rounded-xl font-semibold disabled:opacity-60"
-          :disabled="pwdLoading"
-          @click="submitChangePassword"
-        >
-          {{ t("header.changePassword.saveBtn") }}
-        </button>
       </div>
     </div>
   </header>

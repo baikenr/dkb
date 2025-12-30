@@ -318,10 +318,10 @@ onMounted(async () => {
               <span>
                 {{ t('staffNotifications.from') }}: 
                 <span v-if="notification.sender_user">
-                  {{ `${notification.sender_user.first_name || ''} ${notification.sender_user.last_name || ''}`.trim() || notification.sender_user.email || `ID: ${notification.sender_user.id || notification.sender_user}` }}
+                  {{ `${notification.sender_user.first_name || ''} ${notification.sender_user.last_name || ''}`.trim() || notification.sender_user.email || `${t('common.id')}: ${notification.sender_user.id || notification.sender_user}` }}
                 </span>
                 <span v-else-if="notification.sender_user_id">
-                  ID: {{ notification.sender_user_id }}
+                  {{ t('common.id') }}: {{ notification.sender_user_id }}
                 </span>
                 <span v-else>—</span>
               </span>
@@ -441,17 +441,17 @@ onMounted(async () => {
                     {{ selectedNotification.sender_user.email }}
                   </div>
                   <div v-else>
-                    ID: {{ selectedNotification.sender_user.id || selectedNotification.sender_user_id }}
+                    {{ t('common.id') }}: {{ selectedNotification.sender_user.id || selectedNotification.sender_user_id }}
                   </div>
                   <div v-if="selectedNotification.sender_user.email" class="mt-1">
-                    Email: {{ selectedNotification.sender_user.email }}
+                    {{ t('common.email') }}: {{ selectedNotification.sender_user.email }}
                   </div>
                   <div v-if="selectedNotification.sender_user.phone" class="mt-1">
-                    Phone: {{ selectedNotification.sender_user.phone }}
+                    {{ t('common.phone') }}: {{ selectedNotification.sender_user.phone }}
                   </div>
                 </div>
                 <div v-else-if="selectedNotification.sender_user_id">
-                  Client ID: {{ selectedNotification.sender_user_id }}
+                  {{ t('common.clientId') }}: {{ selectedNotification.sender_user_id }}
                 </div>
                 <div v-else>—</div>
               </div>

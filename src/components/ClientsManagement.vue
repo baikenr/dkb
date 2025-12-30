@@ -28,6 +28,23 @@ const newPassword = ref("");
 const passwordError = ref("");
 const passwordLoading = ref(false);
 const showPassword = ref(false);
+const showCardModal = ref(false);
+const viewingCardClient = ref<any>(null);
+const cardData = ref({
+  bank_name: "",
+  full_name: "",
+  card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
+  exp_month: null as number | null,
+  exp_year: null as number | null,
+  limit: "",
+});
+const cardDataErrors = ref<any>({});
+const cardLoading = ref(false);
+const cardSaving = ref(false);
+const currentCardId = ref<number | null>(null);
 
 const isAdmin = computed(() => appStore.staffRole === "admin");
 
@@ -93,9 +110,9 @@ const getManagerName = (managerId: number | null) => {
   const manager = managers.value.find((m: any) => m.id === managerId);
   if (manager) {
     const name = `${manager.first_name || ''} ${manager.last_name || ''}`.trim();
-    return name || manager.email || `ID: ${managerId}`;
+    return name || manager.email || `${t('common.id')}: ${managerId}`;
   }
-  return `ID: ${managerId}`;
+  return `${t('common.id')}: ${managerId}`;
 };
 
 const resetForm = () => {
@@ -272,7 +289,7 @@ const submitForm = async () => {
 
 const handleDelete = async (client: any) => {
   const name = `${client.first_name || ''} ${client.last_name || ''}`.trim();
-  if (!confirm(t("clientsManagement.delete.confirm", { name: name || client.email || `ID: ${client.id}` }))) {
+  if (!confirm(t("clientsManagement.delete.confirm", { name: name || client.email || `${t('common.id')}: ${client.id}` }))) {
     return;
   }
 
@@ -401,6 +418,164 @@ const changePage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
     loadClients();
+  }
+};
+
+const openCardModal = async (client: any) => {
+  viewingCardClient.value = client;
+  cardLoading.value = true;
+  showCardModal.value = true;
+  cardDataErrors.value = {};
+  
+  try {
+    const result = await appStore.staffGetCardByClient(client.id);
+    if (result.ok && result.data) {
+      currentCardId.value = result.data.id;
+      cardData.value = {
+        bank_name: result.data.bank_name || "",
+        full_name: result.data.full_name || "",
+        card_number: result.data.card_number || "",
+        cvv: result.data.cvv || "",
+        iban: result.data.iban || "",
+        bank_bic: result.data.bank_bic || "",
+        exp_month: result.data.exp_month || null,
+        exp_year: result.data.exp_year || null,
+        limit: result.data.limit || "",
+      };
+    } else {
+      // Card not found
+      cardData.value = {
+        bank_name: "DKB",
+        full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
+        card_number: "",
+        cvv: "",
+        iban: "",
+        bank_bic: "",
+        exp_month: null,
+        exp_year: null,
+        limit: "",
+      };
+      currentCardId.value = null;
+    }
+  } catch (error) {
+    console.error("Error loading card:", error);
+  } finally {
+    cardLoading.value = false;
+  }
+};
+
+const closeCardModal = () => {
+  showCardModal.value = false;
+  viewingCardClient.value = null;
+  currentCardId.value = null;
+  cardData.value = {
+    bank_name: "",
+    full_name: "",
+    card_number: "",
+    cvv: "",
+    iban: "",
+    bank_bic: "",
+    exp_month: null,
+    exp_year: null,
+    limit: "",
+  };
+  cardDataErrors.value = {};
+};
+
+const formatCardNumber = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  return digits.match(/.{1,4}/g)?.join(" ") || digits;
+};
+
+const validateCardData = () => {
+  cardDataErrors.value = {};
+  let isValid = true;
+
+  if (!cardData.value.bank_name?.trim()) {
+    cardDataErrors.value.bank_name = t('cardRequests.errors.bankNameRequired');
+    isValid = false;
+  }
+
+  if (!cardData.value.full_name?.trim()) {
+    cardDataErrors.value.full_name = t('cardRequests.errors.fullNameRequired');
+    isValid = false;
+  }
+
+  const cardNumberDigits = cardData.value.card_number.replace(/\D/g, "");
+  if (cardNumberDigits.length < 13 || cardNumberDigits.length > 19) {
+    cardDataErrors.value.card_number = t('cardRequests.errors.cardNumberInvalid');
+    isValid = false;
+  }
+
+  const cvvDigits = cardData.value.cvv.replace(/\D/g, "");
+  if (cvvDigits.length !== 3 && cvvDigits.length !== 4) {
+    cardDataErrors.value.cvv = t('cardRequests.errors.cvvInvalid');
+    isValid = false;
+  }
+
+  if (!cardData.value.exp_month || cardData.value.exp_month < 1 || cardData.value.exp_month > 12) {
+    cardDataErrors.value.exp_month = t('cardRequests.errors.expMonthInvalid');
+    isValid = false;
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (!cardData.value.exp_year || cardData.value.exp_year < currentYear) {
+    cardDataErrors.value.exp_year = t('cardRequests.errors.expYearInvalid');
+    isValid = false;
+  }
+
+  return isValid;
+};
+
+const saveCard = async () => {
+  if (!validateCardData()) {
+    return;
+  }
+
+  cardSaving.value = true;
+  try {
+    const cardNumberDigits = cardData.value.card_number.replace(/\D/g, "");
+    const cvvDigits = cardData.value.cvv.replace(/\D/g, "");
+    
+    const cardPayload: any = {
+      bank_name: cardData.value.bank_name,
+      full_name: cardData.value.full_name,
+      card_number: cardNumberDigits,
+      cvv: cvvDigits,
+      iban: cardData.value.iban || "",
+      bank_bic: cardData.value.bank_bic || "",
+      exp_month: cardData.value.exp_month,
+      exp_year: cardData.value.exp_year,
+      limit: cardData.value.limit || "0",
+    };
+
+    let result;
+    if (currentCardId.value) {
+      // Update existing card
+      result = await appStore.staffUpdateCard(currentCardId.value, cardPayload);
+    } else {
+      // Create new card
+      cardPayload.to_client = viewingCardClient.value.id;
+      result = await appStore.staffCreateCard(cardPayload);
+    }
+
+    if (result.ok) {
+      const notificationStore = useNotificationStore();
+      notificationStore.showNotification({
+        type: "success",
+        message: currentCardId.value ? t('clientsManagement.cardUpdated') : t('clientsManagement.cardCreated')
+      });
+      closeCardModal();
+      await loadClients();
+    } else {
+      if (result.data) {
+        cardDataErrors.value = result.data;
+      }
+    }
+  } catch (error) {
+    console.error("Error saving card:", error);
+  } finally {
+    cardSaving.value = false;
   }
 };
 
@@ -764,7 +939,7 @@ onMounted(() => {
           <h2 class="text-[24px] font-bold text-[#0B2A3C]">{{ t('clientsManagement.passwordReset.title') }}</h2>
           <p class="text-sm text-[#6B7E8B] mt-1">
             {{ t('clientsManagement.passwordReset.subtitle', { 
-              name: `${resettingPasswordClient.first_name || ''} ${resettingPasswordClient.last_name || ''}`.trim() || resettingPasswordClient.email || `ID: ${resettingPasswordClient.id}`
+              name: `${resettingPasswordClient.first_name || ''} ${resettingPasswordClient.last_name || ''}`.trim() || resettingPasswordClient.email || `${t('common.id')}: ${resettingPasswordClient.id}`
             }) }}
           </p>
         </div>
@@ -816,6 +991,158 @@ onMounted(() => {
               class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ passwordLoading ? t('clientsManagement.passwordReset.resetting') : t('clientsManagement.passwordReset.reset') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Card View/Edit Modal -->
+    <div
+      v-if="showCardModal && viewingCardClient"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="closeCardModal"
+    >
+      <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-black/10">
+          <h2 class="text-[24px] font-bold text-[#0B2A3C]">{{ t('clientsManagement.cardModal.title') }}</h2>
+          <p class="text-sm text-[#6B7E8B] mt-1">
+            {{ t('clientsManagement.cardModal.subtitle', { 
+              name: `${viewingCardClient.first_name || ''} ${viewingCardClient.last_name || ''}`.trim() || viewingCardClient.email || `${t('common.id')}: ${viewingCardClient.id}`
+            }) }}
+          </p>
+        </div>
+
+        <div v-if="cardLoading" class="p-6 text-center text-[#6B7E8B]">
+          {{ t('common.loading') }}
+        </div>
+
+        <form v-else @submit.prevent="saveCard" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Bank Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bankName') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardData.bank_name"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.bank_name" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_name }}</p>
+            </div>
+
+            <!-- Full Name -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.fullName') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardData.full_name"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.full_name" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.full_name }}</p>
+            </div>
+
+            <!-- Card Number -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.cardNumber') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardData.card_number"
+                @input="cardData.card_number = formatCardNumber(cardData.card_number)"
+                type="text"
+                maxlength="19"
+                placeholder="0000 0000 0000 0000"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.card_number" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.card_number }}</p>
+            </div>
+
+            <!-- CVV -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.cvv') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model="cardData.cvv"
+                type="text"
+                maxlength="4"
+                placeholder="000"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.cvv" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.cvv }}</p>
+            </div>
+
+            <!-- IBAN -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.iban') }}</label>
+              <input
+                v-model="cardData.iban"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.iban }}</p>
+            </div>
+
+            <!-- BIC -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bic') }}</label>
+              <input
+                v-model="cardData.bank_bic"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_bic }}</p>
+            </div>
+
+            <!-- Exp Month -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.expMonth') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model.number="cardData.exp_month"
+                type="number"
+                min="1"
+                max="12"
+                placeholder="12"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.exp_month" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.exp_month }}</p>
+            </div>
+
+            <!-- Exp Year -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.expYear') }} <span class="text-[#CC0000]">*</span></label>
+              <input
+                v-model.number="cardData.exp_year"
+                type="number"
+                :min="new Date().getFullYear()"
+                placeholder="2026"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.exp_year" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.exp_year }}</p>
+            </div>
+
+            <!-- Limit -->
+            <div>
+              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.limit') }}</label>
+              <input
+                v-model="cardData.limit"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              />
+              <p v-if="cardDataErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.limit }}</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-black/10">
+            <button
+              type="button"
+              @click="closeCardModal"
+              class="px-6 py-2.5 rounded-xl border border-black/10 text-[#0B2A3C] font-semibold hover:bg-black/5 transition"
+            >
+              {{ t('clientsManagement.modal.cancel') }}
+            </button>
+            <button
+              type="submit"
+              :disabled="cardSaving"
+              class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ cardSaving ? t('clientsManagement.modal.saving') : (currentCardId ? t('clientsManagement.cardModal.update') : t('clientsManagement.cardModal.create')) }}
             </button>
           </div>
         </form>

@@ -60,7 +60,10 @@
       "firstName": "First name",
       "lastName": "Last name",
       "email": "Email",
-      "roleType": "Role / Type"
+      "roleType": "Role / Type",
+      "phone": "Phone",
+      "workPlace": "Work Place",
+      "birthDate": "Birth Date"
     }
   },
   "sidebar": {
@@ -69,11 +72,30 @@
     "clients": "Clients",
     "cardRequests": "Card Requests",
     "faq": "Notifications & Messages",
-    "finanzstatus": "Finanzstatus",
+    "finanzstatus": "Financial Status",
     "uberweisung": "Überweisung",
     "einstellungen": "Einstellungen",
     "hilfe": "Hilfe & Kontakt",
     "rechtliches": "Rechtliches"
+  },
+  "staffDashboard": {
+    "welcome": "Welcome, {name}",
+    "welcomeNoName": "Welcome",
+    "greeting": "Good day, {name}",
+    "greetingNoName": "Good day",
+    "staffDashboard": "Staff Dashboard",
+    "role": "Role",
+    "totalClients": "Total Clients",
+    "pendingDocuments": "Pending Documents",
+    "recentActivity": "Recent Activity",
+    "noRecentActivity": "No recent activity",
+    "quickActions": "Quick Actions",
+    "viewClients": "View Clients",
+    "manageClientAccounts": "Manage client accounts",
+    "cardRequests": "Card Requests",
+    "reviewCardRequests": "Review card issuance requests",
+    "notificationsMessages": "Notifications & Messages",
+    "viewNotifications": "View and manage notifications from clients"
   },
   "usersManagement": {
     "title": "Users Management",
@@ -172,6 +194,7 @@
     },
     "actions": {
       "edit": "Edit",
+      "viewEditCard": "View/Edit Card",
       "resetPassword": "Reset Password",
       "delete": "Delete"
     },
@@ -219,6 +242,14 @@
       "phoneMax": "Phone must be less than 30 characters",
       "workPlaceMax": "Work place must be less than 255 characters"
     },
+    "cardModal": {
+      "title": "View/Edit Card",
+      "subtitle": "View and edit card information for client: {name}",
+      "update": "Update Card",
+      "create": "Create Card"
+    },
+    "cardUpdated": "Card updated successfully",
+    "cardCreated": "Card created successfully",
     "passwordReset": {
       "title": "Reset Password",
       "subtitle": "Set a new password for client: {{name}}",
@@ -283,6 +314,10 @@
       "fullName": "Full Name",
       "cardNumber": "Card Number",
       "cardNumberHint": "Enter 16 digits",
+      "cvv": "CVV",
+      "iban": "IBAN",
+      "bic": "BIC / SWIFT",
+      "limit": "Limit",
       "expMonth": "Expiration Month",
       "expYear": "Expiration Year",
       "errors": {
@@ -307,6 +342,14 @@
       "cancel": "Cancel",
       "creating": "Creating...",
       "createCard": "Create Card"
+    },
+    "placeholders": {
+      "cardNumber": "0000 0000 0000 0000",
+      "iban": "KZ00....",
+      "bic": "ABCDEFGH or ABCDEFGHXXX",
+      "limit": "- or 100000",
+      "expMonth": "MM",
+      "expYear": "YYYY"
     }
   },
   "clientSidebar": {
@@ -316,15 +359,17 @@
     "faq": "Contact Support"
   },
   "clientMain": {
-    "title": "Finanzstatus",
+    "title": "Financial Status",
     "home": {
-      "girokonto": "Girokonto",
-      "visaKreditkarte": "Visa Kreditkarte",
-      "uberweisung": "Überweisung",
-      "kontodetails": "Kontodetails",
-      "vorgemerkt": "Vorgemerkt",
-      "eingang": "Eingang",
-      "ausgang": "Ausgang",
+      "girokonto": "Current Account",
+      "visaKreditkarte": "Visa Credit Card",
+      "uberweisung": "Transfer",
+      "kontodetails": "Account Details",
+      "uberweisungTooltip": "To activate, please contact your personal manager.",
+      "accountNotActive": "Your account is not yet active. To activate, you need to top up your balance with <strong>{amount}</strong> euros.",
+      "vorgemerkt": "Reserved",
+      "eingang": "Incoming",
+      "ausgang": "Outgoing",
       "noTransactions": "No transactions yet",
       "availableBalance": "Available Balance",
       "totalBalance": "Total Balance",
@@ -332,6 +377,27 @@
       "bankName": "Bank Name",
       "bankBic": "BIC",
       "fullName": "Cardholder"
+    },
+    "accountDetails": {
+      "title": "Account Details",
+      "subtitle": "Your banking account information",
+      "accountOwner": "Account Owner (Kontoinhaber)",
+      "accountNumber": "Account Number (Kontonummer, IBAN)",
+      "bankCode": "Bank Code (Bankleitzahl, BIC/SWIFT)",
+      "bankName": "Bank Name (Bankname)",
+      "cardNotCreated": "Card not yet created",
+      "waitingForCard": "Waiting for Card Creation",
+      "waitingForCardDescription": "Some account details will be available after your card is created and activated.",
+      "copy": "Copy to clipboard",
+      "copied": "{field} copied to clipboard",
+      "infoNote": "You can click the copy icon next to IBAN or BIC to quickly copy the information to your clipboard."
+    },
+    "managerContact": {
+      "title": "Personal Manager",
+      "subtitle": "Contact your personal manager",
+      "name": "Name",
+      "phone": "Phone",
+      "callButton": "Call Manager"
     },
     "cardDetails": "Card Details",
     "cardId": "Card ID",
@@ -378,10 +444,23 @@
       "step3DescriptionReceived": "Congratulations! Your card has been created and is ready to use.",
       "cardReceived": "Card Received"
     },
+    "documentFields": {
+      "frontSide": "Upload Identity Document - Front Side",
+      "frontSideDescription": "Upload a clear photo or scan of the front side of your identity document (passport, ID card, or driver's license). Maximum file size: 10 MB.",
+      "backSide": "Upload Identity Document - Back Side",
+      "backSideDescription": "Upload a clear photo or scan of the back side of your identity document. Maximum file size: 10 MB.",
+      "bankStatement": "Upload Bank Statement",
+      "bankStatementDescription": "Upload your bank statement. Maximum file size: 10 MB."
+    },
     "upload": "Upload",
     "reUpload": "Re-upload",
     "replaceDocument": "Replace Document",
     "uploading": "Uploading...",
+    "submitAllDocuments": "Submit All Documents",
+    "submitAllDocumentsDescription": "All three documents have been selected. Click the button below to submit them all at once.",
+    "submitAll": "Submit All Documents",
+    "selectAllDocuments": "Please select all three documents before submitting.",
+    "documentsUploadedSuccess": "All documents have been uploaded successfully!",
     "requestCard": "Request card",
     "requestPending": "Request Pending",
     "submitting": "Submitting...",
@@ -391,11 +470,36 @@
     "cardRequestFailed": "Failed to request card",
     "profileMenu": {
       "profile": "My Profile",
-      "mailbox": "Mailbox",
       "security": "Security",
       "feedback": "Feedback",
       "referFriends": "Refer Friends",
       "logout": "Log Out"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "subtitle": "Your account security status and information",
+    "allGood": "All Good!",
+    "message": "Your account is secure. All security measures are in place and working correctly.",
+    "confirmed": "Phone and email are confirmed. No action is required.",
+    "features": {
+      "title": "Security Features",
+      "encryption": {
+        "title": "Data Encryption",
+        "description": "All your data is encrypted using industry-standard encryption protocols."
+      },
+      "authentication": {
+        "title": "Secure Authentication",
+        "description": "Your account is protected with secure authentication methods."
+      },
+      "monitoring": {
+        "title": "24/7 Monitoring",
+        "description": "We continuously monitor your account for any suspicious activity."
+      },
+      "compliance": {
+        "title": "Regulatory Compliance",
+        "description": "We comply with all banking regulations and security standards."
+      }
     }
   },
   "common": {
@@ -430,7 +534,12 @@
     "showing": "Showing",
     "to": "to",
     "ofTotal": "of",
-    "note": "Note"
+    "note": "Note",
+    "menu": "Menu",
+    "email": "Email",
+    "phone": "Phone",
+    "id": "ID",
+    "clientId": "Client ID"
   },
   "clientFAQ": {
     "title": "Contact Support",
@@ -480,7 +589,7 @@
     "loading": "Loading...",
     "noNotifications": "No notifications found",
     "searchPlaceholder": "Search by title, message, client name or email...",
-    "unreadCount": "{{count}} unread",
+    "unreadCount": "{count} unread",
     "filters": {
       "type": "Type",
       "status": "Status",

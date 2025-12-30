@@ -18,6 +18,11 @@ const routes = [
     name: "Profile",
     component: () => import("@/components/Profile.vue"),
   },
+	{
+    path: "/security",
+    name: "Security",
+    component: () => import("@/pages/Index.vue"),
+  },
 	// Staff routes
 	{
 		path: '/staff',
@@ -60,6 +65,11 @@ const routes = [
 		path: '/faq',
 		name: 'ClientFAQ',
 		component: () => import('@/pages/Index.vue'),
+	},
+	{
+		path: '/account-details',
+		name: 'AccountDetails',
+		component: () => import('@/components/AccountDetails.vue'),
 	},
 ]
 

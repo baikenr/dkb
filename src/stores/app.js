@@ -315,7 +315,7 @@ export const useAppStore = defineStore("app", {
     },
 
     // ==========================
-    // STAFF CREATE CARD: POST /api/cards/ (creates actual card)
+    // STAFF CARDS: /api/cards/
     // ==========================
     async staffCreateCard(cardData) {
       try {
@@ -330,6 +330,53 @@ export const useAppStore = defineStore("app", {
           return { ok: false, data: error.response.data };
         }
         this.notifyError(error, "Create card error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async staffGetCard(cardId) {
+      try {
+        const response = await axios.get(
+          this.base_url + `/cards/${cardId}/`,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get card error");
+        return { ok: false };
+      }
+    },
+
+    async staffGetCardByClient(clientId) {
+      try {
+        const response = await axios.get(
+          this.base_url + `/cards/`,
+          { 
+            headers: this.getAuthHeaders(),
+            params: { to_client: clientId }
+          }
+        );
+        const cards = response.data.results || response.data || [];
+        return { ok: true, data: cards.length > 0 ? cards[0] : null };
+      } catch (error) {
+        this.notifyError(error, "Get card by client error");
+        return { ok: false };
+      }
+    },
+
+    async staffUpdateCard(cardId, cardData) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/cards/${cardId}/`,
+          cardData,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Update card error");
         return { ok: false, data: error?.response?.data };
       }
     },

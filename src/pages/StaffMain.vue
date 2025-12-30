@@ -40,10 +40,11 @@ const staffRole = computed(() => appStore.staffRole || "—");
 
 const pageTitle = computed(() => {
   const path = route.path;
-  if (path.includes("/users")) return "Users";
-  if (path.includes("/clients")) return "Clients";
-  if (path.includes("/card-requests")) return "Card Requests";
-  return "Dashboard";
+  if (path.includes("/users")) return t("sidebar.users");
+  if (path.includes("/clients")) return t("sidebar.clients");
+  if (path.includes("/card-requests")) return t("sidebar.cardRequests");
+  if (path.includes("/faq") || path === "/staff/faq") return t("sidebar.faq");
+  return t("sidebar.dashboard");
 });
 
 // Language toggle
@@ -149,40 +150,40 @@ onBeforeUnmount(() => {
           <div class="h-px bg-black/10 mt-4"></div>
         </div>
 
-        <div v-if="loading" class="text-[#2E4A63]">Loading...</div>
+        <div v-if="loading" class="text-[#2E4A63]">{{ t('common.loading') }}</div>
 
         <div v-else>
           <!-- Dashboard Content -->
-          <template v-if="route.path === '/staff' || route.path === '/'">
+          <template v-if="route.path === '/staff' || (route.path === '/' && appStore.authType === 'staff')">
             <div class="grid grid-cols-12 gap-6">
               <section class="col-span-12 lg:col-span-8 space-y-6">
                 <!-- Welcome Card -->
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
                   <div class="text-[18px] font-bold text-[#0B2A3C] mb-2">
-                    Welcome, {{ fullName }}
+                    {{ fullName && fullName !== '—' ? t('staffDashboard.welcome', { name: fullName }) : t('staffDashboard.welcomeNoName') }}
                   </div>
                   <div class="text-sm text-[#6B7E8B]">
-                    Role: <span class="font-semibold">{{ staffRole }}</span>
+                    {{ t('staffDashboard.role') }}: <span class="font-semibold">{{ staffRole }}</span>
                   </div>
                 </div>
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">Total Clients</div>
-                    <div class="text-[24px] font-bold text-[#0B2A3C]">—</div>
+                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.totalClients') }}</div>
+                    <div class="text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
                   </div>
 
                   <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">Pending Documents</div>
-                    <div class="text-[24px] font-bold text-[#0B2A3C]">—</div>
+                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.pendingDocuments') }}</div>
+                    <div class="text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
                   </div>
                 </div>
 
                 <!-- Recent Activity -->
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                  <div class="text-[18px] font-bold text-[#0B2A3C] mb-4">Recent Activity</div>
-                  <div class="text-sm text-[#6B7E8B]">No recent activity</div>
+                  <div class="text-[18px] font-bold text-[#0B2A3C] mb-4">{{ t('staffDashboard.recentActivity') }}</div>
+                  <div class="text-sm text-[#6B7E8B]">{{ t('staffDashboard.noRecentActivity') }}</div>
                 </div>
               </section>
 
@@ -190,33 +191,41 @@ onBeforeUnmount(() => {
               <aside class="col-span-12 lg:col-span-4 space-y-6">
                 <div class="rounded-2xl bg-gradient-to-br from-[#0A3C63] to-[#062A46] text-white shadow-sm border border-black/5 p-6">
                   <div class="text-sm opacity-80">
-                    Guten Tag, {{ fullName }}
+                    {{ fullName && fullName !== '—' ? t('staffDashboard.greeting', { name: fullName }) : t('staffDashboard.greetingNoName') }}
                   </div>
                   <div class="text-[16px] font-bold mt-3">
-                    Staff Dashboard
+                    {{ t('staffDashboard.staffDashboard') }}
                   </div>
                   <div class="text-xs opacity-80 mt-2">
-                    Role: {{ staffRole }}
+                    {{ t('staffDashboard.role') }}: {{ staffRole }}
                   </div>
                 </div>
 
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                  <div class="text-[16px] font-bold text-[#0B2A3C] mb-3">Quick Actions</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C] mb-3">{{ t('staffDashboard.quickActions') }}</div>
 
                   <button 
                     @click="router.push('/staff/clients')"
                     class="w-full text-left rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-4 hover:bg-[#EEF6FF] transition mb-2"
                   >
-                    <div class="font-semibold text-[#0B2A3C]">View Clients</div>
-                    <div class="text-sm text-[#6B7E8B] mt-1">Manage client accounts</div>
+                    <div class="font-semibold text-[#0B2A3C]">{{ t('staffDashboard.viewClients') }}</div>
+                    <div class="text-sm text-[#6B7E8B] mt-1">{{ t('staffDashboard.manageClientAccounts') }}</div>
                   </button>
 
                   <button 
                     @click="router.push('/staff/card-requests')"
+                    class="w-full text-left rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-4 hover:bg-[#EEF6FF] transition mb-2"
+                  >
+                    <div class="font-semibold text-[#0B2A3C]">{{ t('staffDashboard.cardRequests') }}</div>
+                    <div class="text-sm text-[#6B7E8B] mt-1">{{ t('staffDashboard.reviewCardRequests') }}</div>
+                  </button>
+
+                  <button 
+                    @click="router.push('/staff/faq')"
                     class="w-full text-left rounded-xl bg-[#F7FBFF] border border-black/5 px-4 py-4 hover:bg-[#EEF6FF] transition"
                   >
-                    <div class="font-semibold text-[#0B2A3C]">Card Requests</div>
-                    <div class="text-sm text-[#6B7E8B] mt-1">Review card issuance requests</div>
+                    <div class="font-semibold text-[#0B2A3C]">{{ t('staffDashboard.notificationsMessages') }}</div>
+                    <div class="text-sm text-[#6B7E8B] mt-1">{{ t('staffDashboard.viewNotifications') }}</div>
                   </button>
                 </div>
               </aside>
@@ -225,15 +234,25 @@ onBeforeUnmount(() => {
 
           <!-- Other Pages Content -->
           <template v-else>
-            <UsersManagement v-if="route.path.includes('/users')" />
-            <ClientsManagement v-else-if="route.path.includes('/clients')" />
-            <CardRequests v-else-if="route.path.includes('/card-requests')" />
-            <StaffFAQ v-else-if="route.path.includes('/faq')" />
-            <div v-else class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-              <div class="text-[#6B7E8B]">
-                <p>Page content - coming soon</p>
+            <template v-if="route.path.includes('/faq')">
+              <StaffFAQ />
+            </template>
+            <template v-else-if="route.path.includes('/users')">
+              <UsersManagement />
+            </template>
+            <template v-else-if="route.path.includes('/clients')">
+              <ClientsManagement />
+            </template>
+            <template v-else-if="route.path.includes('/card-requests')">
+              <CardRequests />
+            </template>
+            <template v-else>
+              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+                <div class="text-[#6B7E8B]">
+                  <p>{{ t('common.comingSoon') }}</p>
+                </div>
               </div>
-            </div>
+            </template>
           </template>
         </div>
       </div>
