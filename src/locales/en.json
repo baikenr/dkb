@@ -186,6 +186,7 @@
       "cardStatus": "Card Status",
       "documentStatus": "Document Status",
       "actions": "Actions",
+      "card" : "Info",
       "documentNotUploaded": "Not uploaded"
     },
     "status": {
