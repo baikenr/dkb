@@ -703,13 +703,13 @@ onMounted(() => {
               </td>
               <td class="px-6 py-4">
                 <span
-                  v-if="client.document_status"
+                  v-if="client.document_status !== null"
                   class="px-3 py-1 rounded-full text-xs font-semibold"
                   :class="getDocumentStatusBadgeClass(client.document_status)"
                 >
                   {{ client.document_status }}
                 </span>
-                <span v-else class="text-sm text-[#6B7E8B]">—</span>
+                <span v-else class="text-sm text-[#6B7E8B]">{{t('clientsManagement.table.documentNotUploaded') }}</span>
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-2">

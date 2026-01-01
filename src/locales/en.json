@@ -185,7 +185,8 @@
       "login": "Login",
       "cardStatus": "Card Status",
       "documentStatus": "Document Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "documentNotUploaded": "Not uploaded"
     },
     "status": {
       "pending": "Pending",
@@ -378,7 +379,7 @@
       "ausgang": "Outgoing",
       "noTransactions": "No transactions yet",
       "availableBalance": "Available Balance",
-      "totalBalance": "Total Balance",
+      "totalBalance": "Credit Limit",
       "limit": "Limit",
       "bankName": "Bank Name",
       "bankBic": "BIC",
@@ -392,7 +393,7 @@
       "bankCode": "Bank Code (Bankleitzahl, BIC/SWIFT)",
       "bankName": "Bank Name (Bankname)",
       "cardNotCreated": "Card not yet created",
-      "waitingForCard": "Waiting for Card Creation",
+      "waitingForCard": "WAITING FOR DOCUMENT UPLOAD",
       "waitingForCardDescription": "Some account details will be available after your card is created and activated.",
       "copy": "Copy to clipboard",
       "copied": "{field} copied to clipboard",

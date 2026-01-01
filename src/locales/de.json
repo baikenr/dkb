@@ -185,7 +185,8 @@
       "login": "Login",
       "cardStatus": "Kartenstatus",
       "documentStatus": "Dokumentstatus",
-      "actions": "Aktionen"
+      "actions": "Aktionen",
+      "documentNotUploaded": "Nicht hochgeladen"
     },
     "status": {
       "pending": "Ausstehend",
@@ -378,7 +379,7 @@
       "ausgang": "Ausgang",
       "noTransactions": "Noch keine Transaktionen",
       "availableBalance": "Verfügbares Guthaben",
-      "totalBalance": "Gesamtguthaben",
+      "totalBalance": "Kreditlimit",
       "limit": "Limit",
       "bankName": "Bankname",
       "bankBic": "BIC",
@@ -392,7 +393,7 @@
       "bankCode": "Bankleitzahl, BIC/SWIFT",
       "bankName": "Bankname",
       "cardNotCreated": "Karte noch nicht erstellt",
-      "waitingForCard": "Warten auf Kartenerstellung",
+      "waitingForCard": "WARTEN AUF DAS HOCHLADEN VON DOKUMENTEN",
       "waitingForCardDescription": "Einige Kontodaten werden verfügbar sein, nachdem Ihre Karte erstellt und aktiviert wurde.",
       "copy": "In Zwischenablage kopieren",
       "copied": "{field} in Zwischenablage kopiert",
