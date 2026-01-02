@@ -140,10 +140,10 @@
       "create": "Erstellen"
     },
     "pagination": {
-      "showing": "Zeige {{from}} bis {{to}} von {{total}} Benutzern",
+      "showing": "Zeige {from} bis {to} von {total} Kunden",
       "previous": "Zurück",
       "next": "Weiter",
-      "page": "Seite {{current}} von {{total}}"
+      "page": "Seite {current} von {total}"
     },
     "delete": {
       "confirm": "Möchten Sie den Benutzer {{email}} wirklich löschen?"
@@ -226,10 +226,10 @@
       "ok": "OK"
     },
     "pagination": {
-      "showing": "Zeige {{from}} bis {{to}} von {{total}} Kunden",
+      "showing": "Zeige {from} bis {to} von {total} Kunden",
       "previous": "Zurück",
       "next": "Weiter",
-      "page": "Seite {{current}} von {{total}}"
+      "page": "Seite {current} von {total}"
     },
     "delete": {
       "confirm": "Möchten Sie den Kunden {{name}} wirklich löschen?"
@@ -654,10 +654,10 @@
       "close": "Schließen"
     },
     "pagination": {
-      "showing": "Zeige {{from}} bis {{to}} von {{total}} Benachrichtigungen",
+      "showing": "Zeige {from} bis {to} von {total} Benachrichtigungen",
       "previous": "Zurück",
       "next": "Weiter",
-      "page": "Seite {{current}} von {{total}}"
+      "page": "Seite {current} von {total}"
     },
       "reply": {
         "title": "Antwort an den Kunden",

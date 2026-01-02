@@ -140,10 +140,10 @@
       "create": "Create"
     },
     "pagination": {
-      "showing": "Showing {{from}} to {{to}} of {{total}} users",
+      "showing": "Showing {from} to {to} of {total} users",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {{current}} of {{total}}"
+      "page": "Page {current} of {total}"
     },
     "delete": {
       "confirm": "Are you sure you want to delete user {{email}}?"
@@ -226,10 +226,10 @@
       "ok": "OK"
     },
     "pagination": {
-      "showing": "Showing {{from}} to {{to}} of {{total}} clients",
+      "showing": "Showing {from} to {to} of {total} clients",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {{current}} of {{total}}"
+      "page": "Page {current} of {total}"
     },
     "delete": {
       "confirm": "Are you sure you want to delete client {{name}}?"
@@ -651,10 +651,10 @@
       "close": "Close"
     },
     "pagination": {
-      "showing": "Showing {{from}} to {{to}} of {{total}} notifications",
+      "showing": "Showing {from} to {to} of {total} clients",
       "previous": "Previous",
       "next": "Next",
-      "page": "Page {{current}} of {{total}}"
+      "page": "Page {current} of {total}"
     },
      "reply": {
       "title": "Reply to client",
