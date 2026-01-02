@@ -159,7 +159,7 @@
       "page": "Seite {current} von {total}"
     },
     "delete": {
-      "confirm": "Möchten Sie den Benutzer {{email}} wirklich löschen?"
+      "confirm": "Möchten Sie den Benutzer {email} wirklich löschen?"
     },
     "validation": {
       "emailRequired": "E-Mail ist erforderlich",
@@ -246,7 +246,7 @@
       "page": "Seite {current} von {total}"
     },
     "delete": {
-      "confirm": "Möchten Sie den Kunden {{name}} wirklich löschen?"
+      "confirm": "Möchten Sie den Kunden {name} wirklich löschen?"
     },
     "validation": {
       "firstNameRequired": "Vorname ist erforderlich",
@@ -269,7 +269,7 @@
     "cardCreated": "Karte erfolgreich erstellt",
     "passwordReset": {
       "title": "Passwort zurücksetzen",
-      "subtitle": "Neues Passwort für Kunden festlegen: {{name}}",
+      "subtitle": "Neues Passwort für Kunden festlegen: {name}",
       "newPassword": "Neues Passwort",
       "passwordPlaceholder": "Neues Passwort eingeben",
       "passwordHint": "Passwort muss mindestens 8 Zeichen mit Großbuchstaben, Kleinbuchstaben und Zahl enthalten",
@@ -360,7 +360,7 @@
     },
     "createCardModal": {
       "title": "Karte erstellen",
-      "subtitle": "Karte für Kunden erstellen: {{name}}",
+      "subtitle": "Karte für Kunden erstellen: name}",
       "bankName": "Bankname",
       "fullName": "Vollständiger Name",
       "cardNumber": "Kartennummer",
@@ -494,7 +494,7 @@
     "requestPending": "Anfrage ausstehend",
     "submitting": "Wird übermittelt...",
     "uploadFailed": "Upload fehlgeschlagen",
-    "fileTooLarge": "Datei ist zu groß. Max {{max}} MB",
+    "fileTooLarge": "Datei ist zu groß. Max {max} MB",
     "cardRequestSuccess": "Kartenanfrage erfolgreich übermittelt",
     "cardRequestFailed": "Kartenanfrage fehlgeschlagen",
     "profileMenu": {

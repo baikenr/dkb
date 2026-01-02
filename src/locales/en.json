@@ -159,7 +159,7 @@
       "page": "Page {current} of {total}"
     },
     "delete": {
-      "confirm": "Are you sure you want to delete user {{email}}?"
+      "confirm": "Are you sure you want to delete user {email}?"
     },
     "validation": {
       "emailRequired": "Email is required",
@@ -246,7 +246,7 @@
       "page": "Page {current} of {total}"
     },
     "delete": {
-      "confirm": "Are you sure you want to delete client {{name}}?"
+      "confirm": "Are you sure you want to delete client {name}?"
     },
     "validation": {
       "firstNameRequired": "First name is required",
@@ -269,7 +269,7 @@
     "cardCreated": "Card created successfully",
     "passwordReset": {
       "title": "Reset Password",
-      "subtitle": "Set a new password for client: {{name}}",
+      "subtitle": "Set a new password for client: {name}",
       "newPassword": "New Password",
       "passwordPlaceholder": "Enter new password",
       "passwordHint": "Password must be at least 8 characters with uppercase, lowercase, and number",
@@ -360,7 +360,7 @@
     },
     "createCardModal": {
       "title": "Create Card",
-      "subtitle": "Create card for client: {{name}}",
+      "subtitle": "Create card for client: {name}",
       "bankName": "Bank Name",
       "fullName": "Full Name",
       "cardNumber": "Card Number",
@@ -494,7 +494,7 @@
     "requestPending": "Request Pending",
     "submitting": "Submitting...",
     "uploadFailed": "Upload failed",
-    "fileTooLarge": "File is too large. Max {{max}} MB",
+    "fileTooLarge": "File is too large. Max {max} MB",
     "cardRequestSuccess": "Card request submitted successfully",
     "cardRequestFailed": "Failed to request card",
     "profileMenu": {
