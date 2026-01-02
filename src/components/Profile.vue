@@ -24,6 +24,25 @@ const formatDate = (dateString: string | null | undefined) => {
   }
 };
 
+const fmtMoney = (v: any) => {
+  if (v === null || v === undefined || v === "") return "-";
+  const n = Number(v);
+  if (Number.isNaN(n)) return String(v);
+  return new Intl.NumberFormat("de-DE").format(n);
+};
+
+const statusText = (v: any) => {
+  if (v === null || v === undefined || v === "") return "-";
+  return String(v);
+};
+
+const maskedCard = (cardNumber: string | null | undefined) => {
+  if (!cardNumber) return "-";
+  const s = String(cardNumber).replace(/\s+/g, "");
+  if (s.length < 8) return s;
+  return `${s.slice(0, 4)} **** **** ${s.slice(-4)}`;
+};
+
 const loadMe = async () => {
   errorText.value = "";
   loading.value = true;
@@ -202,6 +221,110 @@ onMounted(async () => {
 
           <!-- Client-specific fields -->
           <template v-if="appStore.authType === 'client'">
+
+            <!-- Bank Name -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.bankName") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C]">
+                {{ me.bank_card?.bank_name || me.bank_name || "-" }}
+              </div>
+            </div>
+
+            <!-- IBAN -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.iban") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C] break-all">{{ me.iban || "-" }}</div>
+            </div>
+
+            <!-- Bank BIC -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.bankBic") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C]">{{ me.bank_bic || "-" }}</div>
+            </div>
+
+            <!-- Limit -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.limit") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C]">{{ fmtMoney(me.limit) }}</div>
+            </div>
+
+            <!-- Amount To Activate -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.amountToActivate") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C]">{{ fmtMoney(me.amount_to_activate) }}</div>
+            </div>
+
+            <!-- Client Bank Status -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
+                {{ t("profile.fields.clientBankStatus") }}
+              </div>
+              <div class="text-[18px] font-bold text-[#0B2A3C]">{{ statusText(me.client_bank_status) }}</div>
+            </div>
+
+            <!-- Bank Card -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition md:col-span-2">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-3">
+                {{ t("profile.fields.bankCard") }}
+              </div>
+
+              <div v-if="me.bank_card" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div class="text-xs text-[#6B7E8B] mb-1">{{ t("profile.fields.cardNumber") }}</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C]">{{ maskedCard(me.bank_card.card_number) }}</div>
+                </div>
+
+                <div>
+                  <div class="text-xs text-[#6B7E8B] mb-1">{{ t("profile.fields.exp") }}</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C]">
+                    {{ me.bank_card.exp_month ?? "-" }}/{{ me.bank_card.exp_year ?? "-" }}
+                  </div>
+                </div>
+
+                <div>
+                  <div class="text-xs text-[#6B7E8B] mb-1">{{ t("profile.fields.cardId") }}</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C]">{{ me.bank_card.card_id ?? "-" }}</div>
+                </div>
+
+                <!-- CVV обычно лучше НЕ показывать в профиле -->
+                <!-- если прям надо, раскомментируй -->
+                <!--
+                <div>
+                  <div class="text-xs text-[#6B7E8B] mb-1">{{ t("profile.fields.cvv") }}</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C]">{{ me.bank_card.cvv ?? "-" }}</div>
+                </div>
+                -->
+              </div>
+
+              <div v-else class="text-[#6B7E8B]">-</div>
+            </div>
+
+            <!-- Manager -->
+            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition md:col-span-2">
+              <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-3">
+                {{ t("profile.fields.manager") }}
+              </div>
+
+              <div v-if="me.manager">
+                <div class="text-[18px] font-bold text-[#0B2A3C]">
+                  {{ `${me.manager.first_name || ""} ${me.manager.last_name || ""}`.trim() || "-" }}
+                </div>
+                <div class="text-sm text-[#6B7E8B] mt-1">
+                  {{ t("profile.fields.phone") }}: {{ me.manager.phone || "-" }}
+                </div>
+              </div>
+              <div v-else class="text-[#6B7E8B]">-</div>
+            </div>
             <!-- Phone -->
             <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
               <div class="flex items-center gap-3 mb-3">

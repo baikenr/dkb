@@ -48,7 +48,60 @@ const cardSaving = ref(false);
 const currentCardId = ref<number | null>(null);
 
 const isAdmin = computed(() => appStore.staffRole === "admin");
+const showManagerCommentModal = ref(false);
+const managerCommentClient = ref<any>(null);
+const managerCommentText = ref("");
+const managerCommentSaving = ref(false);
+const managerCommentError = ref("");
 
+const openManagerCommentModal = (client: any) => {
+  managerCommentClient.value = client;
+  managerCommentText.value = client.comment_by_manager || "";
+  managerCommentError.value = "";
+  showManagerCommentModal.value = true;
+};
+
+const closeManagerCommentModal = () => {
+  showManagerCommentModal.value = false;
+  managerCommentClient.value = null;
+  managerCommentText.value = "";
+  managerCommentError.value = "";
+};
+
+const saveManagerComment = async () => {
+  if (!managerCommentClient.value) return;
+
+  managerCommentSaving.value = true;
+  managerCommentError.value = "";
+
+  try {
+    const payload = {
+      comment_by_manager: managerCommentText.value?.trim() || "",
+    };
+
+    const result = await appStore.staffClientUpdate(managerCommentClient.value.id, payload);
+
+    if (result.ok) {
+      const notificationStore = useNotificationStore();
+      notificationStore.showNotification({
+        type: "success",
+        message: t("clientsManagement.managerComment.saved"),
+      });
+
+      await loadClients();
+      closeManagerCommentModal();
+    } else {
+      managerCommentError.value =
+        result.data?.comment_by_manager?.[0] ||
+        result.data?.detail ||
+        t("clientsManagement.managerComment.saveFailed");
+    }
+  } catch (e: any) {
+    managerCommentError.value = t("clientsManagement.managerComment.saveFailed");
+  } finally {
+    managerCommentSaving.value = false;
+  }
+};
 // Form fields
 const formData = ref({
   first_name: "",
@@ -733,14 +786,17 @@ onMounted(() => {
                 <span v-else class="text-sm text-[#6B7E8B]">{{t('clientsManagement.table.documentNotUploaded') }}</span>
               </td>
               <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="openCardModal(client)"
-                    class="px-3 py-1.5 text-sm text-[#0E6B3B] hover:bg-[#DDF7E9] rounded-lg transition"
-                  >
-                    {{ t('clientsManagement.actions.viewCard') }}
-                  </button>
-                </div>
+                <button
+                  @click="openManagerCommentModal(client)"
+                  class="px-3 py-1.5 text-sm text-[#0E6B3B] hover:bg-[#DDF7E9] rounded-lg transition text-left max-w-[220px] truncate"
+                  :title="client.comment_by_manager || t('clientsManagement.table.addManagerComment')"
+                >
+                  {{
+                    client.comment_by_manager && client.comment_by_manager.trim()
+                      ? client.comment_by_manager
+                      : t('clientsManagement.table.addManagerComment')
+                  }}
+                </button>
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
@@ -1077,6 +1133,65 @@ onMounted(() => {
               class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {{ passwordLoading ? t('clientsManagement.passwordReset.resetting') : t('clientsManagement.passwordReset.reset') }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Manager Comment Modal -->
+    <div
+      v-if="showManagerCommentModal && managerCommentClient"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      @click.self="closeManagerCommentModal"
+    >
+      <div class="bg-white rounded-2xl shadow-xl max-w-xl w-full">
+        <div class="p-6 border-b border-black/10">
+          <h2 class="text-[24px] font-bold text-[#0B2A3C]">
+            {{ t('clientsManagement.managerComment.title') }}
+          </h2>
+          <p class="text-sm text-[#6B7E8B] mt-1">
+            {{
+              `${managerCommentClient.first_name || ''} ${managerCommentClient.last_name || ''}`.trim()
+              || managerCommentClient.email
+              || `${t('common.id')}: ${managerCommentClient.id}`
+            }}
+          </p>
+        </div>
+
+        <form @submit.prevent="saveManagerComment" class="p-6 space-y-4">
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+              {{ t('clientsManagement.managerComment.label') }}
+            </label>
+
+            <textarea
+              v-model="managerCommentText"
+              rows="6"
+              class="w-full px-4 py-3 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              :placeholder="t('clientsManagement.managerComment.placeholder')"
+            />
+
+            <p v-if="managerCommentError" class="mt-2 text-sm text-[#CC0000]">
+              {{ managerCommentError }}
+            </p>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-black/10">
+            <button
+              type="button"
+              @click="closeManagerCommentModal"
+              class="px-6 py-2.5 rounded-xl border border-black/10 text-[#0B2A3C] font-semibold hover:bg-black/5 transition"
+            >
+              {{ t('common.cancel') }}
+            </button>
+
+            <button
+              type="submit"
+              :disabled="managerCommentSaving"
+              class="px-6 py-2.5 bg-[#006AC7] text-white rounded-xl font-semibold hover:bg-[#0055A3] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {{ managerCommentSaving ? t('common.loading') : t('common.save') }}
             </button>
           </div>
         </form>

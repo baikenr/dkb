@@ -63,7 +63,20 @@
       "roleType": "Role / Type",
       "phone": "Phone",
       "workPlace": "Work Place",
-      "birthDate": "Birth Date"
+      "birthDate": "Birth Date",
+      "fullName": "Full name",
+      "bankName": "Bank name",
+      "iban": "IBAN",
+      "bankBic": "BIC / SWIFT",
+      "limit": "Limit",
+      "amountToActivate": "Amount to activate",
+      "clientBankStatus": "Bank status",
+      "clientDocumentStatus": "Document status",
+      "bankCard": "Bank card",
+      "cardNumber": "Card number",
+      "exp": "Expiry",
+      "cardId": "Card ID",
+      "manager": "Manager"
     }
   },
   "sidebar": {
@@ -187,7 +200,8 @@
       "documentStatus": "Document Status",
       "actions": "Actions",
       "card" : "Info",
-      "documentNotUploaded": "Not uploaded"
+      "documentNotUploaded": "Not uploaded",
+      "addManagerComment" : "add Manager Comment"
     },
     "status": {
       "pending": "Pending",
@@ -266,6 +280,13 @@
         "minLength": "Password must be at least 8 characters",
         "failed": "Failed to reset password"
       }
+    },
+    "managerComment": {
+      "title": "Manager comment",
+      "label": "Comment",
+      "placeholder": "Write a comment about the client...",
+      "saved": "Comment saved",
+      "saveFailed": "Failed to save comment"
     }
   },
   "cardRequests": {
