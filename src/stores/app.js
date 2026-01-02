@@ -600,7 +600,7 @@ export const useAppStore = defineStore("app", {
     },
 
     // ==========================
-    // CLIENT FAQ: /api/support/faq-notifications/
+    // CLIENT FAQ SEND: /api/support/faq-notifications/
     // ==========================
     async clientSendFAQ(title, message) {
       try {
@@ -612,6 +612,95 @@ export const useAppStore = defineStore("app", {
         return { ok: true, data: response.data };
       } catch (error) {
         this.notifyError(error, "Send FAQ error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
+    // CLIENT NOTIFICATIONS INBOX: /api/stm-client/notification-client/
+    // (это для просмотра ответов/истории, НЕ для create)
+    // ==========================
+    async clientNotificationsList(params = {}) {
+      try {
+        const response = await axios.get(
+          this.base_url + "/stm-client/notification-client/",
+          {
+            headers: this.getAuthHeaders(),
+            params,
+          }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get client notifications list error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async clientNotificationGet(id) {
+      try {
+        const response = await axios.get(
+          this.base_url + `/stm-client/notification-client/${id}/`,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get client notification error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async clientNotificationUpdate(id, data) {
+      try {
+        const response = await axios.patch(
+          this.base_url + `/stm-client/notification-client/${id}/`,
+          data,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Update client notification error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async clientNotificationDelete(id) {
+      try {
+        await axios.delete(
+          this.base_url + `/stm-client/notification-client/${id}/`,
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true };
+      } catch (error) {
+        this.notifyError(error, "Delete client notification error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async clientNotificationCount() {
+      try {
+        const response = await axios.get(
+          this.base_url + "/stm-client/notification-client/count/",
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get client notification count error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    async clientNotificationShort(count = 3) {
+      try {
+        const response = await axios.get(
+          this.base_url + "/stm-client/notification-client/short/",
+          {
+            headers: this.getAuthHeaders(),
+            params: { count },
+          }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        this.notifyError(error, "Get client short notifications error");
         return { ok: false, data: error?.response?.data };
       }
     },
@@ -720,6 +809,26 @@ export const useAppStore = defineStore("app", {
         this.notifyError(error, "Change user password error");
         return { ok: false, data: error?.response?.data };
       }
-    }
+    },
+
+    // ==========================
+    // STAFF -> SEND MESSAGE TO CLIENT: POST /api/stm/notification/send-message/
+    // ==========================
+    async staffSendMessageToClient({ title, message, receiver_client }) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/stm/notification/send-message/",
+          { title, message, receiver_client },
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Send message to client error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
   },
 });

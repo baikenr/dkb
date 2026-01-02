@@ -19,7 +19,80 @@ const searchQuery = ref("");
 const filterStatus = ref<"all" | "read" | "unread">("all");
 const filterType = ref<"all" | "faq" | "request">("all");
 const unreadCount = ref(0);
+const replyTitle = ref("");
+const replyMessage = ref("");
+const replyLoading = ref(false);
+const replyError = ref("");
+const replySuccess = ref(false);
+const getReceiverClientId = (n: any) => {
+    return (
+      n?.receiver_client_id ??
+      n?.receiver_client?.id ??
+      n?.receiver_client ??
+      n?.sender_client_id ??
+      n?.sender_client?.id ??
+      n?.sender_client ??
+      n?.sender_user?.id ??
+      n?.sender_user_id ??
+      n?.client_id ??
+      null
+    );
+  };
+const resetReplyForm = () => {
+  replyTitle.value = "";
+  replyMessage.value = "";
+  replyLoading.value = false;
+  replyError.value = "";
+  replySuccess.value = false;
+};
 
+const sendReply = async () => {
+  replyError.value = "";
+  replySuccess.value = false;
+
+  const n = selectedNotification.value;
+  const receiverClientId = getReceiverClientId(n);
+
+  if (!receiverClientId) {
+    replyError.value = t("staffNotifications.reply.errors.noReceiver");
+    return;
+  }
+
+  const title = replyTitle.value.trim() || (n?.title ? `Re: ${n.title}` : "Reply");
+  const message = replyMessage.value.trim();
+
+  if (!message) {
+    replyError.value = t("staffNotifications.reply.errors.messageRequired");
+    return;
+  }
+
+  replyLoading.value = true;
+  try {
+    const res = await appStore.staffSendMessageToClient({
+      title,
+      message,
+      receiver_client: Number(receiverClientId),
+    });
+
+    if (res.ok) {
+      replySuccess.value = true;
+      replyTitle.value = "";
+      replyMessage.value = "";
+
+      // обновим список / счетчик
+      await loadNotifications(currentPage.value);
+      await loadUnreadCount();
+
+      setTimeout(() => (replySuccess.value = false), 2500);
+    } else {
+      replyError.value = res.data?.detail || JSON.stringify(res.data);
+    }
+  } catch (e) {
+    replyError.value = t("staffNotifications.reply.errors.failed");
+  } finally {
+    replyLoading.value = false;
+  }
+};
 const loadNotifications = async (page = 1) => {
   loading.value = true;
   try {
@@ -59,6 +132,7 @@ const loadUnreadCount = async () => {
 const openDetailModal = (notification: any) => {
   selectedNotification.value = notification;
   showDetailModal.value = true;
+  resetReplyForm();
   // Mark as read if not read
   if (!notification.is_read) {
     markAsRead(notification.id);
@@ -478,6 +552,51 @@ onMounted(async () => {
               <div class="text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('staffNotifications.detail.message') }}</div>
               <div class="text-[15px] text-[#0B2A3C] whitespace-pre-wrap bg-[#F7FBFF] rounded-xl p-4">
                 {{ selectedNotification.message }}
+              </div>
+            </div>
+
+            <!-- Reply -->
+            <div class="pt-4 border-t border-black/10">
+              <div class="text-sm font-semibold text-[#0B2A3C] mb-2">
+                {{ t("staffNotifications.reply.title") }}
+              </div>
+
+              <div v-if="replySuccess" class="mb-3 bg-[#DDF7E9] border border-[#0E6B3B]/20 rounded-xl p-3 text-[#0E6B3B] text-sm">
+                {{ t("staffNotifications.reply.success") }}
+              </div>
+
+              <div v-if="replyError" class="mb-3 bg-[#FFE0E0] border border-[#B42318]/20 rounded-xl p-3 text-[#B42318] text-sm">
+                {{ replyError }}
+              </div>
+
+              <input
+                v-model="replyTitle"
+                type="text"
+                class="w-full mb-3 px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C]
+                      focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+                :placeholder="t('staffNotifications.reply.titlePlaceholder')"
+              />
+
+              <textarea
+                v-model="replyMessage"
+                rows="4"
+                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C]
+                      focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] resize-none"
+                :placeholder="t('staffNotifications.reply.messagePlaceholder')"
+              ></textarea>
+
+              <div class="flex justify-end mt-3">
+                <button
+                  @click="sendReply"
+                  :disabled="replyLoading"
+                  class="px-6 py-2.5 rounded-xl bg-[#006AC7] text-white font-semibold hover:bg-[#0055A3] transition
+                        disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <svg v-if="replyLoading" class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                  </svg>
+                  <span>{{ replyLoading ? t("staffNotifications.reply.sending") : t("staffNotifications.reply.send") }}</span>
+                </button>
               </div>
             </div>
           </div>

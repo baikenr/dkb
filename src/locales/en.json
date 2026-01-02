@@ -552,6 +552,27 @@
   "clientFAQ": {
     "title": "Contact Support",
     "subtitle": "Send a message to your manager. We will respond as soon as possible.",
+
+    "inbox": {
+    "title": "Messages",
+    "loading": "Loading...",
+    "noMessages": "No messages yet",
+    "searchPlaceholder": "Search...",
+    "filters": {
+      "all": "All",
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "unreadCount": "{count} unread",
+    "new": "New",
+    "noTitle": "No Subject",
+    "markRead": "Mark as Read",
+    "markUnread": "Mark as Unread",
+    "deleteConfirm": "Are you sure you want to delete this message?",
+    "deleteSuccess": "Message deleted successfully",
+    "page": "Page {current} of {total}",
+    "close": "Close"
+    },
     "form": {
       "title": "Subject",
       "titlePlaceholder": "Enter the subject of your message",
@@ -634,6 +655,19 @@
       "previous": "Previous",
       "next": "Next",
       "page": "Page {{current}} of {{total}}"
+    },
+     "reply": {
+      "title": "Reply to client",
+      "success": "Message sent to the client.",
+      "sending": "Sending...",
+      "send": "Send reply",
+      "titlePlaceholder": "Title (optional)",
+      "messagePlaceholder": "Write your reply...",
+      "errors": {
+        "noReceiver": "Cannot send: client is not specified.",
+        "messageRequired": "Please enter a message.",
+        "failed": "Failed to send the message. Please try again."
+      }
     }
   }
 }

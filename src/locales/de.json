@@ -552,6 +552,38 @@
   "clientFAQ": {
     "title": "Support kontaktieren",
     "subtitle": "Senden Sie eine Nachricht an Ihren Manager. Wir werden so schnell wie möglich antworten.",
+
+    "unreadCount": "{count} ungelesen",
+    "loading": "Wird geladen...",
+    "noMessages": "Keine Nachrichten gefunden",
+    "searchPlaceholder": "Suche nach Betreff oder Nachricht...",
+
+    "filters": {
+      "status": "Status",
+      "all": "Alle",
+      "read": "Gelesen",
+      "unread": "Ungelesen"
+    },
+
+    "new": "Neu",
+    "noTitle": "Kein Betreff",
+
+    "read": "Gelesen",
+    "unread": "Ungelesen",
+    "markRead": "Als gelesen markieren",
+    "markUnread": "Als ungelesen markieren",
+
+    "delete": "Löschen",
+    "deleteConfirm": "Möchten Sie diese Nachricht wirklich löschen?",
+    "deleteSuccess": "Nachricht erfolgreich gelöscht",
+
+    "close": "Schließen",
+
+    "pagination": {
+      "previous": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {{current}} von {{total}}"
+    },
     "form": {
       "title": "Betreff",
       "titlePlaceholder": "Geben Sie den Betreff Ihrer Nachricht ein",
@@ -634,6 +666,19 @@
       "previous": "Zurück",
       "next": "Weiter",
       "page": "Seite {{current}} von {{total}}"
-    }
+    },
+      "reply": {
+        "title": "Antwort an den Kunden",
+        "success": "Nachricht wurde an den Kunden gesendet.",
+        "sending": "Wird gesendet...",
+        "send": "Antwort senden",
+        "titlePlaceholder": "Titel (optional)",
+        "messagePlaceholder": "Schreibe deine Antwort...",
+        "errors": {
+          "noReceiver": "Senden nicht möglich: Kunde ist nicht angegeben.",
+          "messageRequired": "Bitte gib eine Nachricht ein.",
+          "failed": "Senden fehlgeschlagen. Bitte erneut versuchen."
+        }
+      }
   }
 }
