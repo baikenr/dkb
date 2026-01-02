@@ -88,6 +88,18 @@ const cardViewErrors = ref({
   limit: "",
 });
 
+const emptyCardViewErrors = () => ({
+  bank_name: "",
+  full_name: "",
+  card_number: "",
+  cvv: "",
+  iban: "",
+  bank_bic: "",
+  exp_month: "",
+  exp_year: "",
+  limit: "",
+});
+
 const loadCardRequests = async () => {
   loading.value = true;
   try {
@@ -441,7 +453,7 @@ const openCardModal = async (client: any) => {
   viewingCardClient.value = client;
   cardLoading.value = true;
   showCardModal.value = true;
-  cardViewErrors.value = {};
+  cardViewErrors.value = emptyCardViewErrors();
   
   try {
     const result = await appStore.staffGetCardByClient(client.id);
@@ -495,7 +507,7 @@ const closeCardModal = () => {
     exp_year: null,
     limit: "",
   };
-  cardViewErrors.value = {};
+  cardViewErrors.value = emptyCardViewErrors();
 };
 
 const formatCardNumber = (value: string) => {
@@ -504,7 +516,7 @@ const formatCardNumber = (value: string) => {
 };
 
 const validateCardViewData = () => {
-  cardViewErrors.value = {};
+  cardViewErrors.value = emptyCardViewErrors();
   let isValid = true;
 
   if (!cardViewData.value.bank_name || cardViewData.value.bank_name.trim() === "") {

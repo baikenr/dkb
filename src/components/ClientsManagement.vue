@@ -456,6 +456,7 @@ const openCardModal = async (client: any) => {
         iban: result.data.iban ?? client.iban ?? "",
         bank_bic: result.data.bank_bic ?? client.bank_bic ?? "",
         limit: result.data.limit ?? client.limit ?? "",
+        amount_to_activate: result.data.amount_to_activate ?? client.amount_to_activate ?? "0.00",
         exp_month: result.data.exp_month || null,
         exp_year: result.data.exp_year || null,
       };
@@ -469,6 +470,7 @@ const openCardModal = async (client: any) => {
         iban: client.iban ?? "",
         bank_bic: client.bank_bic ?? "",
         limit: client.limit ?? "",
+        amount_to_activate: client.amount_to_activate ?? "0.00",
         exp_month: null,
         exp_year: null,
       };
@@ -495,6 +497,7 @@ const closeCardModal = () => {
     exp_month: null,
     exp_year: null,
     limit: "",
+    amount_to_activate: "",
   };
   cardDataErrors.value = {};
 };
@@ -564,6 +567,7 @@ const saveCard = async () => {
       exp_month: cardData.value.exp_month,
       exp_year: cardData.value.exp_year,
       limit: cardData.value.limit || "0",
+      amount_to_activate: cardData.value.amount_to_activate || "0.00",
     };
 
     let result;
