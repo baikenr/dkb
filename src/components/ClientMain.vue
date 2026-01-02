@@ -13,10 +13,8 @@ const route = useRoute();
 const router = useRouter();
 const appStore = useAppStore();
 const notificationStore = useNotificationStore();
-
 const loading = ref(false);
 const docLoading = ref(false);
-
 const me = computed(() => appStore.me as any);
 const clientDocument = ref<any>(null);
 const card = computed(() => me.value?.bank_card || null);

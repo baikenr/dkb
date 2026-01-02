@@ -703,5 +703,23 @@ export const useAppStore = defineStore("app", {
     async staffFAQMarkRead(notificationId) {
       return this.staffNotificationUpdate(notificationId, { is_read: true });
     },
+
+    async staffUserChangePassword(userId, newPassword) {
+      try {
+        const response = await axios.post(
+          this.base_url + `/auth/user/change-password/${userId}/`,
+          { new_password: newPassword },
+          { headers: this.getAuthHeaders() }
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        // валидация
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Change user password error");
+        return { ok: false, data: error?.response?.data };
+      }
+    }
   },
 });

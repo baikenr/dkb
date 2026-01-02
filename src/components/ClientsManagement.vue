@@ -40,6 +40,7 @@ const cardData = ref({
   exp_month: null as number | null,
   exp_year: null as number | null,
   limit: "",
+   amount_to_activate: "",
 });
 const cardDataErrors = ref<any>({});
 const cardLoading = ref(false);
@@ -57,6 +58,10 @@ const formData = ref({
   birth_date: "",
   work_place: "",
   assigned_manager_id: null as number | null,
+  iban: "",
+  bank_bic: "",
+  limit: "", 
+  amount_to_activate: "",
 });
 
 const formErrors = ref<any>({});
@@ -124,6 +129,10 @@ const resetForm = () => {
     birth_date: "",
     work_place: "",
     assigned_manager_id: isAdmin.value ? null : appStore.staffUserId,
+    iban: "",
+    bank_bic: "",
+    limit: "0.00",
+    amount_to_activate: "0.00",
   };
   formErrors.value = {};
   editingClient.value = null;
@@ -148,6 +157,10 @@ const openEditModal = (client: any) => {
     birth_date: client.birth_date || "",
     work_place: client.work_place || "",
     assigned_manager_id: client.assigned_manager_id || null,
+    iban: client.iban || "",
+    bank_bic: client.bank_bic || "",
+    limit: client.limit || "0.00",
+    amount_to_activate: client.amount_to_activate || "0.00",
   };
   formErrors.value = {};
   showModal.value = true;
@@ -222,6 +235,10 @@ const submitForm = async () => {
       email: formData.value.email?.trim() || "",
       birth_date: formData.value.birth_date || null,
       work_place: formData.value.work_place?.trim() || "",
+      iban: formData.value.iban?.trim() || null,
+      bank_bic: formData.value.bank_bic?.trim() || "",
+      limit: formData.value.limit?.trim() || "0.00",
+      amount_to_activate: formData.value.amount_to_activate?.trim() || "0.00",
     };
 
     if (isAdmin.value && formData.value.assigned_manager_id) {
@@ -436,11 +453,11 @@ const openCardModal = async (client: any) => {
         full_name: result.data.full_name || "",
         card_number: result.data.card_number || "",
         cvv: result.data.cvv || "",
-        iban: result.data.iban || "",
-        bank_bic: result.data.bank_bic || "",
+        iban: result.data.iban ?? client.iban ?? "",
+        bank_bic: result.data.bank_bic ?? client.bank_bic ?? "",
+        limit: result.data.limit ?? client.limit ?? "",
         exp_month: result.data.exp_month || null,
         exp_year: result.data.exp_year || null,
-        limit: result.data.limit || "",
       };
     } else {
       // Card not found
@@ -449,11 +466,11 @@ const openCardModal = async (client: any) => {
         full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
         card_number: "",
         cvv: "",
-        iban: "",
-        bank_bic: "",
+        iban: client.iban ?? "",
+        bank_bic: client.bank_bic ?? "",
+        limit: client.limit ?? "",
         exp_month: null,
         exp_year: null,
-        limit: "",
       };
       currentCardId.value = null;
     }
@@ -857,6 +874,60 @@ onMounted(() => {
               class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
             />
             <p v-if="formErrors.work_place" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.work_place }}</p>
+          </div>
+
+          <!-- IBAN -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">IBAN</label>
+            <input
+              v-model="formData.iban"
+              type="text"
+              required
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+            />
+            <p v-if="formErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.iban }}</p>
+          </div>
+
+          <!-- BIC -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">BIC</label>
+            <input
+              v-model="formData.bank_bic"
+              type="text"
+              required
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+            />
+            <p v-if="formErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.bank_bic }}</p>
+          </div>
+
+          <!-- LIMIT -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">LIMIT</label>
+            <input
+              v-model="formData.limit"
+              type="text"
+              required
+              placeholder="0.00"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+            />
+            <p v-if="formErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.limit }}</p>
+          </div>
+
+          <!-- Amount to activate -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
+              Amount to activate
+            </label>
+            <input
+              v-model="formData.amount_to_activate"
+              type="text"
+              required
+              placeholder="0.00"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+            />
+            <p v-if="formErrors.amount_to_activate" class="mt-1 text-sm text-[#CC0000]">
+              {{ formErrors.amount_to_activate }}
+            </p>
           </div>
 
           <!-- Assigned Manager (Admin only) -->

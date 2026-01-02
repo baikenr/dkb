@@ -231,28 +231,41 @@ const submitForm = async () => {
       }
     } else {
       // Update - don't send password if empty
-      if (formData.value.password) {
-        payload.password = formData.value.password;
-      }
       const result = await appStore.staffUserUpdate(editingUser.value.id, payload);
-      if (result.ok) {
-        closeModal();
-        await loadUsers();
-      } else {
-        // Handle backend validation errors
+      if (!result.ok) {
         if (result.data) {
           const errors = result.data;
-          if (errors.email) {
-            formErrors.value.email = Array.isArray(errors.email) ? errors.email[0] : errors.email;
+          if (errors.email) formErrors.value.email = Array.isArray(errors.email) ? errors.email[0] : errors.email;
+          if (errors.first_name) formErrors.value.first_name = Array.isArray(errors.first_name) ? errors.first_name[0] : errors.first_name;
+          if (errors.last_name) formErrors.value.last_name = Array.isArray(errors.last_name) ? errors.last_name[0] : errors.last_name;
+          if (errors.phone) formErrors.value.phone = Array.isArray(errors.phone) ? errors.phone[0] : errors.phone;
+          if (errors.role) formErrors.value.role = Array.isArray(errors.role) ? errors.role[0] : errors.role;
+        }
+        return;
+      }
+      if (formData.value.password) {
+        const passRes = await appStore.staffUserChangePassword(
+          editingUser.value.id,
+          formData.value.password
+        );
+
+        if (!passRes.ok) {
+          const e = passRes.data || {};
+          
+          if (e.new_password) {
+            formErrors.value.password = Array.isArray(e.new_password) ? e.new_password[0] : e.new_password;
+          } else if (e.detail) {
+            formErrors.value.password = e.detail;
+          } else {
+            formErrors.value.password = "Не удалось сменить пароль";
           }
-          if (errors.password) {
-            formErrors.value.password = Array.isArray(errors.password) ? errors.password[0] : errors.password;
-          }
-          if (errors.role) {
-            formErrors.value.role = Array.isArray(errors.role) ? errors.role[0] : errors.role;
-          }
+
+          return;
         }
       }
+
+      closeModal();
+      await loadUsers();
     }
   } catch (error) {
     console.error("Error submitting form:", error);

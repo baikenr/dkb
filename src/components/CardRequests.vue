@@ -1005,6 +1005,7 @@ onMounted(() => {
                 <p class="mt-1 text-xs text-[#6B7E8B]">{{ t('cardRequests.cardForm.cardNumberHint') }}</p>
               </div>
               <!-- cvv -->
+              <br>
               <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
                   {{ t('cardRequests.cardForm.cvv') }} <span class="text-[#CC0000]">*</span>
@@ -1020,50 +1021,52 @@ onMounted(() => {
                 />
                 <p v-if="cardDataErrors.cvv" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.cvv }}</p>
               </div>
+
               <!-- IBAN -->
-               <div>
+              <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  {{ t('cardRequests.cardForm.iban') }} <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.iban') }}
                 </label>
                 <input
                   v-model="cardData.iban"
                   type="text"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
-                  :class="{ 'border-[#CC0000]': cardDataErrors.iban }"
-                  :placeholder="t('cardRequests.placeholders.iban')"
                   @input="cardData.iban = cardData.iban.toUpperCase()"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.iban }"
                 />
                 <p v-if="cardDataErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.iban }}</p>
               </div>
+
               <!-- BIC -->
-               <div>
+              <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  {{ t('cardRequests.cardForm.bic') }} <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.bic') }}
                 </label>
                 <input
                   v-model="cardData.bank_bic"
                   type="text"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
-                  :class="{ 'border-[#CC0000]': cardDataErrors.bank_bic }"
-                  :placeholder="t('cardRequests.placeholders.bic')"
                   @input="cardData.bank_bic = cardData.bank_bic.toUpperCase()"
+                  :class="{ 'border-[#CC0000]': cardDataErrors.bank_bic }"
                 />
                 <p v-if="cardDataErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.bank_bic }}</p>
               </div>
+
               <!-- LIMIT -->
-               <div>
+              <div>
                 <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">
-                  {{ t('cardRequests.cardForm.limit') }} <span class="text-[#CC0000]">*</span>
+                  {{ t('cardRequests.cardForm.limit') }}
                 </label>
                 <input
                   v-model="cardData.limit"
                   type="text"
+                  placeholder="- or 100000"
                   class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
                   :class="{ 'border-[#CC0000]': cardDataErrors.limit }"
-                  :placeholder="t('cardRequests.placeholders.limit')"
                 />
                 <p v-if="cardDataErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardDataErrors.limit }}</p>
               </div>
+
               <!-- Expiration Date -->
               <div class="grid grid-cols-2 gap-4">
                 <div>
