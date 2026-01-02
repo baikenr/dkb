@@ -553,37 +553,27 @@
     "title": "Support kontaktieren",
     "subtitle": "Senden Sie eine Nachricht an Ihren Manager. Wir werden so schnell wie möglich antworten.",
 
-    "unreadCount": "{count} ungelesen",
-    "loading": "Wird geladen...",
-    "noMessages": "Keine Nachrichten gefunden",
-    "searchPlaceholder": "Suche nach Betreff oder Nachricht...",
-
-    "filters": {
-      "status": "Status",
-      "all": "Alle",
-      "read": "Gelesen",
-      "unread": "Ungelesen"
+    "inbox": {
+      "title": "Nachrichten",
+      "loading": "Wird geladen...",
+      "noMessages": "Keine Nachrichten gefunden",
+      "searchPlaceholder": "Suche nach Betreff oder Nachricht...",
+      "filters": {
+        "all": "Alle",
+        "read": "Gelesen",
+        "unread": "Ungelesen"
+      },
+      "unreadCount": "{count} ungelesen",
+      "new": "Neu",
+      "noTitle": "Kein Betreff",
+      "markRead": "Als gelesen markieren",
+      "markUnread": "Als ungelesen markieren",
+      "deleteConfirm": "Möchten Sie diese Nachricht wirklich löschen?",
+      "deleteSuccess": "Nachricht erfolgreich gelöscht",
+      "page": "Seite {current} von {total}",
+      "close": "Schließen"
     },
 
-    "new": "Neu",
-    "noTitle": "Kein Betreff",
-
-    "read": "Gelesen",
-    "unread": "Ungelesen",
-    "markRead": "Als gelesen markieren",
-    "markUnread": "Als ungelesen markieren",
-
-    "delete": "Löschen",
-    "deleteConfirm": "Möchten Sie diese Nachricht wirklich löschen?",
-    "deleteSuccess": "Nachricht erfolgreich gelöscht",
-
-    "close": "Schließen",
-
-    "pagination": {
-      "previous": "Zurück",
-      "next": "Weiter",
-      "page": "Seite {{current}} von {{total}}"
-    },
     "form": {
       "title": "Betreff",
       "titlePlaceholder": "Geben Sie den Betreff Ihrer Nachricht ein",
@@ -592,11 +582,13 @@
       "send": "Nachricht senden",
       "sending": "Wird gesendet..."
     },
+
     "errors": {
       "titleRequired": "Betreff ist erforderlich",
       "messageRequired": "Nachricht ist erforderlich",
       "sendFailed": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
     },
+
     "success": {
       "title": "Nachricht gesendet",
       "message": "Ihre Nachricht wurde erfolgreich gesendet. Wir werden so schnell wie möglich antworten."
