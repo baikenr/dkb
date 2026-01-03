@@ -10,9 +10,11 @@ const appStore = useAppStore();
 const notificationStore = useNotificationStore();
 
 const loading = ref(false);
+const docLoading = ref(false);
 const me = computed(() => appStore.me as any);
 const card = computed(() => me.value?.bank_card || null);
 const docsApproved = computed(() => me.value?.client_document_status === "approved");
+const clientDocument = ref<any>(null);
 // Account details from backend
 // These fields should come from backend: account_owner_name, account_iban, bank_bic, bank_name
 // For now, using card fields as fallback
@@ -44,6 +46,11 @@ const bankName = computed(() =>
 
 const hasCardData = computed(() => !!card.value);
 const hasAllData = computed(() => accountNumber.value && bankCode.value && bankName.value);
+const isDocumentApproved = computed(() => {
+  // Проверяем статус документа из загруженного документа или из me
+  return clientDocument.value?.status === 'approved' || me.value?.client_document_status === 'approved';
+});
+const shouldShowBanner = computed(() => !isDocumentApproved.value);
 
 const loadMe = async () => {
   loading.value = true;
@@ -54,10 +61,32 @@ const loadMe = async () => {
   }
 };
 
+const loadDocument = async () => {
+  docLoading.value = true;
+  try {
+    const r = await appStore.clientGetDocument();
+    // API может возвращать массив или объект
+    if (r?.data) {
+      if (Array.isArray(r.data)) {
+        // Если массив, берем первый элемент
+        clientDocument.value = r.data.length > 0 ? r.data[0] : null;
+      } else {
+        // Если объект, используем как есть
+        clientDocument.value = r.data;
+      }
+    } else {
+      clientDocument.value = null;
+    }
+  } finally {
+    docLoading.value = false;
+  }
+};
+
 onMounted(async () => {
   if (!appStore.me) {
     await loadMe();
   }
+  await loadDocument();
 });
 
 // Format IBAN with spaces
@@ -98,7 +127,7 @@ const copyToClipboard = async (text: string, label: string) => {
         <div v-else class="space-y-6">
           <!-- Status Banner -->
           <div
-          v-if="!docsApproved"
+            v-if="shouldShowBanner"
             class="bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-2xl p-6"
           >
             <div class="flex items-start gap-4">

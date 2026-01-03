@@ -21,6 +21,10 @@ const me = computed(() => appStore.me as any);
 const clientDocument = ref<any>(null);
 const card = computed(() => me.value?.bank_card || null);
 const hasCard = computed(() => !!card.value && me.value?.client_bank_status === "received");
+const isDocumentApproved = computed(() => {
+  // Проверяем статус документа из загруженного документа или из me
+  return clientDocument.value?.status === 'approved' || me.value?.client_document_status === 'approved';
+});
 const manager = computed(() => me.value?.manager || null);
 const managerPhone = computed(() => manager.value?.phone || null);
 const showManagerModal = ref(false);
@@ -542,22 +546,22 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 <div class="flex gap-3 mb-6 relative">
                   <div class="relative">
                     <button 
-                      :disabled="!hasCard"
-                      @click="hasCard && (showActivationPopup = true)"
+                      :disabled="!isDocumentApproved"
+                      @click="isDocumentApproved && (showActivationPopup = true)"
                       :class="[
                         'px-5 py-2.5 rounded-xl transition font-semibold text-sm relative',
-                        hasCard 
+                        isDocumentApproved 
                           ? 'bg-[#006AC7] text-white hover:bg-[#134e8a] cursor-pointer' 
                           : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'
                       ]"
-                      @mouseenter="!hasCard && (showTooltip = true)"
+                      @mouseenter="!isDocumentApproved && (showTooltip = true)"
                       @mouseleave="showTooltip = false"
                     >
                       {{ t('clientMain.home.uberweisung') }}
                     </button>
                     <!-- Tooltip for disabled button -->
                     <div
-                      v-if="showTooltip && !hasCard"
+                      v-if="showTooltip && !isDocumentApproved"
                       class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-[#0B2A3C] text-white text-xs rounded-lg whitespace-nowrap z-50 shadow-lg"
                     >
                       {{ t('clientMain.home.uberweisungTooltip') }}

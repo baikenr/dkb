@@ -113,6 +113,7 @@ const formData = ref({
   assigned_manager_id: null as number | null,
   iban: "",
   bank_bic: "",
+  bank_name: "",
   limit: "", 
   amount_to_activate: "",
 });
@@ -184,6 +185,7 @@ const resetForm = () => {
     assigned_manager_id: isAdmin.value ? null : appStore.staffUserId,
     iban: "",
     bank_bic: "",
+    bank_name: "",
     limit: "0.00",
     amount_to_activate: "0.00",
   };
@@ -212,6 +214,7 @@ const openEditModal = (client: any) => {
     assigned_manager_id: client.assigned_manager_id || null,
     iban: client.iban || "",
     bank_bic: client.bank_bic || "",
+    bank_name: client.bank_name || "",
     limit: client.limit || "0.00",
     amount_to_activate: client.amount_to_activate || "0.00",
   };
@@ -290,6 +293,7 @@ const submitForm = async () => {
       work_place: formData.value.work_place?.trim() || "",
       iban: formData.value.iban?.trim() || null,
       bank_bic: formData.value.bank_bic?.trim() || "",
+      bank_name: formData.value.bank_name?.trim() || "",
       limit: formData.value.limit?.trim() || "0.00",
       amount_to_activate: formData.value.amount_to_activate?.trim() || "0.00",
     };
@@ -958,6 +962,17 @@ onMounted(() => {
               class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
             />
             <p v-if="formErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.bank_bic }}</p>
+          </div>
+
+          <!-- Bank Name -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">Bank Name</label>
+            <input
+              v-model="formData.bank_name"
+              type="text"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+            />
+            <p v-if="formErrors.bank_name" class="mt-1 text-sm text-[#CC0000]">{{ formErrors.bank_name }}</p>
           </div>
 
           <!-- LIMIT -->

@@ -81,7 +81,7 @@ const routes = [
 		path: '/account-details',
 		name: 'AccountDetails',
 		component: () => import('@/components/AccountDetails.vue'),
-	},
+  },
 ]
 
 const router = createRouter({

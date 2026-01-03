@@ -182,7 +182,7 @@ const openReviewModal = (client: any) => {
     // Initialize card data with client's name
     const fullName = `${client.first_name || ''} ${client.last_name || ''}`.trim();
     cardData.value = {
-      bank_name: "DKB",
+      bank_name: client.bank_name || "DKB",
       full_name: fullName || "",
       card_number: "",
       cvv: "",
@@ -398,7 +398,7 @@ const openCreateCardModal = (client: any) => {
   creatingCardClient.value = client;
   const fullName = `${client.first_name || ''} ${client.last_name || ''}`.trim();
   cardFormData.value = {
-    bank_name: "DKB",
+    bank_name: client.bank_name || "DKB",
     full_name: fullName || "Client",
     card_number: generateCardNumber(),
     cvv: "",
@@ -498,7 +498,7 @@ const openCardModal = async (client: any) => {
     } else {
       // Card not found - prepare form for creating new card
       cardViewData.value = {
-        bank_name: "DKB",
+        bank_name: client.bank_name || "DKB",
         full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
         card_number: "",
         cvv: "",
@@ -515,7 +515,7 @@ const openCardModal = async (client: any) => {
     console.error("Error loading card:", error);
     // On error, prepare form for creating new card
     cardViewData.value = {
-      bank_name: "DKB",
+      bank_name: client.bank_name || "DKB",
       full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
       card_number: "",
       cvv: "",

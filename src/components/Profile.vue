@@ -66,7 +66,7 @@ onMounted(async () => {
 
 <template>
   <Header class="fixed top-0 left-0 right-0 z-50 bg-white shadow-md" />
-  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 pt-24">
+  <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-8 mt-20">
     <!-- Header Section -->
     <div class="mb-8">
       <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight mb-2">{{ t("profile.title") }}</h1>
@@ -228,7 +228,7 @@ onMounted(async () => {
                 {{ t("profile.fields.bankName") }}
               </div>
               <div class="text-[18px] font-bold text-[#0B2A3C]">
-                {{ me.bank_card?.bank_name || me.bank_name || "-" }}
+                {{ me.bank_name || me.bank_card?.bank_name || "-" }}
               </div>
             </div>
 
