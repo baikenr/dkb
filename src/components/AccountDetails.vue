@@ -25,6 +25,7 @@ const accountOwner = computed(() =>
 
 const accountNumber = computed(() => 
   me.value?.account_iban || 
+  me.value?.iban || 
   card.value?.iban || 
   null
 );
