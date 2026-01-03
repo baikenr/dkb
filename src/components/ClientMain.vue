@@ -53,6 +53,7 @@ const uploadError = ref({
 const isUploading = ref(false);
 
 const openFilePicker = (type: 'frontSide' | 'backSide' | 'bankStatement') => {
+  if (!canEditDocuments.value) return;
   uploadError.value[type] = "";
   uploadError.value.general = "";
   fileInputRefs.value[type]?.click();
@@ -85,7 +86,15 @@ const canSubmit = computed(() => {
   return selectedFiles.value.frontSide && selectedFiles.value.backSide && selectedFiles.value.bankStatement;
 });
 
+const canEditDocuments = computed(() => {
+  if (docLoading.value) return false;
+  const status = (clientDocument.value?.status || "").toLowerCase();
+  if (!status) return true;
+  return status === "rejected";
+});
+
 const submitAllDocuments = async () => {
+  if (!canEditDocuments.value) return;
   if (!canSubmit.value) {
     uploadError.value.general = t('clientMain.selectAllDocuments');
     return;
@@ -830,7 +839,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             </div>
 
               <!-- Documents Upload Container -->
-              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+              <div v-if="canEditDocuments && !docLoading"  class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
                 <div class="space-y-6">
                   <!-- Step 1: Upload Front Side -->
                   <div class="flex items-start gap-6">
@@ -860,7 +869,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           @change="(e) => onFileSelected(e, 'frontSide')"
                         />
                         <button
-                          :disabled="isUploading"
+                          :disabled="isUploading || !canEditDocuments"
                           class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
                                  disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
@@ -931,7 +940,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           @change="(e) => onFileSelected(e, 'backSide')"
                         />
                         <button
-                          :disabled="isUploading"
+                          :disabled="isUploading || !canEditDocuments"
                           class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
                                  disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
@@ -1002,7 +1011,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           @change="(e) => onFileSelected(e, 'bankStatement')"
                         />
                         <button
-                          :disabled="isUploading"
+                          :disabled="isUploading || !canEditDocuments"
                           class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
                                  disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
@@ -1075,6 +1084,16 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   <p v-if="uploadError.general" class="text-[15px] text-[#B42318] mt-4">
                     {{ uploadError.general }}
                   </p>
+                </div>
+              </div>
+              <div v-else class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
+                <div class="text-[16px] text-[#6B7E8B]">
+                  <template v-if="clientDocument?.status === 'pending'">
+                    {{ t('clientMain.documentLocked.pending') }}
+                  </template>
+                  <template v-else-if="clientDocument?.status === 'approved'">
+                    {{ t('clientMain.documentLocked.approved') }}
+                  </template>
                 </div>
               </div>
 

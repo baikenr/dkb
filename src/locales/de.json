@@ -407,6 +407,10 @@
       "bankBic": "BIC",
       "fullName": "Karteninhaber"
     },
+    "documentLocked": {
+      "pending": "Die Dokumente wurden zur Prüfung eingereicht. Ein erneutes Hochladen ist nicht möglich, solange der Status „pending“ ist.",
+      "approved": "Die Dokumente wurden genehmigt. Ein erneutes Hochladen ist nicht möglich."
+    },
     "accountDetails": {
       "title": "Kontodetails",
       "subtitle": "Ihre Bankkontoinformationen",

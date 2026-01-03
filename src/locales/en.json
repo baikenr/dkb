@@ -407,6 +407,10 @@
       "bankBic": "BIC",
       "fullName": "Cardholder"
     },
+    "documentLocked": {
+      "pending": "Documents have been submitted for review. Re-upload is not available while the status is “pending”.",
+      "approved": "Documents have been approved. Re-upload is not available."
+    },
     "accountDetails": {
       "title": "Account Details",
       "subtitle": "Your banking account information",
