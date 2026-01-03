@@ -28,6 +28,20 @@
       "notMatch": "Passwords do not match."
     }
   },
+  "forgotPassword": {
+    "title": "Restore Password",
+    "subtitle": "Enter your phone number or email address to reset your password.",
+    "phoneOrEmailPlaceholder": "Phone number or Email",
+    "submit": "Reset Password",
+    "submitting": "Submitting...",
+    "backToLogin": "Back to Login",
+    "success": "Your request has been successfully submitted. We will contact you shortly.",
+    "errors": {
+      "fillField": "Please enter your phone number or email address.",
+      "invalidFormat": "Please enter a valid phone number or email address.",
+      "failed": "Failed to send request. Please try again."
+    }
+  },
   "header": {
     "loginBtn": "Sign in",
     "userFallback": "User",
@@ -304,7 +318,8 @@
       "document": "Document",
       "card": "Card",
       "actions": "Actions",
-      "noDocument": "No document"
+      "noDocument": "No document",
+      "cardReceived": "Card Received"
     },
     "actions": {
       "view": "View",
@@ -385,6 +400,7 @@
     "home": "Home",
     "card": "Card",
     "document": "Document",
+    "messages": "Messages",
     "faq": "Contact Support"
   },
   "clientMain": {
@@ -569,6 +585,10 @@
     "phone": "Phone",
     "id": "ID",
     "clientId": "Client ID"
+  },
+  "clientMessages": {
+    "title": "Messages",
+    "subtitle": "Manage your messages and notifications. Read messages from your manager and support team."
   },
   "clientFAQ": {
     "title": "Contact Support",

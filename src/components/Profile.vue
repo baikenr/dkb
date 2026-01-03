@@ -293,7 +293,7 @@ onMounted(async () => {
 
                 <div>
                   <div class="text-xs text-[#6B7E8B] mb-1">{{ t("profile.fields.cardId") }}</div>
-                  <div class="text-[16px] font-bold text-[#0B2A3C]">{{ me.bank_card.card_id ?? "-" }}</div>
+                  <div class="text-[16px] font-bold text-[#0B2A3C]">{{ me.bank_card.unique_card_id ?? "-" }}</div>
                 </div>
 
                 <!-- CVV обычно лучше НЕ показывать в профиле -->

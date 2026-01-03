@@ -28,6 +28,20 @@
       "notMatch": "Passwörter stimmen nicht überein."
     }
   },
+  "forgotPassword": {
+    "title": "Passwort wiederherstellen",
+    "subtitle": "Geben Sie Ihre Telefonnummer oder E-Mail-Adresse ein, um Ihr Passwort zurückzusetzen.",
+    "phoneOrEmailPlaceholder": "Telefonnummer oder E-Mail",
+    "submit": "Passwort zurücksetzen",
+    "submitting": "Wird gesendet...",
+    "backToLogin": "Zurück zur Anmeldung",
+    "success": "Ihre Anfrage wurde erfolgreich übermittelt. Wir werden Sie in Kürze kontaktieren.",
+    "errors": {
+      "fillField": "Bitte geben Sie Ihre Telefonnummer oder E-Mail-Adresse ein.",
+      "invalidFormat": "Bitte geben Sie eine gültige Telefonnummer oder E-Mail-Adresse ein.",
+      "failed": "Fehler beim Senden der Anfrage. Bitte versuchen Sie es erneut."
+    }
+  },
   "header": {
     "loginBtn": "Anmelden",
     "userFallback": "Benutzer",
@@ -304,7 +318,8 @@
       "document": "Dokument",
       "card": "Karte",
       "actions": "Aktionen",
-      "noDocument": "Kein Dokument"
+      "noDocument": "Kein Dokument",
+      "cardReceived": "Karte erhalten"
     },
     "actions": {
       "view": "Ansehen",
@@ -385,6 +400,7 @@
     "home": "Startseite",
     "card": "Karte",
     "document": "Dokument",
+    "messages": "Nachrichten",
     "faq": "Support kontaktieren"
   },
   "clientMain": {
@@ -569,6 +585,10 @@
     "phone": "Telefon",
     "id": "ID",
     "clientId": "Kunden-ID"
+  },
+  "clientMessages": {
+    "title": "Nachrichten",
+    "subtitle": "Verwalten Sie Ihre Nachrichten und Benachrichtigungen. Lesen Sie Nachrichten von Ihrem Manager und Support-Team."
   },
   "clientFAQ": {
     "title": "Support kontaktieren",
