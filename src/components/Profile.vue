@@ -257,20 +257,20 @@ onMounted(async () => {
             </div>
 
             <!-- Amount To Activate -->
-            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+            <!-- <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
               <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
                 {{ t("profile.fields.amountToActivate") }}
               </div>
               <div class="text-[18px] font-bold text-[#0B2A3C]">{{ fmtMoney(me.amount_to_activate) }}</div>
-            </div>
+            </div> -->
 
             <!-- Client Bank Status -->
-            <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
+            <!-- <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition">
               <div class="text-sm font-semibold text-[#6B7E8B] uppercase tracking-wide mb-2">
                 {{ t("profile.fields.clientBankStatus") }}
               </div>
               <div class="text-[18px] font-bold text-[#0B2A3C]">{{ statusText(me.client_bank_status) }}</div>
-            </div>
+            </div> -->
 
             <!-- Bank Card -->
             <div class="p-6 rounded-xl bg-[#F7FBFF] border border-black/5 hover:border-[#006AC7]/20 transition md:col-span-2">

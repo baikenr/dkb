@@ -12,7 +12,7 @@ const notificationStore = useNotificationStore();
 const loading = ref(false);
 const me = computed(() => appStore.me as any);
 const card = computed(() => me.value?.bank_card || null);
-
+const docsApproved = computed(() => me.value?.client_document_status === "approved");
 // Account details from backend
 // These fields should come from backend: account_owner_name, account_iban, bank_bic, bank_name
 // For now, using card fields as fallback
@@ -97,8 +97,8 @@ const copyToClipboard = async (text: string, label: string) => {
 
         <div v-else class="space-y-6">
           <!-- Status Banner -->
-          <div 
-            v-if="!hasAllData"
+          <div
+          v-if="!docsApproved"
             class="bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-2xl p-6"
           >
             <div class="flex items-start gap-4">
