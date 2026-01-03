@@ -7,6 +7,7 @@ import { useNotificationStore } from "@/stores/notification.js";
 import ClientSidebar from "@/components/ClientSidebar.vue";
 import ClientFAQ from "@/components/ClientFAQ.vue";
 import Security from "@/components/Security.vue";
+import DocumentViewerModal from "@/components/DocumentViewerModal.vue";
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -51,6 +52,64 @@ const uploadError = ref({
   general: ""
 });
 const isUploading = ref(false);
+const showDocumentModal = ref(false);
+const selectedDocumentForView = ref<any>(null);
+const blobUrls = ref<string[]>([]);
+
+const getDocumentUrl = (filePath: string) => {
+  if (!filePath) return "";
+  if (filePath.startsWith("blob:")) return filePath;
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) return filePath;
+
+  const baseUrl = appStore.base_url.replace("/api", "");
+  return `${baseUrl}${filePath.startsWith("/") ? "" : "/"}${filePath}`;
+};
+
+const isImageFile = (filePath: string) => {
+  if (!filePath) return false;
+  if (filePath.includes("#img")) return true;
+
+  const lowerPath = filePath.toLowerCase();
+  return [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"].some(ext => lowerPath.endsWith(ext));
+};
+
+const closeDocumentModal = () => {
+  showDocumentModal.value = false;
+  selectedDocumentForView.value = null;
+  blobUrls.value.forEach((u) => URL.revokeObjectURL(u));
+  blobUrls.value = [];
+};
+
+const openDocumentViewerFromSelected = () => {
+  const doc: any = {};
+
+  if (selectedFiles.value.frontSide) {
+    const u = URL.createObjectURL(selectedFiles.value.frontSide);
+    blobUrls.value.push(u);
+    doc.front_side = selectedFiles.value.frontSide.type.startsWith("image/")
+      ? `${u}#img`
+      : u;
+  }
+
+  if (selectedFiles.value.backSide) {
+    const u = URL.createObjectURL(selectedFiles.value.backSide);
+    blobUrls.value.push(u);
+    doc.back_side = selectedFiles.value.backSide.type.startsWith("image/")
+      ? `${u}#img`
+      : u;
+  }
+
+  if (selectedFiles.value.bankStatement) {
+    const u = URL.createObjectURL(selectedFiles.value.bankStatement);
+    blobUrls.value.push(u);
+    doc.bank_statement = selectedFiles.value.bankStatement.type.startsWith("image/")
+      ? `${u}#img`
+      : u;
+  }
+
+  selectedDocumentForView.value = doc;
+  showDocumentModal.value = true;
+};
 
 const openFilePicker = (type: 'frontSide' | 'backSide' | 'bankStatement') => {
   if (!canEditDocuments.value) return;
@@ -892,6 +951,13 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           </svg>
                           <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.frontSide.name }}</span>
                           <button
+                            @click="openDocumentViewerFromSelected()"
+                            class="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-[#0B2A3C] hover:bg-black/5 transition text-sm font-semibold"
+                            :disabled="isUploading"
+                          >
+                            {{ t('cardRequests.actions.view') || 'View' }}
+                          </button>
+                          <button
                             @click="removeFile('frontSide')"
                             class="text-[#B42318] hover:text-[#B42318]/80 transition"
                             :disabled="isUploading"
@@ -963,6 +1029,13 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                           </svg>
                           <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.backSide.name }}</span>
                           <button
+                            @click="openDocumentViewerFromSelected()"
+                            class="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-[#0B2A3C] hover:bg-black/5 transition text-sm font-semibold"
+                            :disabled="isUploading"
+                          >
+                            {{ t('cardRequests.actions.view') || 'View' }}
+                          </button>
+                          <button
                             @click="removeFile('backSide')"
                             class="text-[#B42318] hover:text-[#B42318]/80 transition"
                             :disabled="isUploading"
@@ -1033,6 +1106,13 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                             <polyline points="10 9 9 9 8 9"></polyline>
                           </svg>
                           <span class="text-[15px] text-[#0E6B3B] flex-1 truncate">{{ selectedFiles.bankStatement.name }}</span>
+                          <button
+                            @click="openDocumentViewerFromSelected()"
+                            class="px-3 py-1.5 rounded-lg bg-white border border-black/10 text-[#0B2A3C] hover:bg-black/5 transition text-sm font-semibold"
+                            :disabled="isUploading"
+                          >
+                            {{ t('cardRequests.actions.view') || 'View' }}
+                          </button>
                           <button
                             @click="removeFile('bankStatement')"
                             class="text-[#B42318] hover:text-[#B42318]/80 transition"
@@ -1395,5 +1475,13 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         </div>
       </div>
     </div>
+      <DocumentViewerModal
+        :show="showDocumentModal"
+        :document="selectedDocumentForView"
+        :title="t('cardRequests.documentViewer.title') || 'Document Viewer'"
+        :getDocumentUrl="getDocumentUrl"
+        :isImageFile="isImageFile"
+        @close="closeDocumentModal"
+      />
   </div>
 </template>
