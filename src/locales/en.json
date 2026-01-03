@@ -633,6 +633,29 @@
       "close": "Close"
     }
   },
+  "staffClientMessages": {
+    "title": "My Clients",
+    "subtitle": "Click \"Write\" to send a message",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search by name / phone / email / ID",
+    "loading": "Loading...",
+    "empty": "No clients found",
+    "write": "Write",
+    "modal": {
+      "title": "Message client",
+      "topicPlaceholder": "Title (optional)",
+      "messagePlaceholder": "Message...",
+      "sending": "Sending...",
+      "send": "Send",
+      "sent": "Sent ✅",
+      "close": "Close"
+    },
+    "errors": {
+      "noClient": "Client is not selected.",
+      "messageRequired": "Please enter a message.",
+      "sendFailed": "Failed to send."
+    }
+  },
   "staffNotifications": {
     "title": "Notifications & Messages",
     "subtitle": "View and manage all notifications and messages from clients.",

@@ -636,6 +636,31 @@
       "close": "Schließen"
     }
   },
+  "staffClientMessages": {
+    "title": "Meine Kunden",
+    "subtitle": "Klicken Sie auf „Schreiben“, um eine Nachricht zu senden",
+    "refresh": "Aktualisieren",
+    "searchPlaceholder": "Suche nach Name / Telefon / E-Mail / ID",
+    "loading": "Wird geladen...",
+    "empty": "Keine Kunden gefunden",
+
+    "write": "Schreiben",
+    "modal": {
+      "title": "Nachricht an Kunden",
+      "topicPlaceholder": "Titel (optional)",
+      "messagePlaceholder": "Nachricht...",
+      "sending": "Wird gesendet...",
+      "send": "Senden",
+      "sent": "Gesendet ✅",
+      "close": "Schließen"
+    },
+
+    "errors": {
+      "noClient": "Kunde ist nicht ausgewählt.",
+      "messageRequired": "Bitte geben Sie eine Nachricht ein.",
+      "sendFailed": "Senden fehlgeschlagen."
+    }
+  },
   "staffNotifications": {
     "title": "Benachrichtigungen & Nachrichten",
     "subtitle": "Anzeigen und verwalten Sie alle Benachrichtigungen und Nachrichten von Kunden.",
