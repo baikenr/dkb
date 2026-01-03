@@ -534,9 +534,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                 </div>
                 
-                <div v-if="me.iban" class="mb-4">
+                <div v-if="me?.iban" class="mb-4">
                   <div class="text-sm text-[#6B7E8B] mb-1">IBAN</div>
-                  <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(me.iban) }}</div>
+                  <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(me?.iban) }}</div>
                 </div>
 
                 <div class="flex gap-3 mb-6 relative">
@@ -729,7 +729,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               <div class="flex items-center justify-between py-3 border-b border-black/5">
                 <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.iban') }}</div>
                 <div class="font-bold text-[#0B2A3C] font-mono">
-                  <span v-if="showCardData">{{ me.iban || '—' }}</span>
+                  <span v-if="showCardData">{{ me?.iban || '—' }}</span>
                   <span v-else class="blur-sm select-none">•••• •••• •••• •••• ••••</span>
                 </div>
               </div>
