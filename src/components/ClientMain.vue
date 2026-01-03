@@ -518,7 +518,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
                   <div class="text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.totalBalance') }}</div>
                   <div class="text-[32px] font-bold text-[#0B2A3C]">
-                    {{ card ? (Number(card.balance || 0) + Number(card.limit || 0)).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '0,00 €' }}
+                    {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' }}
                   </div>
                 </div>
               </div>
@@ -621,7 +621,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   <div class="flex items-center justify-between">
                     <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.limit') }}</div>
                     <div class="text-sm font-semibold text-[#0B2A3C]">
-                      {{ Number(card.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
+                      {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                     </div>
                   </div>
                   <div v-if="card.bank_name" class="flex items-center justify-between">
@@ -817,7 +817,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardLimit') }}</div>
                 <div class="font-bold text-[#0B2A3C]">
                   <span v-if="showCardData">
-                    {{ Number(card.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
+                    {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                   </span>
                   <span v-else class="blur-sm select-none">•••• €</span>
                 </div>

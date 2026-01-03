@@ -362,6 +362,7 @@
       "iban": "IBAN",
       "bic": "BIC / SWIFT",
       "limit": "Limit",
+      "balance": "Guthaben",
       "expMonth": "Ablaufmonat",
       "expYear": "Ablaufjahr",
       "errors": {

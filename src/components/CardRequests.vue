@@ -75,6 +75,7 @@ const cardViewData = ref({
   exp_month: null as number | null,
   exp_year: null as number | null,
   limit: "",
+  balance: "",
 });
 const cardViewErrors = ref({
   bank_name: "",
@@ -86,6 +87,7 @@ const cardViewErrors = ref({
   exp_month: "",
   exp_year: "",
   limit: "",
+  balance: "",
 });
 
 const emptyCardViewErrors = () => ({
@@ -98,6 +100,7 @@ const emptyCardViewErrors = () => ({
   exp_month: "",
   exp_year: "",
   limit: "",
+  balance: "",
 });
 
 const loadCardRequests = async () => {
@@ -475,6 +478,7 @@ const openCardModal = async (client: any) => {
           exp_month: cardResult.data.exp_month || null,
           exp_year: cardResult.data.exp_year || null,
           limit: cardResult.data.limit || "",
+          balance: cardResult.data.balance || "0.00",
         };
       } else {
         // Fallback: use data from cardByClientResult
@@ -488,6 +492,7 @@ const openCardModal = async (client: any) => {
           exp_month: cardByClientResult.data.exp_month || null,
           exp_year: cardByClientResult.data.exp_year || null,
           limit: cardByClientResult.data.limit || "",
+          balance: cardByClientResult.data.balance || "0.00",
         };
       }
     } else {
@@ -502,6 +507,7 @@ const openCardModal = async (client: any) => {
         exp_month: null,
         exp_year: null,
         limit: "",
+        balance: "0.00",
       };
       currentCardId.value = null;
     }
@@ -518,6 +524,7 @@ const openCardModal = async (client: any) => {
       exp_month: null,
       exp_year: null,
       limit: "",
+      balance: "0.00",
     };
     currentCardId.value = null;
   } finally {
@@ -539,6 +546,7 @@ const closeCardModal = () => {
     exp_month: null,
     exp_year: null,
     limit: "",
+    balance: "",
   };
   cardViewErrors.value = emptyCardViewErrors();
 };
@@ -618,6 +626,7 @@ const saveCard = async () => {
       exp_month: cardViewData.value.exp_month,
       exp_year: cardViewData.value.exp_year,
       limit: cardViewData.value.limit || "0",
+      balance: cardViewData.value.balance || "0.00",
     };
 
     let result;
@@ -1429,6 +1438,19 @@ onMounted(() => {
               />
               <p v-if="cardViewErrors.exp_year" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.exp_year }}</p>
             </div>
+          </div>
+
+          <!-- Balance -->
+          <div>
+            <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.balance') || 'Balance' }}</label>
+            <input
+              v-model="cardViewData.balance"
+              type="text"
+              placeholder="0.00"
+              class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
+              :class="{ 'border-[#CC0000]': cardViewErrors.balance }"
+            />
+            <p v-if="cardViewErrors.balance" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.balance }}</p>
           </div>
 
           <div class="flex items-center justify-end gap-3 pt-4 border-t border-black/10">
