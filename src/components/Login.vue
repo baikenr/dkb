@@ -168,13 +168,6 @@ const submitLogin = async () => {
         <span>
           {{ t("login.restoreLogin") }}
           <router-link
-            to="/forgot-login"
-            class="text-[#006ACA] hover:text-[#134E8A] underline"
-          >
-            {{ t("login.restoreLoginLink") }}
-          </router-link>
-          {{ t("login.restoreMiddle") }}
-          <router-link
             to="/forgot-password"
             class="text-[#006ACA] hover:text-[#134E8A] underline"
           >

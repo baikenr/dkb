@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/app.js";
 import { useNotificationStore } from "@/stores/notification.js";
 import ClientSidebar from "@/components/ClientSidebar.vue";
 import ClientFAQ from "@/components/ClientFAQ.vue";
+import ClientMessages from "@/components/ClientMessages.vue";
 import Security from "@/components/Security.vue";
 import DocumentViewerModal from "@/components/DocumentViewerModal.vue";
 
@@ -26,7 +27,7 @@ const showManagerModal = ref(false);
 
 // Account activation popup
 const showActivationPopup = ref(false);
-const activationAmount = computed(() => me.value?.activation_amount_eur || 0.24);
+const activationAmount = computed(() => me.value?.amount_to_activate || 0.24);
 
 // Tooltip state for disabled Überweisung button
 const showTooltip = ref(false);
@@ -492,6 +493,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             <span v-if="route.path === '/'">{{ t('clientSidebar.home') }}</span>
             <span v-else-if="route.path === '/card'">{{ t('clientSidebar.card') }}</span>
             <span v-else-if="route.path === '/document'">{{ t('clientSidebar.document') }}</span>
+            <span v-else-if="route.path === '/messages'">{{ t('clientSidebar.messages') }}</span>
             <span v-else-if="route.path === '/faq'">{{ t('clientSidebar.faq') }}</span>
             <span v-else-if="route.path === '/security'">{{ t('security.title') }}</span>
             <span v-else>{{ t('clientMain.title') }}</span>
@@ -532,9 +534,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                 </div>
                 
-                <div v-if="card && card.iban" class="mb-4">
+                <div v-if="me.iban" class="mb-4">
                   <div class="text-sm text-[#6B7E8B] mb-1">IBAN</div>
-                  <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(card.iban) }}</div>
+                  <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(me.iban) }}</div>
                 </div>
 
                 <div class="flex gap-3 mb-6 relative">
@@ -720,14 +722,14 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               <!-- Card ID -->
               <div class="flex items-center justify-between py-3 border-b border-black/5">
                 <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardId') }}</div>
-                <div class="font-bold text-[#0B2A3C]">{{ card.card_id || '—' }}</div>
+                <div class="font-bold text-[#0B2A3C]">{{ card?.unique_card_id || '—' }}</div>
               </div>
 
               <!-- IBAN -->
               <div class="flex items-center justify-between py-3 border-b border-black/5">
                 <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.iban') }}</div>
                 <div class="font-bold text-[#0B2A3C] font-mono">
-                  <span v-if="showCardData">{{ card.iban || '—' }}</span>
+                  <span v-if="showCardData">{{ me.iban || '—' }}</span>
                   <span v-else class="blur-sm select-none">•••• •••• •••• •••• ••••</span>
                 </div>
               </div>
@@ -1322,6 +1324,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                 </div>
               </div>
+          </template>
+
+          <!-- Messages Page -->
+          <template v-else-if="route.path === '/messages'">
+            <ClientMessages />
           </template>
 
           <!-- FAQ Page -->

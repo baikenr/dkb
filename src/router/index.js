@@ -8,6 +8,12 @@ const routes = [
 	meta: { public: true },
 	},
 	{
+	path: '/forgot-password',
+	name: 'ForgotPassword',
+	component: () => import('@/components/ForgotPassword.vue'),
+	meta: { public: true },
+	},
+	{
 		path: '/',
 		name: 'Main',
 		// meta: { public: true },
@@ -59,6 +65,11 @@ const routes = [
 	{
 		path: '/document',
 		name: 'ClientDocument',
+		component: () => import('@/pages/Index.vue'),
+	},
+	{
+		path: '/messages',
+		name: 'ClientMessages',
 		component: () => import('@/pages/Index.vue'),
 	},
 	{

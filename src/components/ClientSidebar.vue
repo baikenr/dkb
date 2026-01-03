@@ -20,6 +20,7 @@ const navItems = computed(() => {
   const items = [
     { key: "home", label: t("clientSidebar.home"), to: "/", icon: "home" },
     { key: "document", label: t("clientSidebar.document"), to: "/document", icon: "document" },
+    { key: "messages", label: t("clientSidebar.messages"), to: "/messages", icon: "messages" },
     { key: "faq", label: t("clientSidebar.faq"), to: "/faq", icon: "faq" },
   ];
   
@@ -105,6 +106,11 @@ const go = async (to: string) => {
             <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <polyline points="10 9 9 9 8 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <!-- Messages Icon -->
+          <svg v-else-if="it.icon === 'messages'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"
+            :class="isActive(it.to) ? 'text-[#006AC7]' : 'text-[#6B7E8B]'">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <!-- FAQ/Support Icon -->
           <svg v-else-if="it.icon === 'faq'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="flex-shrink-0"

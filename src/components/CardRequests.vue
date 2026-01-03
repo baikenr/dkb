@@ -456,22 +456,42 @@ const openCardModal = async (client: any) => {
   cardViewErrors.value = emptyCardViewErrors();
   
   try {
-    const result = await appStore.staffGetCardByClient(client.id);
-    if (result.ok && result.data) {
-      currentCardId.value = result.data.id;
-      cardViewData.value = {
-        bank_name: result.data.bank_name || "",
-        full_name: result.data.full_name || "",
-        card_number: result.data.card_number || "",
-        cvv: result.data.cvv || "",
-        iban: result.data.iban || "",
-        bank_bic: result.data.bank_bic || "",
-        exp_month: result.data.exp_month || null,
-        exp_year: result.data.exp_year || null,
-        limit: result.data.limit || "",
-      };
+    // First, get card by client to find card ID
+    const cardByClientResult = await appStore.staffGetCardByClient(client.id);
+    if (cardByClientResult.ok && cardByClientResult.data && cardByClientResult.data.id) {
+      // Card exists, get full card data by card ID
+      currentCardId.value = cardByClientResult.data.id;
+      const cardResult = await appStore.staffGetCard(currentCardId.value);
+      
+      if (cardResult.ok && cardResult.data) {
+        // Populate form with card data
+        cardViewData.value = {
+          bank_name: cardResult.data.bank_name || "",
+          full_name: cardResult.data.full_name || "",
+          card_number: cardResult.data.card_number || "",
+          cvv: cardResult.data.cvv || "",
+          iban: cardResult.data.iban || "",
+          bank_bic: cardResult.data.bank_bic || "",
+          exp_month: cardResult.data.exp_month || null,
+          exp_year: cardResult.data.exp_year || null,
+          limit: cardResult.data.limit || "",
+        };
+      } else {
+        // Fallback: use data from cardByClientResult
+        cardViewData.value = {
+          bank_name: cardByClientResult.data.bank_name || "",
+          full_name: cardByClientResult.data.full_name || "",
+          card_number: cardByClientResult.data.card_number || "",
+          cvv: cardByClientResult.data.cvv || "",
+          iban: cardByClientResult.data.iban || "",
+          bank_bic: cardByClientResult.data.bank_bic || "",
+          exp_month: cardByClientResult.data.exp_month || null,
+          exp_year: cardByClientResult.data.exp_year || null,
+          limit: cardByClientResult.data.limit || "",
+        };
+      }
     } else {
-      // Card not found
+      // Card not found - prepare form for creating new card
       cardViewData.value = {
         bank_name: "DKB",
         full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
@@ -487,6 +507,19 @@ const openCardModal = async (client: any) => {
     }
   } catch (error) {
     console.error("Error loading card:", error);
+    // On error, prepare form for creating new card
+    cardViewData.value = {
+      bank_name: "DKB",
+      full_name: `${client.first_name || ''} ${client.last_name || ''}`.trim() || "Client",
+      card_number: "",
+      cvv: "",
+      iban: "",
+      bank_bic: "",
+      exp_month: null,
+      exp_year: null,
+      limit: "",
+    };
+    currentCardId.value = null;
   } finally {
     cardLoading.value = false;
   }
@@ -727,14 +760,17 @@ onMounted(() => {
               <td class="px-4 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <button
-                    v-if="getDocumentForClient(client.id)"
+                    v-if="getDocumentForClient(client.id) && client.card_status !== 'received'"
                     @click="openReviewModal(client)"
                     class="px-2 py-1 text-xs whitespace-nowrap bg-[#006AC7] text-white rounded-lg hover:bg-[#0055A3] transition"
                   >
                     {{ t('cardRequests.actions.reviewProcess') }}
                   </button>
-                  <span v-else class="text-xs text-[#6B7E8B]">
+                  <span v-else-if="!getDocumentForClient(client.id)" class="text-xs text-[#6B7E8B]">
                     {{ t('cardRequests.table.noDocument') }}
+                  </span>
+                  <span v-else-if="client.card_status === 'received'" class="text-xs text-[#6B7E8B]">
+                    {{ t('cardRequests.table.cardReceived') }}
                   </span>
                 </div>
               </td>
@@ -1365,32 +1401,6 @@ onMounted(() => {
               <p v-if="cardViewErrors.cvv" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.cvv }}</p>
             </div>
 
-            <!-- IBAN -->
-            <div>
-              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.iban') }}</label>
-              <input
-                v-model="cardViewData.iban"
-                type="text"
-                @input="cardViewData.iban = cardViewData.iban.toUpperCase()"
-                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
-                :class="{ 'border-[#CC0000]': cardViewErrors.iban }"
-              />
-              <p v-if="cardViewErrors.iban" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.iban }}</p>
-            </div>
-
-            <!-- BIC -->
-            <div>
-              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.bic') }}</label>
-              <input
-                v-model="cardViewData.bank_bic"
-                type="text"
-                @input="cardViewData.bank_bic = cardViewData.bank_bic.toUpperCase()"
-                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7] font-mono"
-                :class="{ 'border-[#CC0000]': cardViewErrors.bank_bic }"
-              />
-              <p v-if="cardViewErrors.bank_bic" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.bank_bic }}</p>
-            </div>
-
             <!-- Exp Month -->
             <div>
               <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.expMonth') }} <span class="text-[#CC0000]">*</span></label>
@@ -1418,18 +1428,6 @@ onMounted(() => {
                 :class="{ 'border-[#CC0000]': cardViewErrors.exp_year }"
               />
               <p v-if="cardViewErrors.exp_year" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.exp_year }}</p>
-            </div>
-
-            <!-- Limit -->
-            <div>
-              <label class="block text-sm font-semibold text-[#0B2A3C] mb-2">{{ t('cardRequests.cardForm.limit') }}</label>
-              <input
-                v-model="cardViewData.limit"
-                type="text"
-                class="w-full px-4 py-2.5 rounded-xl border border-black/10 bg-white text-[#0B2A3C] focus:outline-none focus:ring-2 focus:ring-[#006AC7]/20 focus:border-[#006AC7]"
-                :class="{ 'border-[#CC0000]': cardViewErrors.limit }"
-              />
-              <p v-if="cardViewErrors.limit" class="mt-1 text-sm text-[#CC0000]">{{ cardViewErrors.limit }}</p>
             </div>
           </div>
 

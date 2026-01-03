@@ -319,6 +319,25 @@ export const useAppStore = defineStore("app", {
     },
 
     // ==========================
+    // SUPPORT: POST /api/support/request-reset-password/
+    // ==========================
+    async requestResetPassword(data) {
+      try {
+        const response = await axios.post(
+          this.base_url + "/support/request-reset-password/",
+          data
+        );
+        return { ok: true, data: response.data };
+      } catch (error) {
+        if (error?.response?.status === 400 || error?.response?.status === 422) {
+          return { ok: false, data: error.response.data };
+        }
+        this.notifyError(error, "Request reset password error");
+        return { ok: false, data: error?.response?.data };
+      }
+    },
+
+    // ==========================
     // STAFF CARDS: /api/cards/
     // ==========================
     async staffCreateCard(cardData) {
