@@ -154,6 +154,8 @@ const markAsRead = async (notificationId: number) => {
     await appStore.staffNotificationUpdate(notificationId, { is_read: true });
     await loadNotifications(currentPage.value);
     await loadUnreadCount();
+    // Обновляем счетчик в сайдбаре
+    window.dispatchEvent(new Event("notification-updated"));
   } catch (error) {
     console.error("Error marking as read:", error);
   }
@@ -164,6 +166,8 @@ const markAsUnread = async (notificationId: number) => {
     await appStore.staffNotificationUpdate(notificationId, { is_read: false });
     await loadNotifications(currentPage.value);
     await loadUnreadCount();
+    // Обновляем счетчик в сайдбаре
+    window.dispatchEvent(new Event("notification-updated"));
   } catch (error) {
     console.error("Error marking as unread:", error);
   }
@@ -181,6 +185,8 @@ const deleteNotification = async (notificationId: number) => {
       });
       await loadNotifications(currentPage.value);
       await loadUnreadCount();
+      // Обновляем счетчик в сайдбаре
+      window.dispatchEvent(new Event("notification-updated"));
       if (selectedNotification.value?.id === notificationId) {
         closeDetailModal();
       }
@@ -541,6 +547,10 @@ onMounted(async () => {
         <div class="flex items-start justify-between gap-4">
           <div class="flex-1 cursor-pointer" @click="openDetailModal(notification)">
             <div class="flex items-center gap-3 mb-2">
+              <div v-if="!notification.is_read" class="relative flex-shrink-0">
+                <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                <span class="relative w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+              </div>
               <h3 class="text-[18px] font-bold text-[#0B2A3C]">
                 {{ notification.title || t("staffNotifications.noTitle") }}
               </h3>

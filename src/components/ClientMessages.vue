@@ -86,6 +86,8 @@ const openDetail = async (item: any) => {
     await appStore.clientNotificationUpdate(item.id, { is_read: true });
     await loadInbox(currentPage.value);
     await loadUnreadCount();
+    // Обновляем счетчик в сайдбаре
+    window.dispatchEvent(new Event("notification-updated"));
   }
 };
 
@@ -98,6 +100,8 @@ const toggleRead = async (item: any) => {
   await appStore.clientNotificationUpdate(item.id, { is_read: !item.is_read });
   await loadInbox(currentPage.value);
   await loadUnreadCount();
+  // Обновляем счетчик в сайдбаре
+  window.dispatchEvent(new Event("notification-updated"));
 };
 
 const deleteMsg = async (item: any) => {
@@ -108,6 +112,8 @@ const deleteMsg = async (item: any) => {
     if (selected.value?.id === item.id) closeDetail();
     await loadInbox(currentPage.value);
     await loadUnreadCount();
+    // Обновляем счетчик в сайдбаре
+    window.dispatchEvent(new Event("notification-updated"));
   }
 };
 
@@ -176,6 +182,10 @@ onMounted(async () => {
           <div class="flex items-start justify-between gap-4">
             <div class="flex-1 cursor-pointer" @click="openDetail(item)">
               <div class="flex items-center gap-2">
+                <div v-if="!item.is_read" class="relative flex-shrink-0">
+                  <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+                  <span class="relative w-2.5 h-2.5 bg-red-500 rounded-full"></span>
+                </div>
                 <div class="text-[16px] font-bold text-[#0B2A3C]">
                   {{ item.title || t("clientFAQ.inbox.noTitle") }}
                 </div>

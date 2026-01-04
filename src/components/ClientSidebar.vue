@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import { useAppStore } from "@/stores/app.js";
@@ -11,6 +11,8 @@ const route = useRoute();
 const appStore = useAppStore();
 
 const sidebarOpen = ref(true);
+const unreadCount = ref(0);
+let unreadCountInterval: any = null;
 
 const me = computed(() => appStore.me as any);
 const card = computed(() => me.value?.bank_card || null);
@@ -39,6 +41,47 @@ const go = async (to: string) => {
     await router.push(to);
   } catch {}
 };
+
+const loadUnreadCount = async () => {
+  if (appStore.authType !== "client") return;
+  try {
+    const res = await appStore.clientNotificationCount();
+    if (res.ok) unreadCount.value = res.data?.count ?? 0;
+  } catch {}
+};
+
+const handleWindowFocus = () => {
+  loadUnreadCount();
+};
+
+const handleNotificationUpdate = () => {
+  loadUnreadCount();
+};
+
+onMounted(async () => {
+  await loadUnreadCount();
+  // Обновляем счетчик каждые 30 секунд
+  unreadCountInterval = setInterval(loadUnreadCount, 30000);
+  // Обновляем счетчик при возврате фокуса на окно
+  window.addEventListener("focus", handleWindowFocus);
+  // Обновляем счетчик при обновлении уведомлений
+  window.addEventListener("notification-updated", handleNotificationUpdate);
+});
+
+onBeforeUnmount(() => {
+  if (unreadCountInterval) {
+    clearInterval(unreadCountInterval);
+  }
+  window.removeEventListener("focus", handleWindowFocus);
+  window.removeEventListener("notification-updated", handleNotificationUpdate);
+});
+
+// Обновляем счетчик при переходе на страницу Messages
+watch(() => route.path, (newPath) => {
+  if (newPath === "/messages") {
+    loadUnreadCount();
+  }
+});
 </script>
 
 <template>
@@ -83,7 +126,7 @@ const go = async (to: string) => {
         @click="go(it.to)"
       >
         <span
-          class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mx-2"
+          class="relative flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mx-2"
           :class="isActive(it.to) ? 'bg-white' : 'bg-[#F3F7FB]'"
         >
           <!-- Home Icon -->
@@ -125,6 +168,17 @@ const go = async (to: string) => {
             <path d="M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path d="M12 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
           </svg>
+          
+          <!-- Notification Badge -->
+          <span 
+            v-if="it.key === 'messages' && unreadCount > 0" 
+            class="absolute -top-1 -right-1 z-10"
+          >
+            <span class="relative inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-sm">
+              <span class="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-15"></span>
+              <span class="relative z-10">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+            </span>
+          </span>
         </span>
 
         <span 
