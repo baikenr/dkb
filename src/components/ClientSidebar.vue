@@ -11,6 +11,25 @@ const route = useRoute();
 const appStore = useAppStore();
 
 const sidebarOpen = ref(true);
+
+const isMobile = ref(false);
+let prevIsMobile = false;
+
+const checkMobile = () => {
+  const nowMobile = window.innerWidth < 768; // md breakpoint
+  isMobile.value = nowMobile;
+
+  // чтобы не "ломать" состояние на ресайзе постоянно — реагируем только на смену режима
+  if (nowMobile !== prevIsMobile) {
+    sidebarOpen.value = nowMobile ? false : true; // на мобилке закрыто по умолчанию
+    prevIsMobile = nowMobile;
+  }
+};
+
+const onToggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value;
+};
+
 const unreadCount = ref(0);
 let unreadCountInterval: any = null;
 
@@ -40,6 +59,8 @@ const go = async (to: string) => {
   try {
     await router.push(to);
   } catch {}
+
+  if (isMobile.value) sidebarOpen.value = false;
 };
 
 const loadUnreadCount = async () => {
@@ -59,6 +80,9 @@ const handleNotificationUpdate = () => {
 };
 
 onMounted(async () => {
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+  window.addEventListener("toggle-sidebar", onToggleSidebar as any);
   await loadUnreadCount();
   // Обновляем счетчик каждые 30 секунд
   unreadCountInterval = setInterval(loadUnreadCount, 30000);
@@ -85,9 +109,22 @@ watch(() => route.path, (newPath) => {
 </script>
 
 <template>
+  <div
+    v-if="isMobile && sidebarOpen"
+    class="fixed inset-0 bg-black/40 z-[70]"
+    @click="sidebarOpen = false"
+  ></div>
   <aside
-    class="h-screen sticky top-0 bg-white border-r border-black/10 transition-all duration-300 ease-in-out"
-    :class="sidebarOpen ? 'w-[280px]' : 'w-[90px]'"
+    class="h-screen sticky top-0 bg-white border-r border-black/10 transition-all duration-300 ease-in-out z-[80]"
+    :class="isMobile
+      ? [
+          'fixed inset-y-0 left-0 w-[280px] transform',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        ]
+      : [
+          'h-screen sticky top-0',
+          sidebarOpen ? 'w-[280px]' : 'w-[90px]'
+        ]"
   >
     <!-- Logo Section -->
     <div class="px-3 py-6 border-b border-black/10">
