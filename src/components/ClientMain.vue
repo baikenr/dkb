@@ -413,20 +413,38 @@ const changeLanguage = (lang: string) => {
 };
 const toggleLanguage = () => changeLanguage(locale.value === "de" ? "en" : "de");
 const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
+const sidebarRef = ref<InstanceType<typeof ClientSidebar> | null>(null);
+
+const toggleMobileMenu = () => {
+  window.dispatchEvent(new Event("toggle-mobile-menu"));
+};
 </script>
 
 <template>
   <div class="flex min-h-screen">
+    <!-- Mobile Menu Toggle Button -->
+    <button
+      @click="toggleMobileMenu"
+      class="fixed top-3 left-3 sm:top-4 sm:left-4 z-40 lg:hidden w-10 h-10 rounded-lg bg-white border border-black/10 shadow-md hover:bg-black/5 flex items-center justify-center transition-colors duration-200"
+      :title="t('common.menu')"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
+        <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+
     <!-- Left Sidebar -->
-    <ClientSidebar />
-    <main class="flex-1 relative">
+    <ClientSidebar ref="sidebarRef" />
+    <main class="flex-1 relative lg:ml-0 pt-16 sm:pt-20 lg:pt-0">
       <!-- Profile Menu & Language Toggle - Top Right -->
-      <div class="absolute top-0 right-0 z-10 p-6 profile-menu-container">
-        <div class="flex items-center gap-3">
+      <div class="fixed lg:absolute top-0 right-0 z-30 lg:z-10 p-3 sm:p-4 lg:p-6 profile-menu-container">
+        <div class="flex items-center gap-2 sm:gap-3">
           <!-- Language Toggle -->
           <button
             @click="toggleLanguage"
-            class="px-3 py-2 rounded-xl border border-black/10 bg-white hover:bg-black/5 transition font-semibold text-sm text-[#0B2A3C]"
+            class="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-black/10 bg-white hover:bg-black/5 transition font-semibold text-xs sm:text-sm text-[#0B2A3C] shadow-sm lg:shadow-none"
           >
             {{ langLabel }}
           </button>
@@ -434,21 +452,21 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <!-- Profile Menu -->
           <div class="relative">
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-black/5 transition font-semibold text-[#0B2A3C]"
+              class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-xl hover:bg-black/5 transition font-semibold text-[#0B2A3C] bg-white lg:bg-transparent shadow-sm lg:shadow-none border border-black/10 lg:border-transparent"
               @click="profileMenuOpen = !profileMenuOpen"
             >
-              <div class="w-8 h-8 rounded-full bg-[#006AC7] flex items-center justify-center text-white text-sm font-bold">
+              <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#006AC7] flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
                 {{ fullName.charAt(0).toUpperCase() }}
               </div>
-              <span class="text-sm">{{ fullName }}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <span class="text-xs sm:text-sm truncate max-w-[80px] sm:max-w-none hidden sm:inline">{{ fullName }}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
             </button>
 
         <div
           v-if="profileMenuOpen"
-          class="absolute right-0 top-[48px] w-[220px] bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden z-20"
+          class="absolute right-0 top-[44px] sm:top-[48px] w-[180px] sm:w-[220px] bg-white border border-black/10 rounded-xl shadow-lg overflow-hidden z-50"
         >
           <button class="w-full text-left px-4 py-3 hover:bg-black/5 flex items-center gap-3" @click="goProfile">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -491,9 +509,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           </div>
         </div>
       </div>
-      <div class="max-w-[1200px] mx-auto px-6 py-8">
-        <div class="mb-6">
-          <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-5 lg:px-6 pt-2 sm:pt-4 lg:pt-4 pb-4 sm:pb-6 lg:pb-8">
+        <div class="mb-4 sm:mb-6">
+          <h1 class="text-2xl sm:text-3xl lg:text-[36px] font-bold text-[#0B2A3C] tracking-tight">
             <span v-if="route.path === '/'">{{ t('clientSidebar.home') }}</span>
             <span v-else-if="route.path === '/card'">{{ t('clientSidebar.card') }}</span>
             <span v-else-if="route.path === '/document'">{{ t('clientSidebar.document') }}</span>
@@ -510,46 +528,46 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         <div v-else class="space-y-6">
           <!-- Home Page -->
           <template v-if="route.path === '/'">
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
               <!-- Summary Balances -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                  <div class="text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.availableBalance') }}</div>
-                  <div class="text-[32px] font-bold text-[#0B2A3C]">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+                  <div class="text-xs sm:text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.availableBalance') }}</div>
+                  <div class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#0B2A3C]">
                     {{ card ? Number(card.balance || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' : '0,00 €' }}
                   </div>
                 </div>
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                  <div class="text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.totalBalance') }}</div>
-                  <div class="text-[32px] font-bold text-[#0B2A3C]">
+                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+                  <div class="text-xs sm:text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.totalBalance') }}</div>
+                  <div class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#0B2A3C]">
                     {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €' }}
                   </div>
                 </div>
               </div>
 
               <!-- Girokonto Section -->
-              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                   <div>
-                    <h2 class="text-[20px] font-bold text-[#0B2A3C] mb-1">{{ t('clientMain.home.girokonto') }}</h2>
-                    <div class="text-sm text-[#6B7E8B]">
+                    <h2 class="text-lg sm:text-xl font-bold text-[#0B2A3C] mb-1">{{ t('clientMain.home.girokonto') }}</h2>
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">
                       {{ me?.first_name || '' }} {{ me?.last_name || '' }}
                     </div>
                   </div>
                 </div>
                 
                 <div v-if="me?.iban" class="mb-4">
-                  <div class="text-sm text-[#6B7E8B] mb-1">IBAN</div>
-                  <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(me?.iban) }}</div>
+                  <div class="text-xs sm:text-sm text-[#6B7E8B] mb-1">IBAN</div>
+                  <div class="text-sm sm:text-base font-mono text-[#0B2A3C] break-all">{{ formatIBAN(me?.iban) }}</div>
                 </div>
 
-                <div class="flex gap-3 mb-6 relative">
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6 relative">
                   <div class="relative">
                     <button 
                       :disabled="!isDocumentApproved"
                       @click="isDocumentApproved && (showActivationPopup = true)"
                       :class="[
-                        'px-5 py-2.5 rounded-xl transition font-semibold text-sm relative',
+                        'px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition font-semibold text-xs sm:text-sm relative w-full sm:w-auto',
                         isDocumentApproved 
                           ? 'bg-[#006AC7] text-white hover:bg-[#134e8a] cursor-pointer' 
                           : 'opacity-50 cursor-not-allowed bg-gray-300 text-gray-500'
@@ -572,7 +590,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                   <button 
                     @click="router.push('/account-details')"
-                    class="px-5 py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-sm text-[#0B2A3C]"
+                    class="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-xs sm:text-sm text-[#0B2A3C] w-full sm:w-auto"
                   >
                     {{ t('clientMain.home.kontodetails') }}
                   </button>
@@ -606,39 +624,39 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- Visa Kreditkarte Section -->
-              <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+              <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                   <div>
-                    <h2 class="text-[20px] font-bold text-[#0B2A3C] mb-1">{{ t('clientMain.home.visaKreditkarte') }}</h2>
-                    <div class="text-sm text-[#6B7E8B]">
+                    <h2 class="text-lg sm:text-xl font-bold text-[#0B2A3C] mb-1">{{ t('clientMain.home.visaKreditkarte') }}</h2>
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">
                       {{ card.full_name || `${me?.first_name || ''} ${me?.last_name || ''}`.trim() }} •••• {{ card.card_number ? card.card_number.slice(-4) : '' }}
                     </div>
                   </div>
                 </div>
                 
-                <div class="text-[24px] font-bold text-[#B42318] mb-4">
+                <div class="text-xl sm:text-2xl lg:text-[24px] font-bold text-[#B42318] mb-4">
                   {{ Number(card.balance || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                 </div>
 
                 <!-- Card Details -->
                 <div class="space-y-3 border-t border-black/10 pt-4">
                   <div class="flex items-center justify-between">
-                    <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.limit') }}</div>
-                    <div class="text-sm font-semibold text-[#0B2A3C]">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.limit') }}</div>
+                    <div class="text-xs sm:text-sm font-semibold text-[#0B2A3C]">
                       {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                     </div>
                   </div>
-                  <div v-if="card.bank_name" class="flex items-center justify-between">
-                    <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankName') }}</div>
-                    <div class="text-sm font-semibold text-[#0B2A3C]">{{ card.bank_name }}</div>
+                  <div v-if="card.bank_name" class="flex items-center justify-between flex-wrap gap-1">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankName') }}</div>
+                    <div class="text-xs sm:text-sm font-semibold text-[#0B2A3C] break-all text-right">{{ card.bank_name }}</div>
                   </div>
-                  <div v-if="card.bank_bic" class="flex items-center justify-between">
-                    <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankBic') }}</div>
-                    <div class="text-sm font-semibold text-[#0B2A3C]">{{ card.bank_bic }}</div>
+                  <div v-if="card.bank_bic" class="flex items-center justify-between flex-wrap gap-1">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankBic') }}</div>
+                    <div class="text-xs sm:text-sm font-semibold text-[#0B2A3C] font-mono break-all text-right">{{ card.bank_bic }}</div>
                   </div>
-                  <div v-if="card.full_name" class="flex items-center justify-between">
-                    <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.fullName') }}</div>
-                    <div class="text-sm font-semibold text-[#0B2A3C]">{{ card.full_name }}</div>
+                  <div v-if="card.full_name" class="flex items-center justify-between flex-wrap gap-1">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.fullName') }}</div>
+                    <div class="text-xs sm:text-sm font-semibold text-[#0B2A3C] break-all text-right">{{ card.full_name }}</div>
                   </div>
                 </div>
               </div>
@@ -647,15 +665,15 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
 
           <!-- Card Details Page -->
           <template v-else-if="route.path === '/card'">
-            <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-            <h2 class="text-[24px] font-bold text-[#0B2A3C] mb-6">{{ t('clientMain.cardDetails') }}</h2>
+            <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+            <h2 class="text-xl sm:text-2xl lg:text-[24px] font-bold text-[#0B2A3C] mb-4 sm:mb-6">{{ t('clientMain.cardDetails') }}</h2>
             
             <!-- Informationen Section -->
-            <div class="bg-[#F7FBFF] rounded-2xl border border-black/5 p-6 mb-6">
-              <div class="flex flex-col md:flex-row gap-6">
+            <div class="bg-[#F7FBFF] rounded-2xl border border-black/5 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
                 <!-- Card Image (Left) -->
-                <div class="flex-shrink-0">
-                  <div class="relative w-[340px] h-[214px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl shadow-xl overflow-hidden border border-black/20">
+                <div class="flex-shrink-0 w-full lg:w-auto">
+                  <div class="relative w-full max-w-[340px] mx-auto lg:mx-0 h-[190px] sm:h-[214px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl shadow-xl overflow-hidden border border-black/20">
                     <!-- DKB Logo (top left) -->
                     <div class="absolute top-4 left-4">
                       <div class="text-[#006AC7] font-bold text-xl">DKB</div>
@@ -667,8 +685,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                     </div>
                     
                     <!-- Card Number (masked or shown) -->
-                    <div class="absolute bottom-16 left-4 right-4">
-                      <div class="text-white text-xl font-mono tracking-wider">
+                    <div class="absolute bottom-12 sm:bottom-16 left-3 sm:left-4 right-3 sm:right-4">
+                      <div class="text-white text-base sm:text-lg lg:text-xl font-mono tracking-wider">
                         <span v-if="showCardData && card.card_number">
                           {{ formatCardNumber(card.card_number) }}
                         </span>
@@ -694,8 +712,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                 <!-- Card Info (Right) -->
                 <div class="flex-1 flex flex-col justify-between">
                   <div>
-                    <div class="text-[18px] font-bold text-[#0B2A3C] mb-2">VISA-Card DKB-Cash</div>
-                    <div class="text-sm text-[#6B7E8B] mb-4">
+                    <div class="text-base sm:text-lg font-bold text-[#0B2A3C] mb-2">VISA-Card DKB-Cash</div>
+                    <div class="text-xs sm:text-sm text-[#6B7E8B] mb-4 break-all">
                       <span v-if="showCardData && card.card_number" class="font-mono">
                         {{ formatCardNumber(card.card_number) }}
                       </span>
@@ -709,7 +727,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                   
                   <button
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#E8F3FF] text-[#006AC7] hover:bg-[#D0E7FF] transition font-semibold text-sm w-fit"
+                    class="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-[#E8F3FF] text-[#006AC7] hover:bg-[#D0E7FF] transition font-semibold text-xs sm:text-sm w-full sm:w-fit"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -722,26 +740,26 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             </div>
             
             <!-- Detailed Card Information -->
-            <div class="space-y-4">
+            <div class="space-y-3 sm:space-y-4">
               <!-- Card ID -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardId') }}</div>
-                <div class="font-bold text-[#0B2A3C]">{{ card?.unique_card_id || '—' }}</div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardId') }}</div>
+                <div class="font-bold text-sm sm:text-base text-[#0B2A3C] break-all sm:text-right">{{ card?.unique_card_id || '—' }}</div>
               </div>
 
               <!-- IBAN -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.iban') }}</div>
-                <div class="font-bold text-[#0B2A3C] font-mono">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.iban') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] font-mono break-all sm:text-right">
                   <span v-if="showCardData">{{ me?.iban || '—' }}</span>
                   <span v-else class="blur-sm select-none">•••• •••• •••• •••• ••••</span>
                 </div>
               </div>
 
               <!-- Card Number -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardNumber') }}</div>
-                <div class="font-bold text-[#0B2A3C] font-mono">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardNumber') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] font-mono break-all sm:text-right">
                   <span v-if="showCardData && card.card_number">
                     {{ formatCardNumber(card.card_number) }}
                   </span>
@@ -753,33 +771,33 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- CVV -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cvv') }}</div>
-                <div class="font-bold text-[#0B2A3C] font-mono">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cvv') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] font-mono sm:text-right">
                   <span v-if="showCardData">{{ card.cvv || '—' }}</span>
                   <span v-else class="blur-sm select-none">•••</span>
                 </div>
               </div>
               
               <!-- Karteninhaber*in -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardHolder') }}</div>
-                <div class="font-bold text-[#0B2A3C]">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardHolder') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] break-all sm:text-right">
                   <span v-if="showCardData">{{ card.full_name || `${me?.first_name || ''} ${me?.last_name || ''}`.trim() }}</span>
                   <span v-else class="blur-sm select-none">•••• ••••</span>
                 </div>
               </div>
               
               <!-- Kartentyp -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardType') }}</div>
-                <div class="font-bold text-[#0B2A3C]">VISA-Card DKB-Cash</div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardType') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] sm:text-right">VISA-Card DKB-Cash</div>
               </div>
               
               <!-- Gültig bis -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.expires') }}</div>
-                <div class="font-bold text-[#0B2A3C]">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.expires') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] sm:text-right">
                   <span v-if="showCardData && card.exp_month && card.exp_year">
                     {{ String(card.exp_month).padStart(2, '0') }}/{{ card.exp_year }}
                   </span>
@@ -789,8 +807,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- Card Status -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardStatus') }}</div>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardStatus') }}</div>
                 <div class="font-bold">
                   <span
                     class="px-3 py-1 rounded-full text-xs font-semibold"
@@ -806,9 +824,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- Balance -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.balance') }}</div>
-                <div class="font-bold text-[#0B2A3C]">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.balance') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] sm:text-right">
                   <span v-if="showCardData">
                     {{ Number(card.balance || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                   </span>
@@ -817,9 +835,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
               
               <!-- Kartenlimit -->
-              <div class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.cardLimit') }}</div>
-                <div class="font-bold text-[#0B2A3C]">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.cardLimit') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] sm:text-right">
                   <span v-if="showCardData">
                     {{ Number(me?.limit || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                   </span>
@@ -828,23 +846,23 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- Bank Name -->
-              <div v-if="card.bank_name" class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankName') }}</div>
-                <div class="font-bold text-[#0B2A3C]">{{ card.bank_name }}</div>
+              <div v-if="card.bank_name" class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankName') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] break-all sm:text-right">{{ card.bank_name }}</div>
               </div>
 
               <!-- Bank BIC -->
-              <div v-if="card.bank_bic" class="flex items-center justify-between py-3 border-b border-black/5">
-                <div class="text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankBic') }}</div>
-                <div class="font-bold text-[#0B2A3C] font-mono">{{ card.bank_bic }}</div>
+              <div v-if="card.bank_bic" class="flex flex-col sm:flex-row sm:items-center sm:justify-between py-2 sm:py-3 border-b border-black/5 gap-1 sm:gap-0">
+                <div class="text-xs sm:text-sm text-[#6B7E8B]">{{ t('clientMain.home.bankBic') }}</div>
+                <div class="font-bold text-xs sm:text-sm lg:text-base text-[#0B2A3C] font-mono break-all sm:text-right">{{ card.bank_bic }}</div>
               </div>
             </div>
             
             <!-- Toggle visibility button -->
-            <div class="mt-6 flex justify-center">
+            <div class="mt-4 sm:mt-6 flex justify-center">
               <button
                 @click="showCardData = !showCardData"
-                class="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-sm text-[#0B2A3C]"
+                class="flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl border border-black/10 bg-white hover:bg-[#F3F7FB] transition font-semibold text-xs sm:text-sm text-[#0B2A3C] w-full sm:w-auto"
               >
                 <svg v-if="showCardData" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
@@ -869,17 +887,17 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
 
           <!-- Document Upload & Card Request Page -->
           <template v-else-if="route.path === '/document'">
-            <div class="space-y-6">
+            <div class="space-y-4 sm:space-y-6">
               <!-- Header -->
-              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                <h2 class="text-[32px] font-bold text-[#0B2A3C] mb-2">{{ t('clientMain.identityDocument') }}</h2>
-                <p class="text-[16px] text-[#6B7E8B]">
+              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6 lg:p-8">
+                <h2 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#0B2A3C] mb-2">{{ t('clientMain.identityDocument') }}</h2>
+                <p class="text-sm sm:text-base text-[#6B7E8B]">
                   {{ t('clientMain.documentSubtitle') }}
                 </p>
               </div>
 
               <!-- Error Messages -->
-              <div v-if="clientDocument?.status === 'rejected'" class="bg-[#FFE0E0] border border-[#B42318]/20 rounded-2xl p-6">
+              <div v-if="clientDocument?.status === 'rejected'" class="bg-[#FFE0E0] border border-[#B42318]/20 rounded-2xl p-4 sm:p-6">
                 <div class="flex items-start gap-4">
                   <div class="flex-shrink-0 w-10 h-10 rounded-full bg-[#B42318] flex items-center justify-center">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
@@ -904,23 +922,23 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             </div>
 
               <!-- Documents Upload Container -->
-              <div v-if="canEditDocuments && !docLoading"  class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                <div class="space-y-6">
+              <div v-if="canEditDocuments && !docLoading"  class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div class="space-y-4 sm:space-y-6">
                   <!-- Step 1: Upload Front Side -->
-                  <div class="flex items-start gap-6">
+                  <div class="flex items-start gap-3 sm:gap-4 lg:gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
-                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold bg-[#006AC7] text-white">
+                      <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl lg:text-[24px] font-bold bg-[#006AC7] text-white">
                         1
                       </div>
                     </div>
 
                     <!-- Step Content -->
-                    <div class="flex-1">
-                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-lg sm:text-xl lg:text-[24px] font-bold text-[#0B2A3C] mb-2">
                         {{ t('clientMain.documentFields.frontSide') }}
                       </h3>
-                      <p class="text-[15px] text-[#6B7E8B] mb-6">
+                      <p class="text-sm sm:text-[15px] text-[#6B7E8B] mb-4 sm:mb-6">
                         {{ t('clientMain.documentFields.frontSideDescription') }}
                       </p>
 
@@ -935,9 +953,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         />
                         <button
                           :disabled="isUploading || !canEditDocuments"
-                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                          class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
-                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
                           @click="openFilePicker('frontSide')"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1013,9 +1031,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         />
                         <button
                           :disabled="isUploading || !canEditDocuments"
-                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                          class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
-                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
                           @click="openFilePicker('backSide')"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1091,9 +1109,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         />
                         <button
                           :disabled="isUploading || !canEditDocuments"
-                          class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                          class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition border-2
                                  border-[#006AC7] bg-[#006AC7] text-white hover:bg-[#0055A3] hover:border-[#0055A3]
-                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                                 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
                           @click="openFilePicker('bankStatement')"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1141,20 +1159,20 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   <div class="border-t border-black/10"></div>
 
                   <!-- Submit All Documents Button -->
-                  <div class="flex items-center justify-between pt-2">
-                    <div>
-                      <h3 class="text-[20px] font-bold text-[#0B2A3C] mb-2">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-2 gap-4">
+                    <div class="flex-1">
+                      <h3 class="text-lg sm:text-xl font-bold text-[#0B2A3C] mb-2">
                         {{ t('clientMain.submitAllDocuments') }}
                       </h3>
-                      <p class="text-[15px] text-[#6B7E8B]">
+                      <p class="text-sm sm:text-[15px] text-[#6B7E8B]">
                         {{ t('clientMain.submitAllDocumentsDescription') }}
                       </p>
                     </div>
                     <button
                       :disabled="!canSubmit || isUploading"
-                      class="px-8 py-4 rounded-xl font-semibold text-[16px] transition border-2
+                      class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition border-2
                              border-[#0E6B3B] bg-[#0E6B3B] text-white hover:bg-[#0C5A2F] hover:border-[#0C5A2F]
-                             disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                             disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
                       @click="submitAllDocuments"
                     >
                       <svg v-if="!isUploading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1172,8 +1190,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </p>
                 </div>
               </div>
-              <div v-else class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                <div class="text-[16px] text-[#6B7E8B]">
+              <div v-else class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div class="text-sm sm:text-base text-[#6B7E8B]">
                   <template v-if="clientDocument?.status === 'pending'">
                     {{ t('clientMain.documentLocked.pending') }}
                   </template>
@@ -1185,17 +1203,17 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
 
               <!-- Step 2: Document Review -->
               <div 
-                class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
+                class="bg-white rounded-2xl border-2 shadow-sm p-4 sm:p-6 lg:p-8 transition-all"
                 :class="{
                   'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved',
                   'border-[#FFF3CD] bg-[#FFFBEB]': clientDocument?.status === 'pending',
                   'border-black/10': !clientDocument || clientDocument?.status === 'rejected',
                 }"
               >
-                <div class="flex items-start gap-6">
+                <div class="flex items-start gap-3 sm:gap-4 lg:gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
-                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
+                      <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl lg:text-[24px] font-bold"
                         :class="{
                           'bg-[#E5E7EB] text-[#6B7280]': !clientDocument || clientDocument.status === 'rejected',
                           'bg-[#FFF3CD] text-[#7A5D00]': clientDocument?.status === 'pending',
@@ -1213,11 +1231,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                     </div>
                     
                     <!-- Step Content -->
-                    <div class="flex-1">
-                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-lg sm:text-xl lg:text-[24px] font-bold text-[#0B2A3C] mb-2">
                         {{ t('clientMain.documentSteps.step2Title') }}
                       </h3>
-                      <p class="text-[15px] text-[#6B7E8B] mb-4">
+                      <p class="text-sm sm:text-[15px] text-[#6B7E8B] mb-4">
                         <template v-if="!clientDocument">
                           {{ t('clientMain.documentSteps.step2DescriptionWaiting') }}
                         </template>
@@ -1247,16 +1265,16 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
 
               <!-- Step 3: Request Card -->
               <div 
-                class="bg-white rounded-2xl border-2 shadow-sm p-8 transition-all"
+                class="bg-white rounded-2xl border-2 shadow-sm p-4 sm:p-6 lg:p-8 transition-all"
                 :class="{
                   'border-[#DDF7E9] bg-[#F0FDF4]': clientDocument?.status === 'approved' && (me?.client_bank_status === 'received' || me?.client_bank_status === 'pending'),
                   'border-black/10': !clientDocument || clientDocument?.status !== 'approved',
                 }"
               >
-                <div class="flex items-start gap-6">
+                <div class="flex items-start gap-3 sm:gap-4 lg:gap-6">
                   <!-- Step Number -->
                   <div class="flex-shrink-0">
-                    <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold"
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center text-lg sm:text-xl lg:text-[24px] font-bold"
                       :class="{
                         'bg-[#E5E7EB] text-[#6B7280]': !clientDocument || clientDocument.status !== 'approved',
                         'bg-[#006AC7] text-white': clientDocument?.status === 'approved' && canRequestCard && me?.client_bank_status !== 'pending' && me?.client_bank_status !== 'received',
@@ -1272,11 +1290,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                   
                   <!-- Step Content -->
-                  <div class="flex-1">
-                    <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-lg sm:text-xl lg:text-[24px] font-bold text-[#0B2A3C] mb-2">
                       {{ t('clientMain.documentSteps.step3Title') }}
                     </h3>
-                    <p class="text-[15px] text-[#6B7E8B] mb-6">
+                    <p class="text-sm sm:text-[15px] text-[#6B7E8B] mb-4 sm:mb-6">
                       <template v-if="!clientDocument || clientDocument.status !== 'approved'">
                         {{ t('clientMain.documentSteps.step3DescriptionWaiting') }}
                       </template>
@@ -1297,9 +1315,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         v-if="canRequestCard"
                         :disabled="requestCardLoading"
                         @click="requestCard"
-                        class="px-8 py-4 rounded-xl font-semibold text-[16px] transition
+                        class="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-sm sm:text-base transition
                           bg-[#006AC7] text-white hover:bg-[#0055A3]
-                          disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-3"
+                          disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 sm:gap-3"
                       >
                         <svg v-if="!requestCardLoading" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
@@ -1311,18 +1329,18 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                         <span v-if="requestCardLoading">{{ t('clientMain.submitting') }}</span>
                         <span v-else>{{ t('clientMain.requestCard') }}</span>
                       </button>
-                      <div v-else-if="me?.client_bank_status === 'pending'" class="flex items-center gap-3 px-6 py-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
+                      <div v-else-if="me?.client_bank_status === 'pending'" class="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-[#FFF3CD] border border-[#7A5D00]/20 rounded-xl">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#7A5D00" stroke-width="2">
                           <circle cx="12" cy="12" r="10"></circle>
                           <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
-                        <span class="text-[15px] font-semibold text-[#7A5D00]">{{ t('clientMain.requestPending') }}</span>
+                        <span class="text-sm sm:text-[15px] font-semibold text-[#7A5D00]">{{ t('clientMain.requestPending') }}</span>
                       </div>
-                      <div v-else-if="me?.client_bank_status === 'received'" class="flex items-center gap-3 px-6 py-4 bg-[#DDF7E9] border border-[#0E6B3B]/20 rounded-xl">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
+                      <div v-else-if="me?.client_bank_status === 'received'" class="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-[#DDF7E9] border border-[#0E6B3B]/20 rounded-xl">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="#0E6B3B" stroke-width="2">
                           <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        <span class="text-[15px] font-semibold text-[#0E6B3B]">{{ t('clientMain.documentSteps.cardReceived') }}</span>
+                        <span class="text-sm sm:text-[15px] font-semibold text-[#0E6B3B]">{{ t('clientMain.documentSteps.cardReceived') }}</span>
                       </div>
                     </div>
                   </div>
@@ -1392,14 +1410,14 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
     <!-- Manager Contact Icon - Fixed Bottom Right -->
     <div
       v-if="managerPhone"
-      class="fixed bottom-6 right-6 z-40"
+      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30"
     >
       <button
         @click="showManagerModal = true"
-        class="w-14 h-14 rounded-full bg-[#006AC7] text-white shadow-lg hover:bg-[#0055A3] transition-all duration-300 flex items-center justify-center hover:scale-110"
+        class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#006AC7] text-white shadow-xl hover:bg-[#0055A3] transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95"
         :title="t('clientMain.managerContact.title')"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
         </svg>
       </button>
@@ -1412,32 +1430,32 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
       @click.self="showManagerModal = false"
     >
       <div 
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] transform transition-all duration-300"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] max-h-[90vh] overflow-y-auto transform transition-all duration-300"
         :class="showManagerModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
       >
         <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-[#006AC7] to-[#0055A3] p-6 rounded-t-2xl">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <div class="bg-gradient-to-r from-[#006AC7] to-[#0055A3] p-4 sm:p-6 rounded-t-2xl">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-14 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
               </div>
-              <div>
-                <h3 class="text-[20px] font-bold text-white mb-1">
+              <div class="min-w-0">
+                <h3 class="text-lg sm:text-xl font-bold text-white mb-1">
                   {{ t('clientMain.managerContact.title') }}
                 </h3>
-                <p class="text-sm text-white/80">
+                <p class="text-xs sm:text-sm text-white/80">
                   {{ t('clientMain.managerContact.subtitle') }}
                 </p>
               </div>
             </div>
             <button
               @click="showManagerModal = false"
-              class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white"
+              class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white flex-shrink-0"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-4 h-4 sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -1446,27 +1464,27 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 space-y-6">
+        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <!-- Manager Name -->
-          <div v-if="manager?.first_name || manager?.last_name" class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+          <div v-if="manager?.first_name || manager?.last_name" class="p-3 sm:p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
             <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
               {{ t('clientMain.managerContact.name') }}
             </div>
-            <div class="text-[18px] font-bold text-[#0B2A3C]">
+            <div class="text-base sm:text-lg font-bold text-[#0B2A3C] break-words">
               {{ `${manager.first_name || ''} ${manager.last_name || ''}`.trim() }}
             </div>
           </div>
 
           <!-- Manager Phone -->
-          <div class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+          <div class="p-3 sm:p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
             <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
               {{ t('clientMain.managerContact.phone') }}
             </div>
             <a 
               :href="`tel:${managerPhone}`"
-              class="text-[18px] font-bold text-[#006AC7] hover:text-[#0055A3] transition break-all flex items-center gap-2"
+              class="text-base sm:text-lg font-bold text-[#006AC7] hover:text-[#0055A3] transition break-all flex items-center gap-2"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
               {{ managerPhone }}
@@ -1476,9 +1494,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <!-- Call Button -->
           <a
             :href="`tel:${managerPhone}`"
-            class="w-full px-6 py-4 rounded-xl bg-[#006AC7] text-white hover:bg-[#0055A3] transition font-semibold text-[16px] flex items-center justify-center gap-3"
+            class="w-full px-5 sm:px-6 py-3 sm:py-4 rounded-xl bg-[#006AC7] text-white hover:bg-[#0055A3] transition font-semibold text-sm sm:text-base flex items-center justify-center gap-2 sm:gap-3"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
             </svg>
             {{ t('clientMain.managerContact.callButton') }}
