@@ -518,8 +518,8 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         </div>
       </div>
       <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
-        <div class="mb-6">
-          <h1 class="text-2xl sm:text-3xl lg:text-[36px] font-bold text-[#0B2A3C] tracking-tight">
+        <div class="mb-4 sm:mb-6">
+          <h1 class="text-2xl sm:text-3xl lg:text-[36px] font-bold text-[#0B2A3C] tracking-tight pl-14 sm:pl-0">
             <span v-if="route.path === '/'">{{ t('clientSidebar.home') }}</span>
             <span v-else-if="route.path === '/card'">{{ t('clientSidebar.card') }}</span>
             <span v-else-if="route.path === '/document'">{{ t('clientSidebar.document') }}</span>
