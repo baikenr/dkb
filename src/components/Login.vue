@@ -90,10 +90,10 @@ const submitLogin = async () => {
 <template>
   <div class="min-h-screen flex flex-col bg-[#F5F7FA]">
     <!-- Header -->
-    <header class="py-4 flex-shrink-0">
-      <div class="mx-auto flex justify-between px-8">
+    <header class="py-3 sm:py-4 flex-shrink-0">
+      <div class="mx-auto flex justify-between px-4 sm:px-6 lg:px-8">
         <div>
-          <img :src="Logo" :alt="t('common.logoAlt')" class="h-10 sm:h-12" />
+          <img :src="Logo" :alt="t('common.logoAlt')" class="h-8 sm:h-10 lg:h-12" />
         </div>
 
         <div class="flex items-center">
@@ -101,7 +101,8 @@ const submitLogin = async () => {
             variant="text"
             append-icon="mdi-chevron-down"
             rounded="lg"
-            class="font-semibold text-xs sm:text-base uppercase text-[#006AC7]"
+            class="font-semibold text-xs sm:text-sm lg:text-base uppercase text-[#006AC7]"
+            size="small"
           >
             {{ getLanguageLabel() }}
             <v-menu activator="parent">
@@ -116,13 +117,13 @@ const submitLogin = async () => {
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center py-8">
+    <main class="flex-1 flex items-center justify-center py-4 sm:py-6 lg:py-8 px-4">
       <section class="w-full">
     <div
-          class="bg-white p-8 rounded-[14px] w-full max-w-lg mx-auto"
+          class="bg-white p-4 sm:p-6 lg:p-8 rounded-[14px] w-full max-w-lg mx-auto"
       style="border: 1px solid #CBD9E4;"
         >
-      <h2 class="text-[32px] font-bold text-center mb-6 text-[#31373D]">
+      <h2 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-center mb-4 sm:mb-6 text-[#31373D]">
         {{ t("login.title") }}
       </h2>
 
@@ -156,7 +157,7 @@ const submitLogin = async () => {
         <button
           type="submit"
           :disabled="loading"
-          class="w-full mt-10 h-[50px] rounded-[5px] text-[19px] font-semibold
+          class="w-full mt-6 sm:mt-8 lg:mt-10 h-12 sm:h-[50px] rounded-[5px] text-base sm:text-lg lg:text-[19px] font-semibold
                  bg-[#006AC7] text-white hover:bg-[#134E8A]
                  transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
@@ -164,8 +165,8 @@ const submitLogin = async () => {
         </button>
       </form>
 
-      <div class="mt-6 text-center text-[17px] text-[#31373D]">
-        <span>
+      <div class="mt-4 sm:mt-6 text-center text-sm sm:text-base lg:text-[17px] text-[#31373D]">
+        <span class="block sm:inline">
           {{ t("login.restoreLogin") }}
           <router-link
             to="/forgot-password"
@@ -180,11 +181,11 @@ const submitLogin = async () => {
     </main>
 
     <!-- Footer -->
-    <footer class="bg-[#1D2C40] text-white py-2 px-8 flex-shrink-0">
+    <footer class="bg-[#1D2C40] text-white py-2 sm:py-3 px-4 sm:px-6 lg:px-8 flex-shrink-0">
       <div class="mx-auto flex items-center justify-between">
         <div class="flex-shrink-0"></div>
 
-        <div class="flex flex-wrap justify-end gap-x-6 gap-y-2 text-sm">
+        <div class="flex flex-wrap justify-end gap-x-4 sm:gap-x-6 gap-y-2 text-xs sm:text-sm">
           <a
             href="#"
             class="decoration-[#3E757C] underline decoration-1 underline-offset-4 hover:text-[#3E757C] transition"

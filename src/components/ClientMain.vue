@@ -16,6 +16,8 @@ const router = useRouter();
 const appStore = useAppStore();
 const notificationStore = useNotificationStore();
 const loading = ref(false);
+const sidebarRef = ref<InstanceType<typeof ClientSidebar> | null>(null);
+const isMobile = ref(false);
 const docLoading = ref(false);
 const me = computed(() => appStore.me as any);
 const clientDocument = ref<any>(null);
@@ -297,6 +299,11 @@ const submitChangePassword = async () => {
   }
 };
 
+// Проверка мобильного устройства
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 1024;
+};
+
 onMounted(async () => {
   await loadMe();
   await loadDocument();
@@ -308,10 +315,15 @@ onMounted(async () => {
   if (mustChangePassword.value) {
     showChangePasswordModal.value = true;
   }
+  
+  // Проверка мобильного устройства
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', checkMobile);
 });
 
 // ✅ request card only if:
@@ -418,10 +430,24 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
 <template>
   <div class="flex min-h-screen">
     <!-- Left Sidebar -->
-    <ClientSidebar />
-    <main class="flex-1 relative">
+    <ClientSidebar ref="sidebarRef" />
+    <main class="flex-1 relative lg:ml-0">
+      <!-- Mobile Menu Button -->
+      <button
+        v-if="isMobile"
+        @click="sidebarRef?.openMobileMenu()"
+        class="fixed top-4 left-4 z-30 lg:hidden w-10 h-10 rounded-lg bg-[#006AC7] text-white flex items-center justify-center shadow-lg hover:bg-[#0055A3] transition"
+        :title="t('common.menu')"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 7H20" stroke-linecap="round"/>
+          <path d="M4 12H20" stroke-linecap="round"/>
+          <path d="M4 17H20" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
       <!-- Profile Menu & Language Toggle - Top Right -->
-      <div class="absolute top-0 right-0 z-10 p-6 profile-menu-container">
+      <div class="absolute top-0 right-0 z-10 p-4 lg:p-6 profile-menu-container">
         <div class="flex items-center gap-3">
           <!-- Language Toggle -->
           <button
@@ -491,9 +517,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           </div>
         </div>
       </div>
-      <div class="max-w-[1200px] mx-auto px-6 py-8">
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
         <div class="mb-6">
-          <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">
+          <h1 class="text-2xl sm:text-3xl lg:text-[36px] font-bold text-[#0B2A3C] tracking-tight">
             <span v-if="route.path === '/'">{{ t('clientSidebar.home') }}</span>
             <span v-else-if="route.path === '/card'">{{ t('clientSidebar.card') }}</span>
             <span v-else-if="route.path === '/document'">{{ t('clientSidebar.document') }}</span>
@@ -512,7 +538,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <template v-if="route.path === '/'">
             <div class="space-y-6">
               <!-- Summary Balances -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
                   <div class="text-sm text-[#6B7E8B] mb-2">{{ t('clientMain.home.availableBalance') }}</div>
                   <div class="text-[32px] font-bold text-[#0B2A3C]">
@@ -543,7 +569,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   <div class="text-[16px] font-mono text-[#0B2A3C]">{{ formatIBAN(me?.iban) }}</div>
                 </div>
 
-                <div class="flex gap-3 mb-6 relative">
+                <div class="flex flex-col sm:flex-row gap-3 mb-6 relative">
                   <div class="relative">
                     <button 
                       :disabled="!isDocumentApproved"
@@ -606,7 +632,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
               </div>
 
               <!-- Visa Kreditkarte Section -->
-              <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
+              <div v-if="hasCard" class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
                 <div class="flex items-center justify-between mb-4">
                   <div>
                     <h2 class="text-[20px] font-bold text-[#0B2A3C] mb-1">{{ t('clientMain.home.visaKreditkarte') }}</h2>
@@ -616,7 +642,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
                   </div>
                 </div>
                 
-                <div class="text-[24px] font-bold text-[#B42318] mb-4">
+                <div class="text-xl sm:text-2xl lg:text-[24px] font-bold text-[#B42318] mb-4">
                   {{ Number(card.balance || 0).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }} €
                 </div>
 
@@ -651,11 +677,11 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             <h2 class="text-[24px] font-bold text-[#0B2A3C] mb-6">{{ t('clientMain.cardDetails') }}</h2>
             
             <!-- Informationen Section -->
-            <div class="bg-[#F7FBFF] rounded-2xl border border-black/5 p-6 mb-6">
-              <div class="flex flex-col md:flex-row gap-6">
+            <div class="bg-[#F7FBFF] rounded-2xl border border-black/5 p-4 sm:p-6 mb-4 sm:mb-6">
+              <div class="flex flex-col md:flex-row gap-4 sm:gap-6">
                 <!-- Card Image (Left) -->
-                <div class="flex-shrink-0">
-                  <div class="relative w-[340px] h-[214px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl shadow-xl overflow-hidden border border-black/20">
+                <div class="flex-shrink-0 flex justify-center md:justify-start">
+                  <div class="relative w-full max-w-[340px] h-auto aspect-[340/214] sm:w-[340px] sm:h-[214px] bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] rounded-2xl shadow-xl overflow-hidden border border-black/20">
                     <!-- DKB Logo (top left) -->
                     <div class="absolute top-4 left-4">
                       <div class="text-[#006AC7] font-bold text-xl">DKB</div>
@@ -871,9 +897,9 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <template v-else-if="route.path === '/document'">
             <div class="space-y-6">
               <!-- Header -->
-              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                <h2 class="text-[32px] font-bold text-[#0B2A3C] mb-2">{{ t('clientMain.identityDocument') }}</h2>
-                <p class="text-[16px] text-[#6B7E8B]">
+              <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6 lg:p-8">
+                <h2 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#0B2A3C] mb-2">{{ t('clientMain.identityDocument') }}</h2>
+                <p class="text-sm sm:text-base lg:text-[16px] text-[#6B7E8B]">
                   {{ t('clientMain.documentSubtitle') }}
                 </p>
               </div>
@@ -904,23 +930,23 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
             </div>
 
               <!-- Documents Upload Container -->
-              <div v-if="canEditDocuments && !docLoading"  class="bg-white rounded-2xl border border-black/10 shadow-sm p-8">
-                <div class="space-y-6">
+              <div v-if="canEditDocuments && !docLoading"  class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div class="space-y-4 sm:space-y-6">
                   <!-- Step 1: Upload Front Side -->
-                  <div class="flex items-start gap-6">
+                  <div class="flex items-start gap-3 sm:gap-6">
                     <!-- Step Number -->
                     <div class="flex-shrink-0">
-                      <div class="w-16 h-16 rounded-full flex items-center justify-center text-[24px] font-bold bg-[#006AC7] text-white">
+                      <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-lg sm:text-[24px] font-bold bg-[#006AC7] text-white">
                         1
                       </div>
                     </div>
 
                     <!-- Step Content -->
                     <div class="flex-1">
-                      <h3 class="text-[24px] font-bold text-[#0B2A3C] mb-2">
+                      <h3 class="text-lg sm:text-xl lg:text-[24px] font-bold text-[#0B2A3C] mb-2">
                         {{ t('clientMain.documentFields.frontSide') }}
                       </h3>
-                      <p class="text-[15px] text-[#6B7E8B] mb-6">
+                      <p class="text-sm sm:text-base lg:text-[15px] text-[#6B7E8B] mb-4 sm:mb-6">
                         {{ t('clientMain.documentFields.frontSideDescription') }}
                       </p>
 
@@ -1351,17 +1377,17 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
     <!-- Change Password Modal for First Login -->
     <div
       v-if="showChangePasswordModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-3 sm:p-4 z-[100]"
     >
-      <div class="w-full max-w-[480px] bg-white rounded-2xl p-6">
-        <h2 class="text-xl font-bold mb-2">{{ t("header.changePassword.title") }}</h2>
-        <p class="text-gray-600 mb-4">
+      <div class="w-full max-w-[480px] bg-white rounded-2xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+        <h2 class="text-lg sm:text-xl font-bold mb-2">{{ t("header.changePassword.title") }}</h2>
+        <p class="text-sm sm:text-base text-gray-600 mb-4">
           {{ t("header.changePassword.subtitle") }}
         </p>
 
         <div
           v-if="pwdError"
-          class="mb-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
+          class="mb-3 text-xs sm:text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2"
         >
           {{ pwdError }}
         </div>
@@ -1369,18 +1395,18 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         <input
           v-model="newPassword"
           type="password"
-          class="w-full border rounded-lg px-3 py-2 mb-3"
+          class="w-full border rounded-lg px-3 py-2 mb-3 text-sm sm:text-base"
           :placeholder="t('header.changePassword.newPasswordPlaceholder')"
         />
         <input
           v-model="confirmPassword"
           type="password"
-          class="w-full border rounded-lg px-3 py-2"
+          class="w-full border rounded-lg px-3 py-2 text-sm sm:text-base"
           :placeholder="t('header.changePassword.confirmPasswordPlaceholder')"
         />
 
         <button
-          class="mt-4 w-full bg-[#006ac7] hover:bg-[#134e8a] text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+          class="mt-4 w-full bg-[#006ac7] hover:bg-[#134e8a] text-white py-2.5 sm:py-3 rounded-xl font-semibold disabled:opacity-60 text-sm sm:text-base"
           :disabled="pwdLoading"
           @click="submitChangePassword"
         >
@@ -1392,14 +1418,14 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
     <!-- Manager Contact Icon - Fixed Bottom Right -->
     <div
       v-if="managerPhone"
-      class="fixed bottom-6 right-6 z-40"
+      class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40"
     >
       <button
         @click="showManagerModal = true"
-        class="w-14 h-14 rounded-full bg-[#006AC7] text-white shadow-lg hover:bg-[#0055A3] transition-all duration-300 flex items-center justify-center hover:scale-110"
+        class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#006AC7] text-white shadow-lg hover:bg-[#0055A3] transition-all duration-300 flex items-center justify-center hover:scale-110"
         :title="t('clientMain.managerContact.title')"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="20" height="20" class="sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
         </svg>
       </button>
@@ -1408,36 +1434,36 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
     <!-- Manager Contact Modal -->
     <div
       v-if="showManagerModal"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center p-3 sm:p-4 z-[100]"
       @click.self="showManagerModal = false"
     >
       <div 
-        class="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] transform transition-all duration-300"
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] max-h-[90vh] overflow-y-auto transform transition-all duration-300"
         :class="showManagerModal ? 'scale-100 opacity-100' : 'scale-95 opacity-0'"
       >
         <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-[#006AC7] to-[#0055A3] p-6 rounded-t-2xl">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <div class="bg-gradient-to-r from-[#006AC7] to-[#0055A3] p-4 sm:p-6 rounded-t-2xl">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-14 sm:h-14 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" class="sm:w-7 sm:h-7" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                 </svg>
               </div>
-              <div>
-                <h3 class="text-[20px] font-bold text-white mb-1">
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base sm:text-lg lg:text-[20px] font-bold text-white mb-1 break-words">
                   {{ t('clientMain.managerContact.title') }}
                 </h3>
-                <p class="text-sm text-white/80">
+                <p class="text-xs sm:text-sm text-white/80 break-words">
                   {{ t('clientMain.managerContact.subtitle') }}
                 </p>
               </div>
             </div>
             <button
               @click="showManagerModal = false"
-              class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white"
+              class="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition text-white flex-shrink-0"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="16" height="16" class="sm:w-[18px] sm:h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -1446,27 +1472,27 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
         </div>
 
         <!-- Modal Content -->
-        <div class="p-6 space-y-6">
+        <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <!-- Manager Name -->
-          <div v-if="manager?.first_name || manager?.last_name" class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+          <div v-if="manager?.first_name || manager?.last_name" class="p-3 sm:p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
             <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
               {{ t('clientMain.managerContact.name') }}
             </div>
-            <div class="text-[18px] font-bold text-[#0B2A3C]">
+            <div class="text-base sm:text-lg lg:text-[18px] font-bold text-[#0B2A3C] break-words">
               {{ `${manager.first_name || ''} ${manager.last_name || ''}`.trim() }}
             </div>
           </div>
 
           <!-- Manager Phone -->
-          <div class="p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
+          <div class="p-3 sm:p-4 rounded-xl bg-[#F7FBFF] border border-black/5">
             <div class="text-xs text-[#6B7E8B] font-semibold uppercase tracking-wide mb-2">
               {{ t('clientMain.managerContact.phone') }}
             </div>
             <a 
               :href="`tel:${managerPhone}`"
-              class="text-[18px] font-bold text-[#006AC7] hover:text-[#0055A3] transition break-all flex items-center gap-2"
+              class="text-base sm:text-lg lg:text-[18px] font-bold text-[#006AC7] hover:text-[#0055A3] transition break-all flex items-center gap-2"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="18" height="18" class="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
               </svg>
               {{ managerPhone }}
@@ -1476,7 +1502,7 @@ const langLabel = computed(() => (locale.value === "de" ? "EN" : "DE"));
           <!-- Call Button -->
           <a
             :href="`tel:${managerPhone}`"
-            class="w-full px-6 py-4 rounded-xl bg-[#006AC7] text-white hover:bg-[#0055A3] transition font-semibold text-[16px] flex items-center justify-center gap-3"
+            class="w-full px-4 sm:px-6 py-3 sm:py-4 rounded-xl bg-[#006AC7] text-white hover:bg-[#0055A3] transition font-semibold text-sm sm:text-base lg:text-[16px] flex items-center justify-center gap-2 sm:gap-3"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>

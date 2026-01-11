@@ -16,6 +16,8 @@ const { t, locale } = useI18n();
 
 const loading = ref(false);
 const me = computed(() => appStore.me as any);
+const sidebarRef = ref<InstanceType<typeof StaffSidebar> | null>(null);
+const isMobile = ref(false);
 
 const loadMe = async () => {
   loading.value = true;
@@ -75,24 +77,47 @@ const handleClickOutside = (e: MouseEvent) => {
   }
 };
 
+// Проверка мобильного устройства
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 1024;
+};
+
 onMounted(async () => {
   await loadMe();
   // Close profile menu when clicking outside
   document.addEventListener('click', handleClickOutside);
+  // Проверка мобильного устройства
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  window.removeEventListener('resize', checkMobile);
 });
 </script>
 
 <template>
   <div class="flex min-h-screen">
   <!-- Left Sidebar -->
-  <StaffSidebar />
-    <main class="flex-1 relative">
+  <StaffSidebar ref="sidebarRef" />
+    <main class="flex-1 relative lg:ml-0">
+      <!-- Mobile Menu Button -->
+      <button
+        v-if="isMobile"
+        @click="sidebarRef?.openMobileMenu()"
+        class="fixed top-4 left-4 z-30 lg:hidden w-10 h-10 rounded-lg bg-[#006AC7] text-white flex items-center justify-center shadow-lg hover:bg-[#0055A3] transition"
+        :title="t('common.menu')"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 7H20" stroke-linecap="round"/>
+          <path d="M4 12H20" stroke-linecap="round"/>
+          <path d="M4 17H20" stroke-linecap="round"/>
+        </svg>
+      </button>
+      
       <!-- Profile Menu & Language Toggle - Top Right -->
-      <div class="absolute top-0 right-0 z-10 p-6 profile-menu-container">
+      <div class="absolute top-0 right-0 z-10 p-4 lg:p-6 profile-menu-container">
         <div class="flex items-center gap-3">
           <!-- Language Toggle -->
           <button
@@ -144,9 +169,9 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
-      <div class="max-w-[1200px] mx-auto px-6 py-8">
-        <div class="mb-6">
-          <h1 class="text-[36px] font-bold text-[#0B2A3C] tracking-tight">{{ pageTitle }}</h1>
+      <div class="max-w-[1200px] mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
+        <div class="mb-4 sm:mb-6">
+          <h1 class="text-2xl sm:text-3xl lg:text-[36px] font-bold text-[#0B2A3C] tracking-tight">{{ pageTitle }}</h1>
           <div class="h-px bg-black/10 mt-4"></div>
         </div>
 
@@ -158,25 +183,25 @@ onBeforeUnmount(() => {
             <div class="grid grid-cols-12 gap-6">
               <section class="col-span-12 lg:col-span-8 space-y-6">
                 <!-- Welcome Card -->
-                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                  <div class="text-[18px] font-bold text-[#0B2A3C] mb-2">
+                <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+                  <div class="text-base sm:text-lg lg:text-[18px] font-bold text-[#0B2A3C] mb-2">
                     {{ fullName && fullName !== '—' ? t('staffDashboard.welcome', { name: fullName }) : t('staffDashboard.welcomeNoName') }}
                   </div>
-                  <div class="text-sm text-[#6B7E8B]">
+                  <div class="text-xs sm:text-sm text-[#6B7E8B]">
                     {{ t('staffDashboard.role') }}: <span class="font-semibold">{{ staffRole }}</span>
                   </div>
                 </div>
 
                 <!-- Stats Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.totalClients') }}</div>
-                    <div class="text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
+                  <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.totalClients') }}</div>
+                    <div class="text-xl sm:text-2xl lg:text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
                   </div>
 
-                  <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-6">
-                    <div class="text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.pendingDocuments') }}</div>
-                    <div class="text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
+                  <div class="bg-white rounded-2xl border border-black/10 shadow-sm p-4 sm:p-6">
+                    <div class="text-xs sm:text-sm text-[#6B7E8B] font-semibold mb-2">{{ t('staffDashboard.pendingDocuments') }}</div>
+                    <div class="text-xl sm:text-2xl lg:text-[24px] font-bold text-[#0B2A3C]">{{ t('common.dash') }}</div>
                   </div>
                 </div>
 

@@ -43,21 +43,21 @@ onMounted(async () => {
 
 <template>
   <header class="w-full bg-white border-b">
-    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <router-link to="/" class="flex items-center">
-        <img :src="Logo" :alt="t('common.logoAlt')" class="h-10 sm:h-12 cursor-pointer" />
+    <div class="max-w-[1320px] mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+      <router-link to="/" class="flex items-center flex-shrink-0">
+        <img :src="Logo" :alt="t('common.logoAlt')" class="h-8 sm:h-10 lg:h-12 cursor-pointer" />
       </router-link>
 
-      <div class="flex items-center gap-3 relative">
+      <div class="flex items-center gap-2 sm:gap-3 relative">
         <button
           @click="toggleLanguage"
-          class="text-gray-600 hover:text-black transition font-semibold uppercase text-sm sm:text-base"
+          class="text-gray-600 hover:text-black transition font-semibold uppercase text-xs sm:text-sm lg:text-base px-2 sm:px-3 py-1.5 sm:py-2"
         >
           {{ langLabel }}
         </button>
         <template v-if="!isAuthed">
           <button
-            class="bg-[#006ac7] hover:bg-[#134e8a] text-white px-4 py-2 rounded-xl font-semibold"
+            class="bg-[#006ac7] hover:bg-[#134e8a] text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-semibold text-xs sm:text-sm lg:text-base"
             @click="router.push('/login')"
           >
             {{ t("header.loginBtn") }}
@@ -66,7 +66,7 @@ onMounted(async () => {
 
         <template v-else>
           <button
-            class="px-4 py-2 rounded-xl border hover:bg-gray-50 font-semibold"
+            class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border hover:bg-gray-50 font-semibold text-xs sm:text-sm lg:text-base truncate max-w-[120px] sm:max-w-none"
             @click="menuOpen = !menuOpen"
           >
             {{ fullName }}
@@ -74,13 +74,13 @@ onMounted(async () => {
 
           <div
             v-if="menuOpen"
-            class="absolute right-0 top-[48px] w-[220px] bg-white border rounded-xl shadow-lg overflow-hidden"
+            class="absolute right-0 top-[48px] sm:top-[52px] w-[180px] sm:w-[220px] bg-white border rounded-xl shadow-lg overflow-hidden z-50"
           >
-            <button class="w-full text-left px-4 py-3 hover:bg-gray-50" @click="goProfile">
+            <button class="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 text-sm sm:text-base" @click="goProfile">
               {{ t("header.menu.profile") }}
             </button>
             <button
-              class="w-full text-left px-4 py-3 hover:bg-gray-50 text-red-600"
+              class="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 text-red-600 text-sm sm:text-base"
               @click="doLogout"
             >
               {{ t("header.menu.logout") }}

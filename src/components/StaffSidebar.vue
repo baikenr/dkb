@@ -11,8 +11,25 @@ const route = useRoute();
 const appStore = useAppStore();
 
 const sidebarOpen = ref(true);
+const mobileMenuOpen = ref(false);
 const unreadCount = ref(0);
 let unreadCountInterval: any = null;
+
+// Определяем мобильный экран
+const isMobile = ref(false);
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 1024; // lg breakpoint
+  if (!isMobile.value && mobileMenuOpen.value) {
+    mobileMenuOpen.value = false;
+  }
+};
+
+// Закрывать меню при переходе на другой роут на мобильных
+watch(() => route.path, () => {
+  if (isMobile.value) {
+    mobileMenuOpen.value = false;
+  }
+});
 
 const navItems = computed(() => {
   const isAdmin = appStore.staffRole === "admin";
@@ -70,6 +87,9 @@ onMounted(async () => {
   window.addEventListener("focus", handleWindowFocus);
   // Обновляем счетчик при обновлении уведомлений
   window.addEventListener("notification-updated", handleNotificationUpdate);
+  // Проверяем размер экрана
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
 });
 
 onBeforeUnmount(() => {
@@ -78,6 +98,7 @@ onBeforeUnmount(() => {
   }
   window.removeEventListener("focus", handleWindowFocus);
   window.removeEventListener("notification-updated", handleNotificationUpdate);
+  window.removeEventListener("resize", checkMobile);
 });
 
 // Обновляем счетчик при переходе на страницу FAQ
@@ -86,12 +107,41 @@ watch(() => route.path, (newPath) => {
     loadUnreadCount();
   }
 });
+
+// Expose методы для управления меню из родительского компонента
+const openMobileMenu = () => {
+  if (isMobile.value) {
+    mobileMenuOpen.value = true;
+  }
+};
+
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
+
+defineExpose({
+  openMobileMenu,
+  closeMobileMenu,
+  mobileMenuOpen
+});
 </script>
 
 <template>
+  <!-- Mobile Menu Overlay -->
+  <div
+    v-if="mobileMenuOpen && isMobile"
+    class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+    @click="mobileMenuOpen = false"
+  ></div>
+
+  <!-- Sidebar -->
   <aside
-    class="h-screen sticky top-0 bg-white border-r border-black/10 transition-all duration-300 ease-in-out"
-    :class="sidebarOpen ? 'w-[280px]' : 'w-[90px]'"
+    class="h-screen fixed lg:sticky top-0 left-0 bg-white border-r border-black/10 transition-all duration-300 ease-in-out z-50"
+    :class="[
+      isMobile 
+        ? (mobileMenuOpen ? 'w-[280px] translate-x-0' : '-translate-x-full w-[280px]')
+        : (sidebarOpen ? 'w-[280px]' : 'w-[90px]')
+    ]"
   >
     <!-- Logo Section -->
     <div class="px-3 py-6 border-b border-black/10">
@@ -106,10 +156,14 @@ watch(() => route.path, (newPath) => {
     <div class="px-3 py-4 border-b border-black/10 flex justify-center">
       <button
         class="w-9 h-9 rounded-lg hover:bg-black/5 flex items-center justify-center transition-colors duration-200"
-        @click="sidebarOpen = !sidebarOpen"
+        @click="isMobile ? (mobileMenuOpen = false) : (sidebarOpen = !sidebarOpen)"
         :title="t('common.menu')"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
+        <svg v-if="isMobile" width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
+          <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#2E4A63]">
           <path d="M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <path d="M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <path d="M4 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
